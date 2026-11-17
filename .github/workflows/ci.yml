@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore FoodAssistant.slnx
+
+      - name: Build
+        run: dotnet build FoodAssistant.slnx -c Release --no-restore
+
+      # Docker is preinstalled on ubuntu-latest, which the Testcontainers integration tests need.
+      - name: Test
+        run: dotnet test --solution FoodAssistant.slnx -c Release --no-build
+
+      - name: Check file length (max 300 lines)
+        shell: pwsh
+        run: ./scripts/check-file-length.ps1
