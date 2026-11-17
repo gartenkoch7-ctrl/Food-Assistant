@@ -29,12 +29,13 @@ Fehlt eine Datei noch, legt sie an, wer das Thema als Erstes braucht.
 | KI-Assistent | [docs/kb/ki-assistent.md](docs/kb/ki-assistent.md) | du Prompts, Modelle oder KI-Funktionen anfasst |
 | Externe Daten | [docs/kb/externe-daten.md](docs/kb/externe-daten.md) | du Produktdatenbanken, Barcodes oder APIs anbindest |
 | Datenschutz | [docs/kb/datenschutz.md](docs/kb/datenschutz.md) | Nutzerdaten gespeichert, geloggt oder an Dritte gesendet werden |
+| **Designsystem** | [docs/kb/design-system.md](docs/kb/design-system.md) | du UI baust – Farben, Schrift, Maße, eigene Komponenten (Quelle: Claude Design, ADR-0009) |
 | Barrierefreiheit | [docs/kb/barrierefreiheit.md](docs/kb/barrierefreiheit.md) | du UI baust – Checkliste pro Feature |
 | Export-Schema | [docs/kb/export-schema.md](docs/kb/export-schema.md) | du Daten hinzufügst, die in den Haushaltsexport gehören |
 | Testumgebung | [docs/kb/testumgebung.md](docs/kb/testumgebung.md) | du testest oder misst |
 | Build & Tooling | [docs/kb/build-und-tooling.md](docs/kb/build-und-tooling.md) | Build oder Tests nicht laufen |
 | **Telemetrie (Katalog)** | [docs/kb/telemetrie.md](docs/kb/telemetrie.md) | du ein Feature baust – jedes bringt Logs/Abläufe mit |
-| Architekturentscheidungen | [docs/adr/README.md](docs/adr/README.md) | du eine Entscheidung infrage stellst; Rollen/Konten 0002, Anmeldung 0003, API 0004, Sync 0005, Benachrichtigungen 0006, Betrieb 0007, Sprache/Barrierefreiheit 0008 |
+| Architekturentscheidungen | [docs/adr/README.md](docs/adr/README.md) | du eine Entscheidung infrage stellst; Rollen/Konten 0002, Anmeldung 0003, API 0004, Sync 0005, Benachrichtigungen 0006, Betrieb 0007, Sprache/Barrierefreiheit 0008, Design 0009, Vorratsmodell 0010 |
 | **Roadmap & Meilensteinpläne** | [docs/plan/README.md](docs/plan/README.md) | du eine Aufgabe beginnst – arbeite im aktuellen Meilenstein, hake erledigte Punkte ab |
 | Detailplan-Vorlage | [docs/plan/detailplan-vorlage.md](docs/plan/detailplan-vorlage.md) | du einen Plan in Pakete zerlegst und Modelle zuweist (§13) |
 

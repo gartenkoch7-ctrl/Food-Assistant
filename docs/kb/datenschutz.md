@@ -31,3 +31,12 @@ Ohne Konfiguration verlässt nur die Barcode-Abfrage an Open Food Facts den Serv
 - JSON-Export pro Haushalt (ADR-0007).
 - Gelöschte Daten verschwinden aus Backups erst, wenn diese rotiert sind – in der Doku für
   Self-Hoster erwähnen.
+
+## Geplante Daten (ab M3/M5)
+- **Kassenbon-Fotos (M3):** gehen an den konfigurierten KI-Anbieter; das Foto wird nach der
+  Auswertung nicht gespeichert, nur das Ergebnis.
+- **Allergien, Unverträglichkeiten, Ernährungsvorlieben (M5):** Gesundheitsdaten im Sinne von
+  Art. 9 DSGVO. Nur gespeichert, wenn der Haushalt die Funktion einschaltet und jemand Einträge
+  macht; an die KI gehen sie nur als Ausschlussliste ohne Personennamen; im Export enthalten,
+  beim Löschen der Person entfernt.
+- **Preise (M5):** Haushaltsdaten, keine Personendaten.

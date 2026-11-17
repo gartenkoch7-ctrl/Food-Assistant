@@ -13,3 +13,5 @@ umgeschrieben, sondern ersetzt (`Status: Ersetzt durch NNNN`).
 | [0006](0006-benachrichtigungen.md) | Benachrichtigungen | Akzeptiert |
 | [0007](0007-betrieb.md) | Betrieb – HTTPS, Konfiguration, Backup, Updates, Verteilung | Akzeptiert |
 | [0008](0008-sprache-einheiten-barrierefreiheit.md) | Sprache, Einheiten und Barrierefreiheit | Akzeptiert |
+| [0009](0009-visuelles-design.md) | Visuelles Design | Akzeptiert |
+| [0010](0010-vorratsmodell-und-haltbarkeit.md) | Vorratsmodell und Haltbarkeit | Akzeptiert |

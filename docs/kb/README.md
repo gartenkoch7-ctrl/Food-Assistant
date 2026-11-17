@@ -9,12 +9,13 @@ als Erstes braucht, und trägt sie hier ein. Grundsatzentscheidungen stehen in [
 | [ki-assistent.md](ki-assistent.md) | KI-Anbieter, Prompts, Budget, Grenzen | angelegt |
 | [datenschutz.md](datenschutz.md) | Welche Daten wo liegen und wohin sie gehen | angelegt |
 | [externe-daten.md](externe-daten.md) | Open Food Facts und weitere Quellen, Lizenzen | angelegt |
+| [design-system.md](design-system.md) | Farben, Schrift, Maße, eigene Komponenten | angelegt |
 | [barrierefreiheit.md](barrierefreiheit.md) | Checkliste pro Feature (WCAG 2.2 AA) | angelegt |
-| produkt-und-scope.md | Produkt, Scope, MVP | offen |
+| [produkt-und-scope.md](produkt-und-scope.md) | Produkt, Scope, MVP | angelegt |
 | architektur.md | Schichten und Projekte im Detail | offen |
 | datenmodell.md | Entitäten, Speicherung, Migrationen | offen |
-| vorrat-und-haltbarkeit.md | Bestand, MHD/Verbrauchsdatum, Erinnerungstexte | offen |
-| einkauf.md | Einkaufslisten, Nachkauf-Logik | offen |
+| [vorrat-und-haltbarkeit.md](vorrat-und-haltbarkeit.md) | Bestand, MHD/Verbrauchsdatum, Erinnerungstexte | angelegt |
+| [einkauf.md](einkauf.md) | Einkaufslisten, Nachkauf-Logik | angelegt |
 | export-schema.md | JSON-Export/-Import eines Haushalts | offen |
 | testumgebung.md | Testen, Testcontainers, Geräte | offen |
 | build-und-tooling.md | Build, MAUI, Docker | offen |
