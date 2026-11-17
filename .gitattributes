@@ -1,0 +1,10 @@
+* text=auto eol=crlf
+
+# Shell scripts must keep LF, otherwise Git for Windows' sh and Linux containers cannot run them.
+*.sh text eol=lf
+.githooks/* text eol=lf
+Dockerfile text eol=lf
+
+*.png binary
+*.ico binary
+*.woff2 binary

@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FoodAssistant.Application\FoodAssistant.Application.csproj" />
+    <ProjectReference Include="..\FoodAssistant.Infrastructure\FoodAssistant.Infrastructure.csproj" />
+    <ProjectReference Include="..\FoodAssistant.Contracts\FoodAssistant.Contracts.csproj" />
+    <ProjectReference Include="..\FoodAssistant.Web.Client\FoodAssistant.Web.Client.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,20 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/FoodAssistant.Application/FoodAssistant.Application.csproj" />
+    <Project Path="src/FoodAssistant.Client/FoodAssistant.Client.csproj" />
+    <Project Path="src/FoodAssistant.Contracts/FoodAssistant.Contracts.csproj" />
+    <Project Path="src/FoodAssistant.Domain/FoodAssistant.Domain.csproj" />
+    <Project Path="src/FoodAssistant.Infrastructure/FoodAssistant.Infrastructure.csproj" />
+    <Project Path="src/FoodAssistant.Server/FoodAssistant.Server.csproj" />
+    <Project Path="src/FoodAssistant.UI/FoodAssistant.UI.csproj" />
+    <Project Path="src/FoodAssistant.Web.Client/FoodAssistant.Web.Client.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/FoodAssistant.Application.Tests/FoodAssistant.Application.Tests.csproj" />
+    <Project Path="tests/FoodAssistant.Architecture.Tests/FoodAssistant.Architecture.Tests.csproj" />
+    <Project Path="tests/FoodAssistant.Domain.Tests/FoodAssistant.Domain.Tests.csproj" />
+    <Project Path="tests/FoodAssistant.Infrastructure.Tests/FoodAssistant.Infrastructure.Tests.csproj" />
+    <Project Path="tests/FoodAssistant.Server.Tests/FoodAssistant.Server.Tests.csproj" />
+    <Project Path="tests/FoodAssistant.UI.Tests/FoodAssistant.UI.Tests.csproj" />
+  </Folder>
+</Solution>

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\FoodAssistant.Domain\FoodAssistant.Domain.csproj" />
+    <ProjectReference Include="..\..\src\FoodAssistant.Contracts\FoodAssistant.Contracts.csproj" />
+    <ProjectReference Include="..\..\src\FoodAssistant.Application\FoodAssistant.Application.csproj" />
+    <ProjectReference Include="..\..\src\FoodAssistant.Infrastructure\FoodAssistant.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\FoodAssistant.Server\FoodAssistant.Server.csproj" />
+    <ProjectReference Include="..\..\src\FoodAssistant.Client\FoodAssistant.Client.csproj" />
+    <ProjectReference Include="..\..\src\FoodAssistant.UI\FoodAssistant.UI.csproj" />
+    <ProjectReference Include="..\..\src\FoodAssistant.Web.Client\FoodAssistant.Web.Client.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
+    <PackageReference Include="NetArchTest.Rules" />
+  </ItemGroup>
+</Project>
