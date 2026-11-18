@@ -34,6 +34,64 @@ public sealed class RecurringItemsRunnerTests(PostgresFixture postgres)
     }
 
     [Fact]
+    public async Task BrokenRule_MovesOn_AndDoesNotStopTheOtherRules()
+    {
+        var (database, time, household, listId) = await StartAsync();
+        await using var _ = database;
+        var broken = await AddRuleAsync(database, household, listId, new DateOnly(2026, 11, 10), RecurrenceFrequency.Daily, text: " ");
+        await AddRuleAsync(database, household, listId, new DateOnly(2026, 11, 18), RecurrenceFrequency.Daily);
+
+        Assert.Equal(1, await RunAsync(database, time, household));
+
+        Assert.Equal("Milk", Assert.Single(await ItemsAsync(database, household)).Text);
+        Assert.Equal(new DateOnly(2026, 11, 19), (await RuleAsync(database, household, broken)).NextDueOn);
+    }
+
+    [Fact]
+    public async Task RepeatAfterACrashBeforeMarking_DoesNotAddASecondEntry()
+    {
+        var (database, time, household, listId) = await StartAsync();
+        await using var _ = database;
+        var ruleId = await AddRuleAsync(database, household, listId, new DateOnly(2026, 11, 18), RecurrenceFrequency.Daily);
+        await RunAsync(database, time, household);
+        await using (var scope = database.CreateScope(household))
+        {
+            // As if the process died after the insert, before the rule was marked.
+            var rule = await scope.Db.Set<RecurringShoppingRule>().SingleAsync(r => r.Id == ruleId, Ct);
+            rule.NextDueOn = new DateOnly(2026, 11, 18);
+            rule.LastCreatedItemId = null;
+            await scope.Db.SaveChangesAsync(Ct);
+        }
+
+        await RunAsync(database, time, household);
+
+        Assert.Single(await ItemsAsync(database, household));
+    }
+
+    [Fact]
+    public async Task RuleEditedDuringTheRun_KeepsTheEditorsSchedule()
+    {
+        var (database, time, household, listId) = await StartAsync();
+        await using var _ = database;
+        var ruleId = await AddRuleAsync(database, household, listId, new DateOnly(2026, 11, 18), RecurrenceFrequency.Daily);
+        await using var scope = database.CreateScope(household);
+        var store = scope.Get<IRecurringRuleStore>();
+        var due = Assert.Single(await store.ListDueAsync(new DateOnly(2026, 11, 18), Ct));
+        await using (var editor = database.CreateScope(household))
+        {
+            var rule = await editor.Db.Set<RecurringShoppingRule>().SingleAsync(r => r.Id == ruleId, Ct);
+            rule.NextDueOn = new DateOnly(2026, 11, 27);
+            await editor.Db.SaveChangesAsync(Ct);
+        }
+
+        await store.MarkRunAsync(ruleId, due.Version, new DateOnly(2026, 11, 19), Guid.CreateVersion7(), Noon, Ct);
+
+        var stored = await RuleAsync(database, household, ruleId);
+        Assert.Equal(new DateOnly(2026, 11, 27), stored.NextDueOn);
+        Assert.NotNull(stored.LastCreatedItemId);
+    }
+
+    [Fact]
     public async Task RuleNotDueYet_AddsNothing()
     {
         var (database, time, household, listId) = await StartAsync();

@@ -30,23 +30,48 @@ public sealed class RecurringItemsRunner(
         foreach (var rule in await rules.ListDueAsync(today, cancellationToken).ConfigureAwait(false))
         {
             Guid? created = null;
-            if (await IsOpenAsync(rule.LastCreatedItemId, cancellationToken).ConfigureAwait(false))
+            try
             {
-                RestockLog.RecurringItemSkipped(logger, rule.Id);
+                if (await IsOpenAsync(rule.LastCreatedItemId, cancellationToken).ConfigureAwait(false))
+                {
+                    RestockLog.RecurringItemSkipped(logger, rule.Id);
+                }
+                else
+                {
+                    created = await AddAsync(householdId, rule, cancellationToken).ConfigureAwait(false);
+                    added++;
+                }
             }
-            else
+#pragma warning disable CA1031 // One broken rule must not starve the others; it moves on like any other.
+            catch (Exception exception) when (exception is not OperationCanceledException)
+#pragma warning restore CA1031
             {
-                created = await AddAsync(householdId, rule, cancellationToken).ConfigureAwait(false);
-                added++;
+                RestockLog.RecurringRuleFailed(logger, rule.Id, exception);
             }
 
-            // Skipped or added, the due date moves on; otherwise the rule would fire again every run.
+            // Skipped, added or failed, the due date moves on; otherwise the rule would fire again every run.
             var next = RecurrenceSchedule.NextDue(rule.Frequency, rule.DayOfWeek, rule.DayOfMonth, today);
-            await rules.MarkRunAsync(rule.Id, next, created, time.GetUtcNow(), cancellationToken).ConfigureAwait(false);
+            await rules.MarkRunAsync(rule.Id, rule.Version, next, created, time.GetUtcNow(), cancellationToken)
+                .ConfigureAwait(false);
         }
 
         activity?.SetTag("foodassistant.items", added);
         return added;
+    }
+
+    // The entry of one due date always has the same id: if the run dies after the insert but before
+    // the rule is marked, the repeat finds the entry (AddInternalAsync returns a known id) instead of adding a second.
+    private static Guid EntryId(DueRecurringRule rule)
+    {
+        Span<byte> input = stackalloc byte[20];
+        rule.Id.TryWriteBytes(input);
+        BitConverter.TryWriteBytes(input[16..], rule.DueOn.DayNumber);
+        Span<byte> hash = stackalloc byte[32];
+        System.Security.Cryptography.SHA256.HashData(input, hash);
+        var bytes = hash[..16];
+        bytes[6] = (byte)((bytes[6] & 0x0F) | 0x80); // version 8: custom, name-based
+        bytes[8] = (byte)((bytes[8] & 0x3F) | 0x80);
+        return new Guid(bytes, bigEndian: true);
     }
 
     // Open = still on a list: neither checked off nor deleted.
@@ -61,7 +86,7 @@ public sealed class RecurringItemsRunner(
             ? await itemStore.GetProductForItemAsync(productId, cancellationToken).ConfigureAwait(false)
             : null;
         var item = new NewShoppingItem(
-            Guid.CreateVersion7(),
+            EntryId(rule),
             product is null ? null : rule.ProductId,
             product?.Name ?? rule.Text,
             rule.Quantity,

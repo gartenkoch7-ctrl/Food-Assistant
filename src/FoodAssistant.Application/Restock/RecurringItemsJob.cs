@@ -29,11 +29,20 @@ public sealed class RecurringItemsJob(
             using var timer = new PeriodicTimer(Interval, time);
             do
             {
-                await RunOnceAsync(stoppingToken).ConfigureAwait(false);
+                try
+                {
+                    await RunOnceAsync(stoppingToken).ConfigureAwait(false);
+                }
+#pragma warning disable CA1031 // An unhandled exception would stop the whole host (e.g. the database restarting).
+                catch (Exception exception) when (!stoppingToken.IsCancellationRequested)
+#pragma warning restore CA1031
+                {
+                    RestockLog.RecurringJobFailed(logger, exception);
+                }
             }
             while (await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false));
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
         {
             // Shutdown.
         }
@@ -62,7 +71,7 @@ public sealed class RecurringItemsJob(
                     .ConfigureAwait(false);
             }
 #pragma warning disable CA1031 // One household's failure must not stop the others.
-            catch (Exception exception) when (exception is not OperationCanceledException)
+            catch (Exception exception) when (!cancellationToken.IsCancellationRequested)
 #pragma warning restore CA1031
             {
                 RestockLog.RecurringRunFailed(logger, id, exception);

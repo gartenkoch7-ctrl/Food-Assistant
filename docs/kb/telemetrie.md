@@ -134,6 +134,8 @@ Rest frei für weitere API-Konventionen.
 | `RecurringItemAdded` / 3551 | Log, Information | Nachkauf | Wiederkehrende Regel hat ihren Eintrag angelegt | `RuleId`, `ListId` |
 | `RecurringItemSkipped` / 3552 | Log, Information | Nachkauf | Wiederkehrende Regel übersprungen, weil ihr letzter Eintrag noch offen ist | `RuleId` |
 | `MinimumStockCheckFailed` / 3554 | Log, Warning | Nachkauf | Mindestbestand-Prüfung eines Produkts gescheitert; die übrigen Produkte werden weiter geprüft | `ProductId`, Exception |
+| `RecurringJobFailed` / 3555 | Log, Warning | Nachkauf | Durchlauf des Hintergrunddiensts über alle Haushalte gescheitert (z. B. Datenbank nicht erreichbar); der nächste Durchlauf läuft planmäßig | Exception |
+| `RecurringRuleFailed` / 3556 | Log, Warning | Nachkauf | Eine wiederkehrende Regel ist gescheitert; sie rückt auf den nächsten Termin, die übrigen Regeln laufen weiter | `RuleId`, Exception |
 | `RecurringRunFailed` / 3553 | Log, Warning | Nachkauf | Lauf der wiederkehrenden Einträge für einen Haushalt gescheitert; die übrigen Haushalte laufen weiter | `HouseholdId`, Exception |
 | `StoreCreated` / 3450 | Log, Information | Läden | Laden angelegt | `StoreId` |
 | `StoreDeleted` / 3451 | Log, Information | Läden | Laden gelöscht (Listen verlieren den Laden) | `StoreId` |

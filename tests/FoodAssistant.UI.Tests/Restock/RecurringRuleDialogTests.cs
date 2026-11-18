@@ -32,6 +32,27 @@ public sealed class RecurringRuleDialogTests : RestockTestContext
     }
 
     [Fact]
+    public async Task StaleVersion_IsRefreshedOnce_AndTheSaveRepeated()
+    {
+        var list = AddList();
+        var rule = AddRule(list.Id, "Milch");
+        Restock.Rules[0] = rule with { Version = 9 }; // the server moved on (e.g. the due date)
+        var reference = await ShowAsync<RecurringRuleDialog>(p =>
+        {
+            p.Add(d => d.Rule, rule);
+            p.Add(d => d.Lists, [list]);
+        });
+        Dialogs.WaitForAssertion(() => Assert.Contains("Regel bearbeiten", Dialogs.Markup, StringComparison.Ordinal));
+        Dialogs.Field("Artikel").Change("Hafermilch");
+
+        ButtonByText(Dialogs, "Speichern").Click();
+
+        var result = await reference.Result.WaitAsync(TimeSpan.FromSeconds(10), Xunit.TestContext.Current.CancellationToken);
+        Assert.False(result!.Canceled);
+        Assert.Equal(("Hafermilch", 10L), (Restock.Rules[0].Text, Restock.Rules[0].Version));
+    }
+
+    [Fact]
     public async Task EmptyText_ShowsTheFieldError_AndSendsNothing()
     {
         var list = AddList();

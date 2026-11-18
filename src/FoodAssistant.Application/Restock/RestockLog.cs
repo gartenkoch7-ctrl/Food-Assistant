@@ -21,6 +21,14 @@ internal static partial class RestockLog
         Message = "Recurring run failed for household {HouseholdId}")]
     public static partial void RecurringRunFailed(ILogger logger, Guid householdId, Exception exception);
 
+    [LoggerMessage(EventId = 3555, Level = LogLevel.Warning,
+        Message = "Recurring pass over all households failed; the next pass runs on schedule")]
+    public static partial void RecurringJobFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(EventId = 3556, Level = LogLevel.Warning,
+        Message = "Recurring rule {RuleId} failed; it moves on to its next due date")]
+    public static partial void RecurringRuleFailed(ILogger logger, Guid ruleId, Exception exception);
+
     [LoggerMessage(EventId = 3554, Level = LogLevel.Warning,
         Message = "Minimum-stock check of product {ProductId} failed")]
     public static partial void MinimumStockCheckFailed(ILogger logger, Guid productId, Exception exception);

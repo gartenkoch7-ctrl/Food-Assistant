@@ -64,7 +64,7 @@
     </DialogContent>
     <DialogActions>
         <MudButton Disabled="_saving" OnClick="() => MudDialog.Cancel()">@Common["Cancel"]</MudButton>
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_saving" OnClick="SaveAsync">@Common["Save"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_saving" OnClick="() => SaveAsync()">@Common["Save"]</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -83,6 +83,7 @@
     private DayOfWeek _dayOfWeek = DayOfWeek.Monday;
     private int? _dayOfMonth = 1;
     private Guid? _createId;
+    private long _version;
     private bool _textInvalid;
     private bool _dayInvalid;
     private bool _saving;
@@ -106,6 +107,7 @@
             return;
         }
 
+        _version = Rule.Version;
         _text = Rule.Text;
         _productId = Rule.ProductId;
         _quantity = Rule.Quantity;
@@ -124,7 +126,7 @@
 
     private void ClearProduct() => _productId = null;
 
-    private async Task SaveAsync()
+    private async Task SaveAsync(bool retried = false)
     {
         _textInvalid = string.IsNullOrWhiteSpace(_text);
         _dayInvalid = _frequency == RecurrenceFrequencyDto.Monthly && _dayOfMonth is not (>= 1 and <= 31);
@@ -149,13 +151,34 @@
             _frequency == RecurrenceFrequencyDto.Monthly ? _dayOfMonth : null);
         var result = Rule is null
             ? await Restock.CreateRuleAsync(household, request, CancellationToken.None)
-            : await Restock.UpdateRuleAsync(household, Rule.Id, request, $"\"{Rule.Version}\"", CancellationToken.None);
+            : await Restock.UpdateRuleAsync(household, Rule.Id, request, $"\"{_version}\"", CancellationToken.None);
         _saving = false;
 
         if (result.IsSuccess)
         {
             MudDialog.Close(DialogResult.Ok(result.Value!));
             return;
+        }
+
+        // 409 on a create: the id is taken, so an earlier attempt of this dialog (lost response) created the rule.
+        // 412 on a change: the rule changed meanwhile (the job moves its due date); the next save is based on the current version.
+        if ((result.Error!.Status == 409 && Rule is null) || (result.Error.Status == 412 && Rule is not null && !retried))
+        {
+            var rules = await Restock.ListRulesAsync(household, CancellationToken.None);
+            var current = rules.Value?.FirstOrDefault(r => r.Id == (Rule?.Id ?? _createId));
+            if (current is not null && Rule is null)
+            {
+                MudDialog.Close(DialogResult.Ok(current));
+                return;
+            }
+
+            if (current is not null)
+            {
+                _version = current.Version;
+                _error = null;
+                await SaveAsync(retried: true);
+                return;
+            }
         }
 
         _error = result.Error;

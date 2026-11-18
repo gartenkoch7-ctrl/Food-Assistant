@@ -168,24 +168,35 @@ internal sealed class RecurringRuleStore(AppDbContext db, IHouseholdContext hous
                 r.Frequency,
                 (DayOfWeek?)r.DayOfWeek,
                 r.DayOfMonth,
-                r.LastCreatedItemId)),
+                r.LastCreatedItemId,
+                r.NextDueOn,
+                r.Version)),
         ];
     }
 
     public async Task MarkRunAsync(
         Guid ruleId,
+        long expectedVersion,
         DateOnly nextDueOn,
         Guid? lastCreatedItemId,
         DateTimeOffset now,
         CancellationToken cancellationToken)
     {
+        // A failed insert of a list entry may have left it tracked; it must not be saved along.
+        db.ChangeTracker.Clear();
         var entity = await Rules.SingleOrDefaultAsync(r => r.Id == ruleId, cancellationToken).ConfigureAwait(false);
         if (entity is null)
         {
             return;
         }
 
-        entity.NextDueOn = nextDueOn;
+        // Edited since the run read it: keep the editor's schedule, only remember the new entry.
+        var edited = entity.Version != (uint)expectedVersion;
+        if (!edited)
+        {
+            entity.NextDueOn = nextDueOn;
+        }
+
         entity.LastCreatedItemId = lastCreatedItemId ?? entity.LastCreatedItemId;
         entity.UpdatedAt = now;
         try
@@ -194,7 +205,7 @@ internal sealed class RecurringRuleStore(AppDbContext db, IHouseholdContext hous
         }
         catch (DbUpdateConcurrencyException)
         {
-            // Edited or deleted while the run was busy: the editor's schedule wins, the next run decides again.
+            // Edited or deleted right now: the next run decides again (a deterministic entry id keeps it from adding twice).
             db.ChangeTracker.Clear();
         }
     }

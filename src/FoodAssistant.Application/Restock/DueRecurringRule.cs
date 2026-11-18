@@ -13,4 +13,6 @@ public sealed record DueRecurringRule(
     RecurrenceFrequency Frequency,
     DayOfWeek? DayOfWeek,
     int? DayOfMonth,
-    Guid? LastCreatedItemId);
+    Guid? LastCreatedItemId,
+    DateOnly DueOn,
+    long Version);

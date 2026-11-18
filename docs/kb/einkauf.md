@@ -103,7 +103,12 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
 - **Termine** (`RecurrenceSchedule`, Haushaltsdaten): täglich = morgen; wöchentlich = nächster Wochentag **nach**
   dem Bezugstag; monatlich = nächster Tag `dom` nach dem Bezugstag, in kürzeren Monaten der letzte Tag. Erster
   Termin beim Anlegen/Ändern des Plans: `NextDue(…, gestern)`, also heute, wenn er passt. Ändern von Text, Menge
-  oder Liste lässt den Termin unberührt.
+  oder Liste lässt den Termin unberührt. Wer den Plan an dem Tag ändert, an dem die Regel schon lief, kann
+  für heute einen zweiten Eintrag bekommen (bewusst einfach gehalten).
+- **Robustheit:** Der Eintrag eines Termins hat eine feste Id (Hash aus Regel-Id und Termin), ein Neustart
+  zwischen Anlegen und Markieren legt ihn also nicht doppelt an. Eine Regel, die scheitert (Log 3556), rückt auf
+  den nächsten Termin und stoppt die übrigen nicht; wurde sie während des Laufs bearbeitet, bleibt der Plan des
+  Bearbeiters (Versionsvergleich).
 - **Lauf** (`RecurringItemsJob`, alle 15 min, erster Lauf 30 s nach dem Start; je Haushalt ein Scope über
   `IHouseholdScopeFactory`, Fehler je Haushalt geloggt): Regeln mit `NextDueOn ≤ heute`; ist der zuletzt
   erzeugte Eintrag (`LastCreatedItemId`) noch offen (nicht abgehakt, nicht gelöscht), wird übersprungen, sonst

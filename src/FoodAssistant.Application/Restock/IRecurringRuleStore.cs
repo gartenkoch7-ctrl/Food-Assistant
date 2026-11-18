@@ -37,11 +37,13 @@ public interface IRecurringRuleStore
 
     /// <summary>
     /// Moves the due date on after a run and remembers the entry created last (kept when
-    /// <paramref name="lastCreatedItemId"/> is <see langword="null"/>). A rule changed or deleted
-    /// meanwhile is left alone.
+    /// <paramref name="lastCreatedItemId"/> is <see langword="null"/>). If the rule was edited since
+    /// <paramref name="expectedVersion"/> was read, the editor's schedule stays and only the created
+    /// entry is remembered; a deleted rule is left alone.
     /// </summary>
     Task MarkRunAsync(
         Guid ruleId,
+        long expectedVersion,
         DateOnly nextDueOn,
         Guid? lastCreatedItemId,
         DateTimeOffset now,

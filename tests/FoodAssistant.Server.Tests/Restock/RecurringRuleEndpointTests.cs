@@ -49,6 +49,29 @@ public sealed class RecurringRuleEndpointTests(PostgresContainerFixture postgres
     }
 
     [Fact]
+    public async Task Change_OfTextQuantityOrList_KeepsTheDueDate_AndARepeatedIdIsAConflict()
+    {
+        await using var api = await ShoppingApi.StartAsync(postgres);
+        var list = await api.DefaultListAsync();
+        var other = await api.CreateListAsync("Party");
+        var id = Guid.CreateVersion7();
+        using var create = await api.Owner.PostAsync(Recurring(api), Weekly(list.Id) with { Id = id });
+        var created = await TestClient.ReadAsync<RecurringRuleDto>(create, HttpStatusCode.Created);
+
+        using var change = await ShoppingApi.SendAsync(
+            api.Owner, HttpMethod.Put, $"{Recurring(api)}/{id}",
+            Weekly(other.Id, "Oat milk") with { Quantity = null }, ShoppingApi.ETag(created.Version));
+        using var again = await api.Owner.PostAsync(Recurring(api), Weekly(list.Id) with { Id = id });
+        using var staleDelete = await ShoppingApi.SendAsync<object>(
+            api.Owner, HttpMethod.Delete, $"{Recurring(api)}/{id}", null, ShoppingApi.ETag(created.Version));
+
+        var changed = await TestClient.ReadAsync<RecurringRuleDto>(change);
+        Assert.Equal((created.NextDueOn, other.Id, "Oat milk"), (changed.NextDueOn, changed.ListId, changed.Text));
+        await TestClient.AssertProblemAsync(again, HttpStatusCode.Conflict, ErrorCodes.Conflict);
+        await TestClient.AssertProblemAsync(staleDelete, HttpStatusCode.PreconditionFailed, ErrorCodes.PreconditionFailed);
+    }
+
+    [Fact]
     public async Task Rule_WithProduct_TakesItsName()
     {
         await using var api = await ShoppingApi.StartAsync(postgres);
