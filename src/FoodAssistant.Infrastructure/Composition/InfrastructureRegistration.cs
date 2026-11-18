@@ -24,6 +24,7 @@ public static class InfrastructureRegistration
         builder.AddImportPersistence();
         builder.AddBackupPersistence();
         builder.AddExportPersistence();
+        builder.AddActivityPersistence();
         return builder;
     }
 }

@@ -57,9 +57,25 @@
         Navigation.NavigateTo(LocalTarget(ReturnUrl), replace: true);
     }
 
-    private static string LocalTarget(string? returnUrl) =>
-        returnUrl is { Length: > 0 } && returnUrl[0] == '/' && !returnUrl.StartsWith("//", StringComparison.Ordinal)
-            && !returnUrl.StartsWith("/\\", StringComparison.Ordinal)
-            ? returnUrl
-            : "/";
+    // Browsers drop tabs and line breaks and read '\' as '/', so "/\t/evil.example" would become a
+    // protocol-relative URL: such characters are rejected outright, and the result must stay on our origin.
+    private string LocalTarget(string? returnUrl)
+    {
+        if (returnUrl is not { Length: > 0 } || returnUrl[0] != '/' || returnUrl.StartsWith("//", StringComparison.Ordinal)
+            || returnUrl.Any(c => c <= ' ' || c == '\\'))
+        {
+            return "/";
+        }
+
+        try
+        {
+            return Navigation.ToAbsoluteUri(returnUrl).AbsoluteUri.StartsWith(Navigation.BaseUri, StringComparison.Ordinal)
+                ? returnUrl
+                : "/";
+        }
+        catch (UriFormatException)
+        {
+            return "/";
+        }
+    }
 }

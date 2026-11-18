@@ -31,8 +31,7 @@ hinzufügt, trägt sie hier ein – in derselben Änderung.
 | UI (M0 Spur E) | 4000–4099 | M0 |
 | Server – Sync (Live-Updates; M1 S0, E1, E2) | 1300–1324 | M1 S0.2 |
 | Infrastructure – Sync (Änderungsprotokoll; M1 S0, E2) | 2200–2249 | M1 S0.2 |
-| Server – Activity (M1 S0, V) | 1325–1349 | M1 S0.3 |
-| Infrastructure – Activity (M1 S0, V) | 2250–2299 | M1 S0.3 |
+| Server/Infrastructure/Application/UI/Client – Activity (M1 S0, V) | 1325–1349 / 2250–2299 / 3150–3199 / 4150–4199 | M1 S0.3 |
 | Server – Households (M1 K); UI/Client – Session, Accounts | 1350–1374; 4200–4249 | M1 S0.3 |
 | Application – Sync (M1 S0, E1, E2) / UI – Sync | 3100–3149 / 4100–4149 | M1 S0.3 |
 | Server/Infrastructure/Application/UI/Client – Catalog (M1 A) | 1375–1399 / 2300–2349 / 3200–3249 / 4250–4299 | M1 S0.3 |
@@ -51,6 +50,11 @@ hinzufügt, trägt sie hier ein – in derselben Änderung.
 | Backup (M1 N) | 1675–1699 / 2900–2949 / 3800–3849 | M1 S0.3 |
 | Export (M1 N) | 1700–1724 / 2950–2999 / 3850–3899 / 4850–4899 | M1 S0.3 |
 | Mobile (M1 M) | 4900–4999 | M1 S0.3 |
+
+Im Server heißt der Verlauf-Ordner `Activities/` (Namespace `FoodAssistant.Server.Activities`):
+`FoodAssistant.Server.Activity` würde im Server-Code `System.Diagnostics.Activity` verdecken. Der
+Präfix in `TelemetryConventionTests` lautet deshalb dort `FoodAssistant.Server.Activities`; die
+anderen Projekte bleiben bei `Activity`.
 
 Innerhalb von 1000–1099: Fehlerbehandlung 1000–1009, Idempotenz 1010–1019, Rate-Limits 1020–1029,
 Rest frei für weitere API-Konventionen.
@@ -82,6 +86,7 @@ Rest frei für weitere API-Konventionen.
 | `HouseholdNotAccessible` / 1112 | Log, Information | Anmeldung | Zugriff auf Haushalt verweigert: kein Mitglied | – |
 | `HouseholdRoleInsufficient` / 1113 | Log, Information | Anmeldung | Zugriff verweigert: Rolle reicht nicht | `HouseholdId`, `Role` |
 | `ServerAdminDenied` / 1114 | Log, Warning | Anmeldung | Server-Admin-Recht fehlt, Zugriff verweigert | `UserId` |
+| `HttpsRequired` / 1115 | Log, Warning | Anmeldung | Antiforgery-Token über einfaches HTTP angefragt; Web-Anmeldung braucht HTTPS (Antwort 400 `accounts.https_required`) | – |
 | `HubJoinDenied` / 1300 | Log, Information | Sync | Beitritt zur Live-Gruppe eines Haushalts abgelehnt: kein Mitglied (unbekannt oder fremd) | – |
 | `HubJoined` / 1301 | Log, Debug | Sync | Verbindung empfängt Live-Updates eines Haushalts | `HouseholdId` |
 | `DatabaseUpToDate` / 2000 | Log, Information | Persistenz | Datenbankschema ist aktuell | – |
@@ -102,7 +107,8 @@ Rest frei für weitere API-Konventionen.
 | `MemberRemoved` / 3024 | Log, Information | Haushalte | Mitglied aus Haushalt entfernt | `HouseholdId`, `UserId` |
 | `LastOwnerProtected` / 3025 | Log, Warning | Haushalte | Änderung abgelehnt: letzter Besitzer würde fehlen | `HouseholdId` |
 | `BrowserCallUnavailable` / 4000 | Log, Debug | UI | Browser-Aufruf nicht verfügbar; nur Operationsname | `Operation`, Exception |
-| `NetworkError` / 4010 | Log, Debug | Client | API-Aufruf ohne Antwort fehlgeschlagen; nur HTTP-Methode, nie Pfad/Query | `Method`, Exception |
+| `NetworkError` / 4010 | Log, Debug | Client | API-Aufruf ohne Antwort fehlgeschlagen (auch Zeitüberschreitung des HttpClient); nur HTTP-Methode, nie Pfad/Query | `Method`, Exception |
+| `InvalidResponse` / 4011 | Log, Warning | Client | Erfolgsantwort der API mit unlesbarem JSON-Körper (z. B. HTML eines Proxys); nur HTTP-Methode, ohne Exception (Meldung kann Teile des Körpers zitieren) | `Method` |
 
 ## Abläufe (Activities)
 

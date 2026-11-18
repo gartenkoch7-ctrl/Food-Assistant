@@ -25,7 +25,7 @@ public sealed class TelemetryConventionTests
         new("FoodAssistant.UI", 4000, 4099),
         new("FoodAssistant.Client", 4000, 4099),
         new("FoodAssistant.Web.Client", 4000, 4099),
-        new("FoodAssistant.Server.Activity", 1325, 1349),
+        new("FoodAssistant.Server.Activities", 1325, 1349),
         new("FoodAssistant.Infrastructure.Activity", 2250, 2299),
         new("FoodAssistant.Application.Activity", 3150, 3199),
         new("FoodAssistant.UI.Activity", 4150, 4199),

@@ -18,6 +18,9 @@ public sealed class FakeAccountClient : IAccountClient
 
     public ApiError? LoginError { get; set; }
 
+    /// <summary>When set, sign-out fails with this error and the session stays.</summary>
+    public ApiError? LogoutError { get; set; }
+
     public List<string> Calls { get; } = [];
 
     public static MeResponse MeWith(HouseholdRole role, int households = 1) => new(
@@ -55,6 +58,11 @@ public sealed class FakeAccountClient : IAccountClient
     public Task<ApiResult> LogoutAsync(CancellationToken cancellationToken)
     {
         Calls.Add("logout");
+        if (LogoutError is not null)
+        {
+            return Task.FromResult(ApiResult.Failure(LogoutError));
+        }
+
         Me = null;
         return Task.FromResult(ApiResult.Success());
     }

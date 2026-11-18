@@ -44,4 +44,18 @@ public sealed class SessionGateTests : UiTestContext
 
         cut.WaitForAssertion(() => Assert.Contains("/login?returnUrl=%2Fmore", navigation.Uri, StringComparison.Ordinal));
     }
+
+    [Fact]
+    public void ExpiredSession_OnADataCall_LeadsToTheLoginPage()
+    {
+        var navigation = Services.GetRequiredService<Bunit.TestDoubles.BunitNavigationManager>();
+        navigation.NavigateTo("/shopping");
+        var cut = RenderGate();
+        Accounts.Me = null;
+
+        // What ApiHttpClient does when a data call is answered with 401.
+        Expiry.Notify();
+
+        cut.WaitForAssertion(() => Assert.Contains("/login?returnUrl=%2Fshopping", navigation.Uri, StringComparison.Ordinal));
+    }
 }

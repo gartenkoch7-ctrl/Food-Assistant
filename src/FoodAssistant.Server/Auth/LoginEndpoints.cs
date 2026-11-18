@@ -1,6 +1,7 @@
 using FoodAssistant.Application.Diagnostics;
 using FoodAssistant.Contracts.Accounts;
 using FoodAssistant.Infrastructure.Accounts;
+using FoodAssistant.Server.Api.Errors;
 using FoodAssistant.Server.Api.Idempotency;
 using FoodAssistant.Server.Api.RateLimiting;
 using Microsoft.AspNetCore.Antiforgery;
@@ -25,8 +26,20 @@ internal static class LoginEndpoints
         return api;
     }
 
-    private static Ok<AntiforgeryTokenResponse> GetAntiforgeryToken(HttpContext httpContext, IAntiforgery antiforgery)
+    private static Results<Ok<AntiforgeryTokenResponse>, ProblemHttpResult> GetAntiforgeryToken(
+        HttpContext httpContext, IAntiforgery antiforgery, ILoggerFactory loggerFactory)
     {
+        // The antiforgery and session cookies are Secure-only (__Host- prefix); over plain HTTP the
+        // framework throws. Answer with a clear code instead of a 500, so the login page can explain it.
+        if (!httpContext.Request.IsHttps)
+        {
+            AuthLog.HttpsRequired(loggerFactory.CreateLogger(AuthLog.Category));
+            return ApiProblems.Problem(
+                StatusCodes.Status400BadRequest,
+                AccountErrorCodes.HttpsRequired,
+                "Web sign-in needs HTTPS. Open the app through the HTTPS address (reverse proxy).");
+        }
+
         var tokens = antiforgery.GetAndStoreTokens(httpContext);
         return TypedResults.Ok(new AntiforgeryTokenResponse(tokens.RequestToken!, CookieAntiforgeryFilter.HeaderName));
     }

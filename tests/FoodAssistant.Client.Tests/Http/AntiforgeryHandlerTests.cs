@@ -66,6 +66,21 @@ public sealed class AntiforgeryHandlerTests
     }
 
     [Fact]
+    public async Task FailedTokenRequest_IsPassedOnAsTheAnswer()
+    {
+        var fake = new FakeHttpHandler()
+            .EnqueueJson(HttpStatusCode.BadRequest, """{"status":400,"errorCode":"accounts.https_required"}""", "application/problem+json");
+        using var http = Create(fake);
+
+        using var response = await PostAsync(http);
+
+        // The write itself is never sent without a token; the caller reads the server's reason instead.
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Single(fake.Requests);
+        Assert.Contains("https_required", await response.Content.ReadAsStringAsync(Ct), StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task OtherBadRequests_AreNotRetried()
     {
         var fake = new FakeHttpHandler()

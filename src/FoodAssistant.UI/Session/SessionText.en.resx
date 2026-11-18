@@ -12,6 +12,7 @@
   <data name="Error.accounts.invalid_credentials" xml:space="preserve"><value>User name or password is wrong.</value></data>
   <data name="Error.accounts.locked_out" xml:space="preserve"><value>Too many failed attempts. The account is locked for 15 minutes.</value></data>
   <data name="Error.common.rate_limited" xml:space="preserve"><value>Too many attempts. Please wait a moment.</value></data>
+  <data name="Error.accounts.https_required" xml:space="preserve"><value>Signing in only works over HTTPS. Open the app at its https:// address.</value></data>
   <data name="NoHouseholdHeading" xml:space="preserve"><value>You are not part of a household yet</value></data>
   <data name="NoHouseholdText" xml:space="preserve"><value>Ask the owner of a household to invite you.</value></data>
   <data name="SignOut" xml:space="preserve"><value>Sign out</value></data>

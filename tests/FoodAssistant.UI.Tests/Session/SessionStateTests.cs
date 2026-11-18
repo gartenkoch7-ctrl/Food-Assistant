@@ -1,3 +1,4 @@
+using FoodAssistant.Client.Http;
 using FoodAssistant.Client.Sync;
 using FoodAssistant.Contracts.Households;
 using FoodAssistant.UI.Session;
@@ -13,7 +14,7 @@ public sealed class SessionStateTests
     private readonly FakeBrowserInterop _browser = new();
     private readonly FakeLiveUpdates _live = new();
 
-    private SessionState Create() => new(_accounts, _browser, _live);
+    private SessionState Create() => new(_accounts, _browser, _live, new SessionExpiry());
 
     [Fact]
     public async Task SignedIn_ActivatesTheFirstHousehold_AndStartsLiveUpdates()

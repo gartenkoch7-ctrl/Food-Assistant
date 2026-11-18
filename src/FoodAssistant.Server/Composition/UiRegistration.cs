@@ -5,7 +5,11 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace FoodAssistant.Server.Composition;
 
-/// <summary>Server-side services the Blazor UI needs while prerendering (MudBlazor, localization). Owned by the UI track.</summary>
+/// <summary>
+/// Server-side services of the Blazor host. Pages run in WebAssembly without prerendering; the server
+/// only renders the HTML shell (<c>App.razor</c>) and the error page, but the UI services must still
+/// resolve for DI validation. Owned by the UI track.
+/// </summary>
 public static class UiRegistration
 {
     public static WebApplicationBuilder AddUi(this WebApplicationBuilder builder)
@@ -20,7 +24,8 @@ public static class UiRegistration
         builder.Services.AddFoodAssistantClient(publicUrl);
         builder.Services.AddFoodAssistantUi();
 
-        // Prerendering must speak the language the WebAssembly client will pick afterwards (ADR-0008).
+        // The shell's html lang attribute and the server-rendered error page must speak the language the
+        // WebAssembly client picks: the culture cookie written by the "More" page, else the browser's first language (ADR-0008).
         builder.Services.AddTransient<IStartupFilter, RequestLocalizationStartupFilter>();
         return builder;
     }

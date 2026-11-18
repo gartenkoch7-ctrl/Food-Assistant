@@ -1,6 +1,7 @@
 @page "/more"
 @implements IDisposable
 @using System.Globalization
+@using FoodAssistant.Client.Http
 @inject SessionState Session
 @inject ThemeState Theme
 @inject ICultureService Cultures
@@ -58,8 +59,10 @@
         <ul class="fa-more-links">
             <li><MudLink Href="/settings/household">@T["MoreSwitchHousehold"]</MudLink></li>
         </ul>
+        @* Signing out can fail (offline, server error); the session then stays and says so. *@
+        <ApiErrorAlert Error="_signOutError" FeatureText="T" />
         <MudButton Class="fa-sign-out" Variant="Variant.Outlined" Color="Color.Primary"
-                   OnClick="() => Session.SignOutAsync()">@T["MoreSignOut"]</MudButton>
+                   OnClick="SignOutAsync">@T["MoreSignOut"]</MudButton>
     </section>
 }
 
@@ -67,6 +70,7 @@
     private IReadOnlyList<ChoiceOption<ThemeMode>> _themeOptions = [];
     private IReadOnlyList<ChoiceOption<string>> _languageOptions = [];
     private string _pendingLanguage = string.Empty;
+    private ApiError? _signOutError;
 
     protected override void OnInitialized()
     {
@@ -90,11 +94,14 @@
 
     private void SelectLanguage(string culture) => _pendingLanguage = culture;
 
+    private async Task SignOutAsync() => _signOutError = await Session.SignOutAsync();
+
     private async Task ApplyLanguageAsync()
     {
         await Cultures.SetAsync(_pendingLanguage);
 
-        // Texts are resolved while rendering; a reload also lets the server prerender in the new language.
+        // Pages are not prerendered; a full reload restarts the WebAssembly app in the new language (texts and
+        // satellite assemblies), and the culture cookie lets the server write the matching html lang attribute.
         Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
     }
 

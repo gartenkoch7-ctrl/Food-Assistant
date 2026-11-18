@@ -71,6 +71,10 @@ public sealed class LoginPageTests : UiTestContext
     [Theory]
     [InlineData("https://evil.example/x")]
     [InlineData("//evil.example/x")]
+    [InlineData("/\\evil.example/x")]
+    [InlineData("/\t/evil.example/x")]
+    [InlineData("/\n/evil.example/x")]
+    [InlineData("/\r/evil.example/x")]
     public void ReturnUrl_ThatIsNotLocal_IsIgnored(string returnUrl)
     {
         Accounts.MeAfterLogin = FakeAccountClient.MeWith(HouseholdRole.Member);
@@ -109,6 +113,18 @@ public sealed class LoginPageTests : UiTestContext
         cut.Find("form").Submit();
 
         cut.WaitForAssertion(() => Assert.Contains("15 Minuten", cut.Find("[role=alert]").TextContent));
+    }
+
+    [Fact]
+    public void PlainHttp_ExplainsThatHttpsIsNeeded()
+    {
+        Accounts.LoginError = FakeAccountClient.Error(400, AccountErrorCodes.HttpsRequired);
+        var cut = Render<LoginPage>();
+
+        Fill(cut, "anna", "secret");
+        cut.Find("form").Submit();
+
+        cut.WaitForAssertion(() => Assert.Contains("nur über HTTPS", cut.Find("[role=alert]").TextContent));
     }
 
     [Fact]

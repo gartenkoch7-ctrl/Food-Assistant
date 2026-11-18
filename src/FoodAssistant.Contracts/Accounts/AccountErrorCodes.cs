@@ -26,4 +26,7 @@ public static class AccountErrorCodes
 
     /// <summary>Antiforgery token missing or invalid on a cookie-authenticated write (400).</summary>
     public const string AntiforgeryInvalid = "accounts.antiforgery_invalid";
+
+    /// <summary>Web sign-in over plain HTTP; the Secure-only cookies need HTTPS (400).</summary>
+    public const string HttpsRequired = "accounts.https_required";
 }

@@ -102,6 +102,20 @@ public sealed class LoginTests(PostgresContainerFixture postgres)
     }
 
     [Fact]
+    public async Task AntiforgeryToken_OverPlainHttp_IsAClearProblem_NotA500()
+    {
+        await using var app = new ServerTestApp(postgres.NewDatabaseConnectionString());
+        using var http = app.CreateClient(new Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions
+        {
+            BaseAddress = new Uri("http://localhost"),
+        });
+
+        using var response = await http.GetAsync(new Uri("/api/v1/auth/antiforgery", UriKind.Relative), TestContext.Current.CancellationToken);
+
+        await TestClient.AssertProblemAsync(response, HttpStatusCode.BadRequest, AccountErrorCodes.HttpsRequired);
+    }
+
+    [Fact]
     public async Task Me_Anonymous_Returns401()
     {
         await using var app = new ServerTestApp(postgres.NewDatabaseConnectionString());

@@ -18,6 +18,7 @@ public static class ClientRegistration
 
         services.AddTransient<AntiforgeryHandler>();
         services.AddTransient<TraceContextHandler>();
+        services.TryAddScoped<SessionExpiry>();
 
         // Order matters: the trace header is set first, then the antiforgery handler may send its own token request.
         services.AddHttpClient<ApiHttpClient>(client => client.BaseAddress = baseAddress)

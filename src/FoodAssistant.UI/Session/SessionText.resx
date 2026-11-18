@@ -13,6 +13,7 @@
   <data name="Error.accounts.invalid_credentials" xml:space="preserve"><value>Benutzername oder Passwort stimmt nicht.</value></data>
   <data name="Error.accounts.locked_out" xml:space="preserve"><value>Zu viele Fehlversuche. Das Konto ist für 15 Minuten gesperrt.</value></data>
   <data name="Error.common.rate_limited" xml:space="preserve"><value>Zu viele Versuche. Bitte warte einen Moment.</value></data>
+  <data name="Error.accounts.https_required" xml:space="preserve"><value>Anmelden geht nur über HTTPS. Öffne die App über ihre https://-Adresse.</value></data>
   <data name="NoHouseholdHeading" xml:space="preserve"><value>Du gehörst noch zu keinem Haushalt</value></data>
   <data name="NoHouseholdText" xml:space="preserve"><value>Bitte den Besitzer eines Haushalts, dich einzuladen.</value></data>
   <data name="SignOut" xml:space="preserve"><value>Abmelden</value></data>

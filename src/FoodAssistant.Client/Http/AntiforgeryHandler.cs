@@ -61,13 +61,19 @@ public sealed class AntiforgeryHandler : DelegatingHandler
 
     private async Task<HttpResponseMessage> SendWithTokenAsync(HttpRequestMessage request, bool refresh, CancellationToken cancellationToken)
     {
-        var token = await GetTokenAsync(refresh, cancellationToken).ConfigureAwait(false);
+        var (token, failure) = await GetTokenAsync(refresh, cancellationToken).ConfigureAwait(false);
+        if (token is null)
+        {
+            return failure!;
+        }
+
         request.Headers.Remove(token.HeaderName);
         request.Headers.TryAddWithoutValidation(token.HeaderName, token.RequestToken);
         return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<AntiforgeryTokenResponse> GetTokenAsync(bool refresh, CancellationToken cancellationToken)
+    /// <returns>The token, or the server's failed answer (e.g. <c>accounts.https_required</c>) as the caller's response.</returns>
+    private async Task<(AntiforgeryTokenResponse? Token, HttpResponseMessage? Failure)> GetTokenAsync(bool refresh, CancellationToken cancellationToken)
     {
         await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
@@ -75,13 +81,21 @@ public sealed class AntiforgeryHandler : DelegatingHandler
             if (_token is null || refresh)
             {
                 using var request = new HttpRequestMessage(HttpMethod.Get, TokenPath);
-                using var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-                response.EnsureSuccessStatusCode();
-                _token = await response.Content.ReadFromJsonAsync<AntiforgeryTokenResponse>(cancellationToken).ConfigureAwait(false)
-                    ?? throw new InvalidOperationException("Empty antiforgery response.");
+                var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                {
+                    // Passed on instead of thrown: the caller reads its ProblemDetails like any other answer.
+                    return (null, response);
+                }
+
+                using (response)
+                {
+                    _token = await response.Content.ReadFromJsonAsync<AntiforgeryTokenResponse>(cancellationToken).ConfigureAwait(false)
+                        ?? throw new InvalidOperationException("Empty antiforgery response.");
+                }
             }
 
-            return _token;
+            return (_token, null);
         }
         finally
         {

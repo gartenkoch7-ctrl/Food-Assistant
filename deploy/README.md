@@ -16,13 +16,19 @@ HTTPS.
 git clone <repo-url> food-assistant && cd food-assistant
 cp .env.example .env
 # .env bearbeiten: POSTGRES_PASSWORD (langes Zufallspasswort, z. B. `openssl rand -base64 32`)
-# und FOODASSISTANT_PUBLICURL (spätere Adresse; für einen ersten Test http://localhost:8080).
+# und FOODASSISTANT_PUBLICURL (spätere Adresse; für eine erste Prüfung http://localhost:8080).
 docker compose up -d --build
 docker compose ps          # beide Dienste "healthy"?
 curl http://localhost:8080/api/v1/info
 ```
 
 Ohne Reverse-Proxy ist der Server nur auf diesem Rechner erreichbar (`127.0.0.1:8080`).
+
+**Über einfaches HTTP lässt sich nicht anmelden.** Sitzungs- und Antiforgery-Cookie sind nur
+über HTTPS erlaubt (`Secure`, `__Host-`-Präfix). `http://localhost:8080` zeigt deshalb nur, dass
+der Server läuft (`/health`, `/api/v1/info`); die Anmeldeseite meldet „Anmelden geht nur über
+HTTPS“ (`accounts.https_required`). Zum Einrichten und Anmelden HTTPS nutzen – Caddy oder
+Tailscale, siehe unten.
 
 ### HTTPS mit Caddy
 
@@ -56,7 +62,7 @@ später im Admin-Bereich.
 | Variable in `.env` | Pflicht | Bedeutung |
 |---|---|---|
 | `POSTGRES_PASSWORD` | ja | Passwort der Datenbank |
-| `FOODASSISTANT_PUBLICURL` | ja¹ | Adresse, unter der Handys und Browser den Server erreichen; für einen ersten Test `http://localhost:8080` (nur dieser Rechner). Mit Caddy `https://<FOODASSISTANT_DOMAIN>`. |
+| `FOODASSISTANT_PUBLICURL` | ja¹ | Adresse, unter der Handys und Browser den Server erreichen; für eine erste Prüfung `http://localhost:8080` (nur dieser Rechner, nur `/health` und `/api/v1/info`; Anmelden braucht HTTPS). Mit Caddy `https://<FOODASSISTANT_DOMAIN>`. |
 | `FOODASSISTANT_DOMAIN` | nur Caddy | Domain für das HTTPS-Zertifikat |
 | `FOODASSISTANT_TRUSTEDPROXIES` | nein | Reverse-Proxys, deren `X-Forwarded-*`-Header gelten (IPs/CIDR, kommagetrennt); Standard `172.16.0.0/12` (Docker-Netze). Loopback gilt immer. Wer den Server-Port über `127.0.0.1` hinaus freigibt, setzt hier nur die echten Proxys. |
 | `FOODASSISTANT_PORT` | nein | Port auf dem Rechner, Standard `8080` |

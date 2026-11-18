@@ -22,6 +22,7 @@ public static class ApplicationRegistration
         services.AddImport();
         services.AddBackup();
         services.AddExport();
+        services.AddActivity();
         services.AddAccountsAndHouseholds();
         return services;
     }

@@ -9,11 +9,16 @@ namespace FoodAssistant.Client.Http;
 /// <summary>
 /// The one place that talks HTTP to the API (ADR-0004): JSON in and out, <c>Idempotency-Key</c> on every
 /// write, <c>If-Match</c>/<c>ETag</c>, and ProblemDetails turned into <see cref="ApiError"/> values.
-/// Feature clients use this class and never see <see cref="HttpClient"/>.
+/// Feature clients use this class and never see <see cref="HttpClient"/>. A 401 on a data call is
+/// reported to <see cref="SessionExpiry"/>, so an expired session leads back to the login page.
 /// </summary>
-public sealed class ApiHttpClient(HttpClient http, ILogger<ApiHttpClient>? logger = null)
+public sealed class ApiHttpClient(HttpClient http, SessionExpiry? sessionExpiry = null, ILogger<ApiHttpClient>? logger = null)
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+
+    // These answer 401 when nobody is signed in or the password is wrong; the session layer handles that itself.
+    private static readonly string[] SessionPaths = ["api/v1/auth", "api/v1/me", "api/v1/setup"];
+
     private readonly ILogger _logger = logger ?? NullLogger<ApiHttpClient>.Instance;
 
     public async Task<ApiResult<T>> GetAsync<T>(string path, CancellationToken cancellationToken)
@@ -35,7 +40,7 @@ public sealed class ApiHttpClient(HttpClient http, ILogger<ApiHttpClient>? logge
         {
             using (response)
             {
-                return ApiResult<Stream>.Failure(await ReadErrorAsync(response, cancellationToken).ConfigureAwait(false));
+                return ApiResult<Stream>.Failure(await FailureOfAsync(request, response, cancellationToken).ConfigureAwait(false));
             }
         }
 
@@ -65,7 +70,7 @@ public sealed class ApiHttpClient(HttpClient http, ILogger<ApiHttpClient>? logge
         {
             return response.IsSuccessStatusCode
                 ? ApiResult.Success(response.Headers.ETag?.Tag)
-                : ApiResult.Failure(await ReadErrorAsync(response, cancellationToken).ConfigureAwait(false));
+                : ApiResult.Failure(await FailureOfAsync(request, response, cancellationToken).ConfigureAwait(false));
         }
     }
 
@@ -99,11 +104,20 @@ public sealed class ApiHttpClient(HttpClient http, ILogger<ApiHttpClient>? logge
         {
             if (!response.IsSuccessStatusCode)
             {
-                return ApiResult<T>.Failure(await ReadErrorAsync(response, cancellationToken).ConfigureAwait(false));
+                return ApiResult<T>.Failure(await FailureOfAsync(request, response, cancellationToken).ConfigureAwait(false));
             }
 
-            var value = await response.Content.ReadFromJsonAsync<T>(Json, cancellationToken).ConfigureAwait(false);
-            return ApiResult<T>.Success(value!, response.Headers.ETag?.Tag);
+            try
+            {
+                var value = await response.Content.ReadFromJsonAsync<T>(Json, cancellationToken).ConfigureAwait(false);
+                return ApiResult<T>.Success(value!, response.Headers.ETag?.Tag);
+            }
+            catch (JsonException)
+            {
+                // A success status with an unreadable body (e.g. a proxy's HTML page) is a failed call, not a crash.
+                HttpLog.InvalidResponse(_logger, request.Method.Method);
+                return ApiResult<T>.Failure(new ApiError((int)response.StatusCode, ErrorCodes.RequestFailed, null, EmptyFieldErrors, null));
+            }
         }
     }
 
@@ -119,6 +133,37 @@ public sealed class ApiHttpClient(HttpClient http, ILogger<ApiHttpClient>? logge
             HttpLog.NetworkError(_logger, exception, request.Method.Method);
             return (null, new ApiError(0, ClientErrorCodes.Network, null, EmptyFieldErrors, null));
         }
+        catch (OperationCanceledException exception) when (!cancellationToken.IsCancellationRequested)
+        {
+            // Not cancelled by the caller: HttpClient gave up waiting (timeout), which is a network problem.
+            HttpLog.NetworkError(_logger, exception, request.Method.Method);
+            return (null, new ApiError(0, ClientErrorCodes.Network, null, EmptyFieldErrors, null));
+        }
+    }
+
+    private async Task<ApiError> FailureOfAsync(HttpRequestMessage request, HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        var error = await ReadErrorAsync(response, cancellationToken).ConfigureAwait(false);
+        if (error.Status == 401 && sessionExpiry is not null && IsDataCall(request))
+        {
+            sessionExpiry.Notify();
+        }
+
+        return error;
+    }
+
+    private bool IsDataCall(HttpRequestMessage request)
+    {
+        // HttpClient has made the address absolute by now; compare the part below the API's base address.
+        var uri = request.RequestUri;
+        var path = uri is null ? string.Empty
+            : uri.IsAbsoluteUri && http.BaseAddress is { } baseAddress ? baseAddress.MakeRelativeUri(uri).OriginalString
+            : uri.OriginalString;
+        path = path.TrimStart('/');
+        var end = path.IndexOfAny(['?', '#']);
+        path = end < 0 ? path : path[..end];
+        return !SessionPaths.Any(p => path.Equals(p, StringComparison.OrdinalIgnoreCase)
+            || path.StartsWith(p + "/", StringComparison.OrdinalIgnoreCase));
     }
 
     private static readonly IReadOnlyDictionary<string, string[]> EmptyFieldErrors = new Dictionary<string, string[]>();

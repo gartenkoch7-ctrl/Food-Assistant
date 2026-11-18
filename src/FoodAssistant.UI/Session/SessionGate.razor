@@ -1,3 +1,4 @@
+@using FoodAssistant.Client.Http
 @implements IDisposable
 @inject SessionState Session
 @inject NavigationManager Navigation
@@ -16,7 +17,8 @@ else
             break;
         case SessionStatus.NoHousehold:
             <EmptyState Icon="@Icons.Material.Rounded.House" Heading="@T["NoHouseholdHeading"]" Text="@T["NoHouseholdText"]">
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => Session.SignOutAsync()">@T["SignOut"]</MudButton>
+                <ApiErrorAlert Error="_signOutError" FeatureText="T" />
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="SignOutAsync">@T["SignOut"]</MudButton>
             </EmptyState>
             break;
         default:
@@ -28,6 +30,7 @@ else
 
 @code {
     private static readonly string[] PublicPrefixes = ["login", "setup", "invite"];
+    private ApiError? _signOutError;
 
     [Parameter]
     public RenderFragment? ChildContent { get; set; }
@@ -49,6 +52,8 @@ else
         await Session.EnsureLoadedAsync();
         Redirect();
     }
+
+    private async Task SignOutAsync() => _signOutError = await Session.SignOutAsync();
 
     private static string PathOnly(string relative)
     {

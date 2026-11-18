@@ -60,4 +60,8 @@ internal static partial class AuthLog
 
     [LoggerMessage(EventId = 1114, Level = LogLevel.Warning, Message = "Server admin right required, denied for user {UserId}")]
     public static partial void ServerAdminDenied(ILogger logger, Guid userId);
+
+    [LoggerMessage(EventId = 1115, Level = LogLevel.Warning,
+        Message = "Web sign-in needs HTTPS: antiforgery token requested over plain HTTP (check the reverse proxy and X-Forwarded-Proto)")]
+    public static partial void HttpsRequired(ILogger logger);
 }

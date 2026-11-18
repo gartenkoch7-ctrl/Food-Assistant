@@ -29,7 +29,7 @@ Konflikt: „Abhaken von {0} hat eine gleichzeitige Änderung überschrieben“)
 | `src/FoodAssistant.Application/Activity/IActivityFeedStore.cs` + `ActivityFeedService.cs` | neu | `ListAsync(ActivityCursor? after, int take, string? area)`; `CanUndo` = Area Inventory, ≤ 24 h, nicht rückgängig (endgültige Prüfung macht B2) | über Endpunkt-Tests | 20+80 |
 | `src/FoodAssistant.Infrastructure/Activity/ActivityFeedStore.cs` | neu | EF mit Join auf Mitgliedschaften/Users (Anzeigename) und Produkte | – | 90 |
 | Registrierungen (Stubs Activity) | ändern | | – | +2 |
-| `src/FoodAssistant.Server/Activity/ActivityEndpoints.cs` | ändern (Stub) | `GET /activity?area&cursor&limit` (Any) | `ActivityEndpointTests` (Reihenfolge, Cursor, Person/ehemalig/System, fremder Haushalt 404) | 40+160 |
+| `src/FoodAssistant.Server/Activities/ActivityEndpoints.cs` | ändern (Stub) | `GET /activity?area&cursor&limit` (Any) | `ActivityEndpointTests` (Reihenfolge, Cursor, Person/ehemalig/System, fremder Haushalt 404) | 40+160 |
 | `src/FoodAssistant.Client/Activity/*`, Registrierung | neu | `ListAsync` | – | 50 |
 | `src/FoodAssistant.UI/Activity/ActivityPage.razor` + `ActivityText.cs` + resx | neu | `@page "/activity"`: nach Tag gruppiert, Filter Vorrat/Einkauf, „Mehr laden“, „Rückgängig“ bei `CanUndo` (ruft `IInventoryClient.UndoAsync`), Live-Aktualisierung | `ActivityPageTests` | 170+5+2×50 |
 | `src/FoodAssistant.UI/Shell/MorePage.razor`, `ShellText*.resx` | ändern (Hotspot M1b) | Link „Verlauf“ | – | +5 |

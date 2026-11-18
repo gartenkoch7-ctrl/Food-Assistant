@@ -143,6 +143,19 @@ public sealed class MorePageTests : UiTestContext
     }
 
     [Fact]
+    public void FailedSignOut_ShowsTheError_AndStaysSignedIn()
+    {
+        Accounts.LogoutError = FakeAccountClient.Error(0, FoodAssistant.Client.Http.ClientErrorCodes.Network);
+        var cut = Render<MorePage>();
+
+        cut.Find("button.fa-sign-out").Click();
+
+        cut.WaitForAssertion(() => Assert.Contains("Server ist nicht erreichbar", cut.Find("[role=alert]").TextContent));
+        Assert.Equal(FoodAssistant.UI.Session.SessionStatus.Ready, Session.Status);
+        Assert.Contains("Angemeldet als Anna", cut.Find("#more-account + p").TextContent);
+    }
+
+    [Fact]
     public async Task LateStoredTheme_UpdatesTheSelection()
     {
         Browser.Storage[BrowserThemePreferenceStore.StorageKey] = "high-contrast";

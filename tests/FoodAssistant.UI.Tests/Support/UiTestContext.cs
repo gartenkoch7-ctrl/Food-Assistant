@@ -2,6 +2,7 @@ using System.Globalization;
 using Bunit;
 using FoodAssistant.Client.Accounts;
 using FoodAssistant.Client.Catalog;
+using FoodAssistant.Client.Http;
 using FoodAssistant.Client.Sync;
 using FoodAssistant.Contracts.Households;
 using FoodAssistant.UI.Common;
@@ -37,7 +38,9 @@ public abstract class UiTestContext : BunitContext
 
         // Built by hand (not resolved) so tests can still register more services before the first render.
         // The fakes answer synchronously, so loading does not block.
-        Session = new SessionState(Accounts, Browser, Live);
+        Expiry = new SessionExpiry();
+        Services.AddSingleton(Expiry);
+        Session = new SessionState(Accounts, Browser, Live, Expiry);
         Session.LoadAsync().GetAwaiter().GetResult();
         Services.AddSingleton(Session);
         Services.AddFoodAssistantUi();
@@ -54,6 +57,8 @@ public abstract class UiTestContext : BunitContext
     protected FakeLiveUpdates Live { get; }
 
     protected SessionState Session { get; }
+
+    protected SessionExpiry Expiry { get; }
 
     /// <summary>Asks the fake account client again (after a test changed <see cref="Accounts"/>); the fake answers synchronously.</summary>
     protected void ReloadSession() => Session.LoadAsync().GetAwaiter().GetResult();
