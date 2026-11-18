@@ -8,7 +8,7 @@ Branch `feat/m01-a-catalog` · Pakete nacheinander: A1 → A2.
 
 ## Aufgaben
 - [x] A1 Server: Produkte, Barcodes, Kategorien-Liste, Lagerorte (Application, Infrastructure, Endpunkte, Tests)
-- [ ] A2 Client und UI: `CatalogClient`, Produktliste, Produktdialog, `ProductPicker`, Lagerorte-Seite
+- [x] A2 Client und UI: `CatalogClient`, Produktliste, Produktdialog, `ProductPicker`, Lagerorte-Seite
 
 ## Detailplan
 

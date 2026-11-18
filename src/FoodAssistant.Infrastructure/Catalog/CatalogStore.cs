@@ -112,6 +112,11 @@ internal sealed class CatalogStore(AppDbContext db) : ICatalogStore
             return OperationResult<ProductDto>.Conflict(
                 CatalogDbErrors.IsBarcodeViolation(exception) ? CatalogErrorCodes.BarcodeInUse : CatalogErrorCodes.ProductExists);
         }
+        catch (DbUpdateException exception) when (CatalogDbErrors.IsForeignKeyViolation(exception))
+        {
+            // The default location was deleted between the check and the save.
+            return LocationGone();
+        }
 
         return OperationResult<ProductDto>.Created(CatalogMapping.ToDto(entity));
     }
@@ -179,6 +184,10 @@ internal sealed class CatalogStore(AppDbContext db) : ICatalogStore
         {
             return OperationResult<ProductDto>.Conflict(CatalogErrorCodes.BarcodeInUse);
         }
+        catch (DbUpdateException exception) when (CatalogDbErrors.IsForeignKeyViolation(exception))
+        {
+            return LocationGone();
+        }
 
         return OperationResult<ProductDto>.Ok(CatalogMapping.ToDto(entity));
     }
@@ -207,6 +216,7 @@ internal sealed class CatalogStore(AppDbContext db) : ICatalogStore
 
         // The barcodes are freed: they are unique per household, and an archived product is
         // invisible, so a new product must be able to take them over.
+        // No FK guards a batch inserted concurrently with this check: batch creation (B2) must refuse archived products.
         _barcodes.Replace(entity, []);
         entity.ArchivedAt = now;
         entity.UpdatedAt = now;
@@ -222,11 +232,6 @@ internal sealed class CatalogStore(AppDbContext db) : ICatalogStore
         catch (DbUpdateConcurrencyException)
         {
             return await MismatchAsync(id, cancellationToken).ConfigureAwait(false);
-        }
-        catch (DbUpdateException exception) when (CatalogDbErrors.IsForeignKeyViolation(exception))
-        {
-            // A batch was added between the check and the save.
-            return OperationResult<ProductDto>.Conflict(CatalogErrorCodes.ProductHasStock);
         }
 
         return OperationResult<ProductDto>.Deleted();
@@ -265,10 +270,13 @@ internal sealed class CatalogStore(AppDbContext db) : ICatalogStore
             return null;
         }
 
-        return OperationResult<ProductDto>.Invalid(
+        return LocationGone();
+    }
+
+    private static OperationResult<ProductDto> LocationGone() =>
+        OperationResult<ProductDto>.Invalid(
             new Dictionary<string, string[]> { ["defaultStorageLocationId"] = ["not_found"] },
             CatalogErrorCodes.ValidationFailed);
-    }
 
     // Someone else changed the row between loading and saving: report the stored state.
     private async Task<OperationResult<ProductDto>> MismatchAsync(Guid id, CancellationToken cancellationToken)

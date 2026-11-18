@@ -1,0 +1,103 @@
+@using FoodAssistant.Client.Catalog
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Common
+@inject ICatalogClient Catalog
+@inject SessionState Session
+@inject IDialogService Dialogs
+@inject IStringLocalizer<CatalogText> T
+@inject IStringLocalizer<CommonText> Common
+@inject IStringLocalizer<SectionText> Sections
+
+<MudDialog>
+    <TitleContent>@(Product is null ? T["ProductDialogNew"] : T["ProductDialogEdit"])</TitleContent>
+    <DialogContent>
+        @Notice
+        <ApiErrorAlert Error="_error" FeatureText="T" />
+        @if (_reloaded)
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" role="status">@T["Reloaded"]</MudAlert>
+        }
+
+        <div class="fa-dialog-fields">
+            <MudTextField T="string" @bind-Value="_name" Label="@T["FieldName"]" Required="true" RequiredError="@T["FieldError.required"]"MaxLength="120"
+                          Variant="Variant.Outlined" Error="@HasError("name")" ErrorText="@FieldText("name")" />
+            <MudTextField T="string" @bind-Value="_brand" Label="@T["FieldBrand"]" MaxLength="120"
+                          Variant="Variant.Outlined" Error="@HasError("brand")" ErrorText="@FieldText("brand")" />
+            <CategorySelect @bind-Value="_category" Label="@T["FieldCategory"]" Required="true" ErrorText="@FieldText("categoryKey")" />
+            <MudSelect T="string" @bind-Value="_unit" Label="@T["FieldUnit"]" Required="true" Variant="Variant.Outlined"
+                       Error="@HasError("defaultUnit")" ErrorText="@FieldText("defaultUnit")">
+                @foreach (var unit in UnitCodes.All)
+                {
+                    <MudSelectItem T="string" Value="@unit">@Common["Unit." + unit]</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="Guid" @bind-Value="_locationId" Label="@T["FieldLocation"]" Variant="Variant.Outlined"
+                       Error="@HasError("defaultStorageLocationId")" ErrorText="@FieldText("defaultStorageLocationId")">
+                <MudSelectItem T="Guid" Value="@Guid.Empty">@T["LocationNone"]</MudSelectItem>
+                @foreach (var location in _locations)
+                {
+                    <MudSelectItem T="Guid" Value="@location.Id">@location.Name</MudSelectItem>
+                }
+            </MudSelect>
+            <MudSelect T="string" @bind-Value="_section" Label="@T["FieldSection"]" Variant="Variant.Outlined"
+                       Error="@HasError("sectionKey")" ErrorText="@FieldText("sectionKey")">
+                <MudSelectItem T="string" Value="@string.Empty">@T["SectionAuto"]</MudSelectItem>
+                @foreach (var section in SectionKeys.All)
+                {
+                    <MudSelectItem T="string" Value="@section">@Sections[section]</MudSelectItem>
+                }
+            </MudSelect>
+            <QuantityInput Label="@T["FieldMinimum"]" @bind-Value="_minimum" DefaultUnit="@_unit" />
+            @if (HasError("minimumStock"))
+            {
+                <p class="fa-field-error" role="alert">@FieldText("minimumStock")</p>
+            }
+
+            <fieldset class="fa-barcodes">
+                <legend>@T["FieldBarcodes"]</legend>
+                @if (_barcodes.Count == 0)
+                {
+                    <p class="fa-barcodes-none">@T["BarcodesNone"]</p>
+                }
+                else
+                {
+                    <ul class="fa-barcode-list">
+                        @foreach (var barcode in _barcodes)
+                        {
+                            <li>
+                                <span class="fa-barcode-code">@barcode</span>
+                                <MudIconButton Icon="@Icons.Material.Rounded.Close" Size="Size.Small"
+                                               aria-label="@string.Format(System.Globalization.CultureInfo.CurrentCulture, T["BarcodeRemove"].Value, barcode)"
+                                               OnClick="() => RemoveBarcode(barcode)" />
+                            </li>
+                        }
+                    </ul>
+                }
+
+                <div class="fa-barcode-add">
+                    <MudTextField T="string" @bind-Value="_newBarcode" Label="@T["BarcodeAddLabel"]" Variant="Variant.Outlined"
+                                  MaxLength="14" InputMode="InputMode.numeric" Immediate="true"
+                                  OnKeyDown="OnBarcodeKeyDown"
+                                  Error="@(_barcodeInvalid || HasError("barcodes"))"
+                                  ErrorText="@(_barcodeInvalid ? T["FieldError.barcode"].Value : FieldText("barcodes"))" />
+                    <MudButton Variant="Variant.Outlined" Disabled="@string.IsNullOrWhiteSpace(_newBarcode)"
+                               OnClick="AddBarcode">@T["BarcodeAdd"]</MudButton>
+                </div>
+            </fieldset>
+
+            @if (Product is not null)
+            {
+                <MudLink Href="@($"/products/{Product.Id:D}/shelf-life")" OnClick="() => MudDialog.Cancel()">@T["ShelfLifeLink"]</MudLink>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        @if (Product is not null)
+        {
+            <MudButton Color="Color.Error" Disabled="_saving" OnClick="ArchiveAsync">@T["ProductArchive"]</MudButton>
+        }
+        <MudButton Disabled="_saving" OnClick="() => MudDialog.Cancel()">@Common["Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_saving" OnClick="SaveAsync">@Common["Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
