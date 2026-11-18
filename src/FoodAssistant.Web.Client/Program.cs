@@ -1,3 +1,4 @@
+using FoodAssistant.Client.Composition;
 using FoodAssistant.UI.Common;
 using FoodAssistant.UI.Composition;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -5,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 // Thin host: everything the app does lives in FoodAssistant.UI.
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
+builder.Services.AddFoodAssistantClient(new Uri(builder.HostEnvironment.BaseAddress));
 builder.Services.AddFoodAssistantUi();
 
 var host = builder.Build();

@@ -9,7 +9,7 @@ Hintergrunddiensten, Registrierungen) liegen **hier**, nicht in den Spuren.
 - [x] S0.1 Datenmodell M1a, Domain-Ergänzungen, gemeinsame Contracts, Migration `M1Core`
 - [ ] S0.2 Nahtstellen: `OperationResult`, If-Match, Sync-Interceptor, SignalR-Hub, Kalender, Haushalts-Scopes, Verlauf, Bestands-Hook, Regel-Platzhalter
 - [ ] S0.3 Einhängepunkte aller Spuren, Event-ID-Bereiche
-- [ ] S0.4 Client-Basis (HTTP, Antiforgery, traceparent, Idempotenz), `IAccountClient`, `ICatalogClient`, `ILiveUpdates`, Testprojekt
+- [x] S0.4 Client-Basis (HTTP, Antiforgery, traceparent, Idempotenz), `IAccountClient`, `ICatalogClient`, `ILiveUpdates`, Testprojekt
 - [ ] S0.5 UI-Basis: Anmeldung, Sitzung/Haushalt, gemeinsame Komponenten, Kategorien-Texte, „Mehr“-Links, Scan-Seite verschieben, Vorrendern aus
 
 ## Detailplan
