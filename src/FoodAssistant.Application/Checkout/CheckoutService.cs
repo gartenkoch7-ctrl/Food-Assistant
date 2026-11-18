@@ -121,9 +121,7 @@ public sealed class CheckoutService(
         var batches = stored.Applied.Select(l => l.Batch).OfType<CheckoutBatch>().ToList();
         var stale = plan.StaleItemIds.Concat(stored.StaleItemIds).ToList();
         Report(listId, stored, batches, stale.Count);
-        // Not the request's token: the checkout is committed, and an aborted request (bad reception in the
-        // shop) must still return its result, so a retry with the same Idempotency-Key replays it.
-        await NotifyStockChangedAsync([.. batches.Select(b => b.ProductId).Distinct()], CancellationToken.None).ConfigureAwait(false);
+        await NotifyStockChangedAsync([.. batches.Select(b => b.ProductId).Distinct()]).ConfigureAwait(false);
         return OperationResult<CheckoutResultDto>.Ok(new CheckoutResultDto(
             batches.Count, stored.Applied.Count, [.. batches.Select(b => b.Batch.Id)], stale));
     }
@@ -178,7 +176,10 @@ public sealed class CheckoutService(
     }
 
     // Hooks run after the commit; a failing one is logged and never fails the checkout (IStockChangedHandler).
-    private async Task NotifyStockChangedAsync(IReadOnlyCollection<Guid> productIds, CancellationToken cancellationToken)
+    // The checkout is committed, so its answer must reach the client even if the request was aborted or a
+    // handler's own call was cancelled (HTTP timeout): a retry with the same Idempotency-Key then replays it.
+    // Hence no request token, and every exception (cancellations included) is only logged.
+    private async Task NotifyStockChangedAsync(IReadOnlyCollection<Guid> productIds)
     {
         if (productIds.Count == 0)
         {
@@ -190,9 +191,9 @@ public sealed class CheckoutService(
         {
             try
             {
-                await handler.OnStockChangedAsync(householdId, productIds, cancellationToken).ConfigureAwait(false);
+                await handler.OnStockChangedAsync(householdId, productIds, CancellationToken.None).ConfigureAwait(false);
             }
-            catch (Exception exception) when (exception is not OperationCanceledException)
+            catch (Exception exception)
             {
                 CheckoutLog.StockHandlerFailed(logger, exception);
             }
