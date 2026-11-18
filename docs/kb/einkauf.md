@@ -74,6 +74,62 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
 4. Freitext-Einträge werden beim Abschließen einem Produkt zugeordnet oder übersprungen.
 - Ab M3 kann ein **Kassenbon** den Abschluss vorbefüllen (inkl. Preise).
 
+### Abschluss im Detail (M1 F)
+- API: `GET …/shopping/lists/{listId}/checkout` (Vorschlag), `POST …` mit `Idempotency-Key` (Abschluss);
+  beide ab Mitglied, Eingeschränkte bekommen 403.
+- **Vorbelegung** (`CheckoutPrefill`, Domain):
+  - Menge: Menge des Eintrags, sonst 1 × Standardeinheit des Produkts, bei Freitext 1 Stück.
+  - Lagerort: Standard-Lagerort des Produkts → Ort der zuletzt angelegten (noch vorhandenen) Charge →
+    erster Ort (nach `SortOrder`, Name) vom Standard-Lagertyp der Kategorie → erster Ort. Ohne Lagerort
+    im Haushalt kein Vorschlag; der Abschluss verlangt dann einen (400 `lines[i].storageLocationId`).
+  - Ablaufdatum: bekannter „letzter Kauf“ (`Product.LastShelfLifeDays` + `LastExpiryKind`) → heute +
+    Tage mit dieser Art; sonst im Gefrierort Regel „gefroren“ ab heute als Verbrauchsdatum
+    (`expiryFromRule`, F5 „selbst eingefroren“), ohne Regel kein Datum; sonst kein Datum.
+  - Ein Eintrag mit archiviertem Produkt erscheint wie Freitext (ohne `productId`).
+- **Abschluss:** je Zeile `skip` oder Charge (Herkunft `Purchase`, Regeln wie „Neue Charge“ inkl. F5)
+  für ein bestehendes oder ein neu angelegtes Produkt (Name, Kategorie, Standardeinheit). Ein Datum aus
+  der Regel schickt der Client **nicht** zurück (ohne Datum = selbst eingefroren); die Art eines
+  eingetragenen Datums ist Pflicht (keine Vorbelegung).
+- **Letzter Kauf** wird nur aus einem vom Nutzer eingetragenen Packungsdatum gelernt (Charge bleibt
+  verschlossen, Datum nicht in der Vergangenheit, höchstens 3650 Tage – „läuft nie ab“ wie 31.12.9999
+  wird nicht gelernt), nie aus einem Regeldatum.
+- **Eine Transaktion** mit Änderungsprotokoll-Sperre des Haushalts zuerst. Unter der Sperre werden alle
+  Einträge erneut geprüft (noch auf der Liste, abgehakt, nicht gelöscht, gleiche `Version`) und die
+  Produkte (nicht archiviert). Was nicht passt, wird nicht verarbeitet und als `staleItemIds` gemeldet –
+  die übrigen Zeilen werden trotzdem gebucht. Ein inzwischen gelöschter Lagerort oder einer, der den
+  Lagertyp gewechselt hat (die Charge wurde für den alten Typ gebaut), ergibt 409 `common.conflict` ohne Änderung.
+- Verarbeitete Einträge (auch übersprungene) bekommen `DeletedAt` und `Version + 1`; je Charge eine
+  Aktivität `batch_added` (Rückgängig wie beim Einbuchen). Danach laufen alle `IStockChangedHandler`
+  einmal mit allen betroffenen Produkten.
+- Eine Wiederholung mit gleichem `Idempotency-Key` bekommt die gespeicherte Antwort; ohne Schlüssel
+  findet sie nur noch gelöschte Einträge und meldet sie als `staleItemIds` (keine Doppelbuchung).
+- **Oberfläche** (`/shopping/{id}/complete`, F2): je Eintrag eine Zeile mit Überschrift (Name), Menge,
+  Datum mit Art als Text („aus Regel“ ausgeschrieben), Lagerort-Auswahl und „Ändern“ (Dialog: Menge, Ort,
+  Datum + Art ohne Vorbelegung, im Gefrierort „selbst eingefroren“). Freitext: `ProductPicker` (legt ein
+  neues Produkt über den Katalog an) oder „Überspringen“; ein zugeordnetes Produkt übernimmt bei
+  „1 Stück“ ohne Menge im Eintrag (`quantityFromEntry = false`) seine Standardeinheit und – solange der
+  Nutzer keinen Ort gewählt hat – den ersten Ort vom Lagertyp seiner Kategorie. Meldet der Server `lines[i].productId` (Produkt inzwischen archiviert),
+  bietet die Zeile wieder den `ProductPicker` an. Vor dem Senden liest die Seite die Lagerorte neu: Hat
+  einer seit dem Laden den Lagertyp gewechselt (oder ist gelöscht – dann verliert die Zeile ihren Ort und
+  muss neu wählen), werden die Zeilen dort „umgezogen“ (beim Wechsel zwischen
+  Gefrierort und anderem fallen nicht selbst eingetragene Daten weg) und erst angezeigt statt gesendet.
+  Ein anderes Produkt in einer Zeile nimmt deren Vorschläge (letzter Kauf, Regeldatum, Standardeinheit
+  bei nicht geänderter Standardmenge) nicht mit. Auf 409
+  `common.conflict` (Lagerort zwischen Planung und Speichern geändert) lädt die Seite Vorschlag und
+  Lagerorte neu. Ein Datum, das der
+  Nutzer nicht selbst eingetragen hat (Regel „gefroren“, letzter Kauf), fällt weg, sobald die Zeile
+  zwischen Gefrierort und anderem Ort wechselt – ein Gefrierdatum darf nie im Kühlschrank landen.
+  **Offen:** Der Server merkt sich beim letzten Kauf nicht den Lagertyp; wurde zuletzt TK-Ware gekauft,
+  schlägt er deren Tage auch für einen Kühlschrank-Vorschlag vor (Entscheidung nötig, z. B. Spalte
+  `LastStorageType` oder nur aus nicht gefrorenen Chargen lernen).
+  **Offen:** Ein beim Abschluss entfernter Eintrag ist ein normaler Tombstone. Ändert ein anderes Gerät ihn
+  danach mit älterer `baseVersion` (online mit altem Stand oder offline), gewinnt nach ADR-0005 die Änderung
+  gegen das Löschen; der Eintrag kommt abgehakt zurück und würde beim nächsten Abschluss erneut gebucht.
+  Lösung braucht eine Entscheidung (z. B. Tombstone als „gebucht“ markieren – Schemaänderung – und im
+  `ShoppingConflictResolver` gegen alte Änderungen gewinnen lassen oder nur unabgehakt zurückholen). Der Client nimmt denselben `Idempotency-Key` nur für dieselbe Anfrage nach einem Fehler
+  ohne Antwort (Netz/offline oder 409 `common.idempotency_request_in_progress`); jede andere Anfrage bekommt einen neuen (sonst 422 `common.idempotency_key_reused`).
+  Erfolg: Ansage + Snackbar, zurück zur Liste; mit `staleItemIds` bleibt die Seite, lädt neu und nennt die Anzahl.
+
 ## Mindestbestand
 - Pro Produkt optional; Bestand unter Mindestbestand → Eintrag auf der Standardliste,
   markiert „automatisch“.

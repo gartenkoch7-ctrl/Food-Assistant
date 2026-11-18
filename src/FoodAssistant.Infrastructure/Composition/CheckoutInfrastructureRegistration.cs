@@ -1,13 +1,17 @@
+using FoodAssistant.Application.Checkout;
+using FoodAssistant.Infrastructure.Checkout;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace FoodAssistant.Infrastructure.Composition;
 
-/// <summary>Extension point for track F (docs/plan/m01-mvp.md). Empty until the feature is implemented.</summary>
+/// <summary>Persistence of completing a shopping list (track F).</summary>
 public static class CheckoutInfrastructureRegistration
 {
     public static IHostApplicationBuilder AddCheckoutPersistence(this IHostApplicationBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
+        builder.Services.AddScoped<ICheckoutStore, CheckoutStore>();
         return builder;
     }
 }

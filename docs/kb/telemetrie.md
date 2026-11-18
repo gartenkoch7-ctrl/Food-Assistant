@@ -141,6 +141,8 @@ Rest frei für weitere API-Konventionen.
 | `StoreDeleted` / 3451 | Log, Information | Läden | Laden gelöscht (Listen verlieren den Laden) | `StoreId` |
 | `SectionOrderSet` / 3452 | Log, Information | Läden | Eigene Bereichsreihenfolge gespeichert | `StoreId` |
 | `SectionOrderReset` / 3453 | Log, Information | Läden | Zurück zur gelernten Reihenfolge | `StoreId` |
+| `CheckoutCompleted` / 3500 | Log, Information | Einkauf abschließen | Gekaufte Einträge einer Liste gebucht bzw. übersprungen | `ListId`, `BatchCount`, `SkippedCount`, `StaleCount` |
+| `StockHandlerFailed` / 3501 | Log, Warning | Einkauf abschließen | Ein `IStockChangedHandler` ist nach dem Abschluss gescheitert; der Abschluss bleibt gültig | Exception |
 | `BrowserCallUnavailable` / 4000 | Log, Debug | UI | Browser-Aufruf nicht verfügbar; nur Operationsname | `Operation`, Exception |
 | `NetworkError` / 4010 | Log, Debug | Client | API-Aufruf ohne Antwort fehlgeschlagen (auch Zeitüberschreitung des HttpClient); nur HTTP-Methode, nie Pfad/Query | `Method`, Exception |
 | `InvalidResponse` / 4011 | Log, Warning | Client | Erfolgsantwort der API mit unlesbarem JSON-Körper (z. B. HTML eines Proxys); nur HTTP-Methode, ohne Exception (Meldung kann Teile des Körpers zitieren) | `Method` |
@@ -168,6 +170,7 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.catalog.delete_location` | Katalog | Lagerort löschen | `foodassistant.outcome` |
 | `foodassistant.catalog.update_location` | Katalog | Lagerort ändern | `foodassistant.outcome` |
 | `foodassistant.catalog.update_product` | Katalog | Produkt ändern | `foodassistant.outcome` |
+| `foodassistant.checkout.complete` | Einkauf abschließen | Gekaufte Einträge als Chargen buchen, Einträge entfernen | `foodassistant.outcome`, `foodassistant.batches` |
 | `foodassistant.food_facts.fetch` | Open Food Facts | Abruf der Produktdaten (Span-Art Client; nur Server-Aufruf, nur Barcode im Pfad, der in `url.full` gekürzt wird) | `foodassistant.outcome` (`found`, `not_found`, `timeout`, `network`, `invalid_response`, `http_<status>`), `http.response.status_code` |
 | `foodassistant.food_facts.lookup` | Open Food Facts | Barcode-Abfrage mit Cache | `foodassistant.cache` (`hit`, `miss`, `stale`), `foodassistant.outcome` (`found`, `not_found`, `unavailable`) |
 | `foodassistant.households.change_member_role` | Haushalte | Mitgliedsrolle ändern | `foodassistant.outcome` |
@@ -213,6 +216,7 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.api.idempotency.requests` | Counter `{request}` | API – Idempotenz | Schreibende Anfragen mit `Idempotency-Key` nach Ergebnis | `outcome`: `stored`, `replayed`, `key_reused`, `in_progress`, `invalid_key`, `abandoned` (5xx, Exception oder vor dem Handler abgewiesen, z. B. Antiforgery; Wiederholung läuft erneut), `stored_without_body` (Antwort > 1 MiB: nur Status und Header gespeichert), `store_failed`, `write_failed` (Handler fertig, Ergebnis nicht schreibbar; Schlüssel bleibt bis Lease-Ende reserviert) |
 | `foodassistant.api.rate_limit.rejections` | Counter `{request}` | API – Rate-Limits | Mit 429 abgewiesene Anfragen | `policy`: `auth-strict`, `api`, `openid` (`/connect/*`, `/.well-known/*`, vor der Authentifizierung pro Netz), `global` (API-Anfragen ohne passenden Endpunkt) |
 | `foodassistant.catalog.products.created` | Counter `{product}` | Katalog | Angelegte Produkte | `source`: `manual`, `food_facts` |
+| `foodassistant.checkout.batches` | Counter `{batch}` | Einkauf abschließen | Beim Abschließen einer Liste eingebuchte Chargen (zählen auch in `foodassistant.inventory.batches.added` mit `origin` = `Purchase`, je Charge zusätzlich Log `BatchAdded` / 3300). Beim Abschließen neu angelegte Produkte loggen `ProductCreated` / 3200, zählen aber **nicht** in `foodassistant.catalog.products.created` | – |
 | `foodassistant.inventory.batches.added` | Counter `{batch}` | Vorrat | Eingebuchte Chargen (auch Reste) | `origin`: `Manual`, `Scanned`, `Purchase`, `Import`, `Leftover` |
 | `foodassistant.inventory.consumptions` | Counter `{event}` | Vorrat | Verbrauchsereignisse (je Charge) | `kind`: `UsedUp`, `Partial`, `Discarded`; `reason`: Grund oder `none` |
 | `foodassistant.food_facts.lookups` | Counter `{lookup}` | Open Food Facts | Barcode-Abfragen nach Cache-Zustand und Ergebnis | `cache`: `hit`, `miss`, `stale`; `outcome`: `found`, `not_found`, `unavailable` |

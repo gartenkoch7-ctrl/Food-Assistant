@@ -1,0 +1,74 @@
+@page "/shopping/{ListId:guid}/complete"
+@using System.Globalization
+@using FoodAssistant.Client.Catalog
+@using FoodAssistant.Client.Checkout
+@using FoodAssistant.UI.Inventory
+@inject ICheckoutClient Checkout
+@inject ICatalogClient Catalog
+@inject SessionState Session
+@inject IDialogService Dialogs
+@inject ISnackbar Snackbar
+@inject ILiveAnnouncer Announcer
+@inject NavigationManager Navigation
+@inject IStringLocalizer<CheckoutText> T
+@inject IStringLocalizer<InventoryText> Inventory
+
+<PageTitle>@T["Title"] – @AppInfo.Name</PageTitle>
+
+<h1>@T["Title"]</h1>
+
+@if (!Session.CanEdit)
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@T["NotAllowed"]</MudAlert>
+    <MudButton Variant="Variant.Text" Href="@ListUrl" Class="mt-2">@T["BackToList"]</MudButton>
+}
+else if (_loading)
+{
+    <LoadingState />
+}
+else
+{
+    <ApiErrorAlert Error="_error" FeatureText="T" />
+    @if (_staleCount > 0)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" role="alert">
+            @(_staleCount == 1 ? T["StaleOne"].Value : string.Format(CultureInfo.CurrentCulture, T["Stale"].Value, _staleCount))
+        </MudAlert>
+    }
+    @if (_locationsChanged)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" role="alert">@T["LocationsMoved"]</MudAlert>
+    }
+    @if (_checkLines)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert">@T["CheckLines"]</MudAlert>
+    }
+
+    @if (_lines.Count == 0 && _loaded)
+    {
+        <EmptyState Icon="@Icons.Material.Rounded.ShoppingCartCheckout" Heading="@T["EmptyHeading"]" Text="@T["EmptyText"]">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="@ListUrl">@T["BackToList"]</MudButton>
+        </EmptyState>
+    }
+    else if (_lines.Count > 0)
+    {
+        <p>@T["Intro"]</p>
+        <ul class="fa-checkout-list">
+            @for (var index = 0; index < _lines.Count; index++)
+            {
+                var line = _lines[index];
+                <CheckoutLineRow @key="line.ItemId" Line="line" Locations="_locations" CategoryTypes="_categoryTypes"
+                                 Error="@_rowErrors.GetValueOrDefault(index)"
+                                 Changed="OnLineChanged" Edit="EditAsync" />
+            }
+        </ul>
+        <div class="fa-checkout-footer">
+            @* Never disabled (the focus would get lost); a second press while sending is ignored. *@
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SubmitAsync"
+                       StartIcon="@Icons.Material.Rounded.ShoppingCartCheckout">
+                @string.Format(CultureInfo.CurrentCulture, T["Book"].Value, BookCount)
+            </MudButton>
+            <MudButton Variant="Variant.Text" Href="@ListUrl">@T["BackToList"]</MudButton>
+        </div>
+    }
+}

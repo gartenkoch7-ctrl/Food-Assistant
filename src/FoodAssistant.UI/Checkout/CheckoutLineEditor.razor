@@ -1,0 +1,149 @@
+@using System.Globalization
+@using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Common
+@using FoodAssistant.Contracts.Inventory
+@using FoodAssistant.UI.Inventory
+@inject IStringLocalizer<CheckoutText> T
+@inject IStringLocalizer<InventoryText> Inventory
+@inject IStringLocalizer<CommonText> Common
+
+@* Edits amount, location and date of one line; closes with DialogResult.Ok(CheckoutLine) holding the edited copy. *@
+<MudDialog>
+    <TitleContent>@string.Format(CultureInfo.CurrentCulture, T["EditorTitle"].Value, Line.Name)</TitleContent>
+    <DialogContent>
+        <div class="d-flex flex-column gap-3 mt-2">
+            <QuantityInput @bind-Value="_quantity" Label="@Inventory["FieldQuantity"]" Required="true" DefaultUnit="@Line.Quantity.Unit" />
+            @if (_quantityMissing)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Error" role="alert">@Inventory["FieldError.required"]</MudText>
+            }
+            <MudSelect T="Guid?" Label="@Inventory["FieldLocation"]" Value="_locationId" ValueChanged="SelectLocation" Required="true" Variant="Variant.Outlined">
+                @foreach (var location in Locations)
+                {
+                    <MudSelectItem T="Guid?" Value="@location.Id">@location.Name</MudSelectItem>
+                }
+            </MudSelect>
+            @if (RuleDate is { } ruleDate)
+            {
+                <p class="ma-0 mud-text-secondary">@string.Format(CultureInfo.CurrentCulture, T["RuleDateInfo"].Value, ruleDate.ToString("d", CultureInfo.CurrentCulture))</p>
+            }
+            <DateOnlyField Value="_date" ValueChanged="SelectDate" Label="@Inventory["FieldDate"]" />
+            @if (_date is not null)
+            {
+                <OptionGroup TValue="ExpiryKindDto?" Legend="@Inventory["FieldKind"]" Options="_kindOptions" @bind-Value="_kind" />
+                @if (_kindMissing)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Error" role="alert">@Inventory["FieldError.required"]</MudText>
+                }
+            }
+            @if (IsFreezer)
+            {
+                <MudSwitch T="bool" @bind-Value="_selfFrozen" Label="@Inventory["SelfFrozen"]" Color="Color.Primary" />
+                <p class="ma-0 mud-text-secondary">@(_date is null || _selfFrozen ? Inventory["FrozenAtHomeHint"] : Inventory["BoughtFrozenHint"])</p>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Cancel()">@Common["Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Save">@Common["Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private IReadOnlyList<ChoiceOption<ExpiryKindDto?>> _kindOptions = [];
+    private QuantityDto? _quantity;
+    private Guid? _locationId;
+    private DateOnly? _date;
+    // No preselection for a newly entered date (safety, as when adding a batch); a suggested one keeps its kind.
+    private ExpiryKindDto? _kind;
+    private bool _selfFrozen;
+    private bool _suggestionDropped;
+    private bool _quantityMissing;
+    private bool _kindMissing;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>The line to edit; it stays unchanged, the result is a copy.</summary>
+    [Parameter, EditorRequired]
+    public CheckoutLine Line { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<StorageLocationDto> Locations { get; set; } = [];
+
+    private bool IsFreezer => Locations.FirstOrDefault(l => l.Id == _locationId)?.Type == StorageTypeDto.Frozen;
+
+    // The rule date is shown as information only while the line is in the freezer without a package date.
+    private DateOnly? RuleDate => Line.FromRule && IsFreezer && _date is null ? Line.Date : null;
+
+    protected override void OnInitialized()
+    {
+        _kindOptions =
+        [
+            new(ExpiryKindDto.BestBefore, Inventory["Kind.BestBefore"]),
+            new(ExpiryKindDto.UseBy, Inventory["Kind.UseBy"]),
+        ];
+        _quantity = Line.Quantity;
+        _locationId = Line.LocationId;
+        if (!Line.FromRule && Line.Date is not null)
+        {
+            (_date, _kind) = (Line.Date, Line.Kind);
+        }
+
+        _selfFrozen = Line.SelfFrozen;
+    }
+
+    // The untouched last-purchase suggestion goes visibly when the place changes between freezer and
+    // the rest: it may stem from frozen goods (or fresh ones) and must not travel to the other side.
+    private void SelectLocation(Guid? locationId)
+    {
+        var wasFreezer = IsFreezer;
+        _locationId = locationId;
+        if (wasFreezer != IsFreezer && IsUntouchedSuggestion)
+        {
+            (_date, _kind, _suggestionDropped) = (null, null, true);
+        }
+    }
+
+    // A date the person enters has no preselected kind (safety, as when adding a batch); only the
+    // untouched suggestion keeps the kind it came with.
+    private void SelectDate(DateOnly? date)
+    {
+        _date = date;
+        _kind = date is not null && date == Line.Date && Line.Suggested && !_suggestionDropped ? Line.Kind : null;
+    }
+
+    // Once dropped, a date typed in again is the person's own, even if it equals the old suggestion.
+    private bool IsUntouchedSuggestion => Line.Suggested && !_suggestionDropped && _date == Line.Date && _kind == Line.Kind;
+
+    private void Save()
+    {
+        _quantityMissing = _quantity is null;
+        _kindMissing = _date is not null && _kind is null;
+        if (_quantityMissing || _kindMissing)
+        {
+            return;
+        }
+
+        var fromFreezer = Locations.FirstOrDefault(l => l.Id == Line.LocationId)?.Type == StorageTypeDto.Frozen;
+        var edited = Line.Copy();
+        edited.Quantity = _quantity!;
+        edited.QuantityIsDefault = Line.QuantityIsDefault && _quantity == Line.Quantity;
+        edited.LocationIsDefault = Line.LocationIsDefault && _locationId == Line.LocationId;
+        if (_date is { } date)
+        {
+            // Only a changed date counts as the person's own; an untouched suggestion stays one, so
+            // MoveTo below still drops it when the line crosses the freezer boundary.
+            var suggested = IsUntouchedSuggestion;
+            (edited.Date, edited.Kind, edited.FromRule, edited.Suggested) = (date, _kind!.Value, false, suggested);
+        }
+        else if (!Line.FromRule)
+        {
+            (edited.Date, edited.Kind, edited.Suggested) = (null, ExpiryKindDto.None, false);
+        }
+
+        edited.SelfFrozen = IsFreezer && _selfFrozen;
+        edited.MoveTo(_locationId, IsFreezer, fromFreezer);
+        MudDialog.Close(DialogResult.Ok(edited));
+    }
+}

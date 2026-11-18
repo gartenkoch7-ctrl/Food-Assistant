@@ -24,3 +24,7 @@ Hier MudBlazor- oder Plattform-Eigenheiten und deren Umgehung eintragen.
   wird rot und `aria-invalid`, der `ErrorText` erscheint aber nicht (beobachtet in bUnit). Umgehung:
   eigenes Fehlerelement unter dem Feld und `ErrorId` darauf setzen (→ `aria-describedby`), siehe
   `UI/ShelfLife/ShelfLifeDaysDialog.razor`.
+- **MudBlazor 9, `MudSelect` mit `Error` + `ErrorText` + `ErrorId`** (M1 F): Hier erscheint der Text (beobachtet in
+  bUnit) im eigenen Hilfetext-Container der Komponente, und **dieser** bekommt die `ErrorId`; Eingabe und
+  Combobox verweisen per `aria-describedby` darauf. Ein zusätzliches eigenes Element mit derselben Id doppelt
+  die Id (der leere Container kommt zuerst und gewinnt). Muster: `UI/Checkout/CheckoutLineRow.razor`.
