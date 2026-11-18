@@ -1,0 +1,72 @@
+@page "/inventory/batches/{BatchId:guid}"
+@using FoodAssistant.Client.Catalog
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Inventory
+@using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Inventory
+@inject IInventoryClient Inventory
+@inject ICatalogClient Catalog
+@inject SessionState Session
+@inject IStringLocalizer<InventoryText> T
+
+@* Target of the QR code on labels (J): one batch with its product and actions. *@
+<PageTitle>@T["BatchTitle"] – @AppInfo.Name</PageTitle>
+
+<h1>@(_product?.Product.Name ?? T["BatchTitle"])</h1>
+
+<ApiErrorAlert Error="_error" FeatureText="T" />
+
+@if (_loading)
+{
+    <LoadingState />
+}
+else if (_batch is not null && _product is not null)
+{
+    <BatchCard Batch="_batch" Product="_product.Product" Locations="_locations" Changed="LoadAsync" />
+}
+else if (_error is null)
+{
+    <EmptyState Icon="@Icons.Material.Rounded.Inventory2" Heading="@T["BatchGoneHeading"]" Text="@T["BatchGoneText"]">
+        <MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary">@T["InventoryTitle"]</MudButton>
+    </EmptyState>
+}
+
+@code {
+    private BatchDto? _batch;
+    private InventoryProductDto? _product;
+    private IReadOnlyList<StorageLocationDto> _locations = [];
+    private ApiError? _error;
+    private bool _loading = true;
+
+    [Parameter]
+    public Guid BatchId { get; set; }
+
+    protected override Task OnParametersSetAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        var batch = await Inventory.GetBatchAsync(household, BatchId, CancellationToken.None);
+
+        // A used-up batch is gone (404): that is an expected end, not an error.
+        _error = batch.Error is { Status: not 404 } ? batch.Error : null;
+        _batch = batch.Value;
+        if (_batch is not null)
+        {
+            var product = await Inventory.GetProductAsync(household, _batch.ProductId, CancellationToken.None);
+            _product = product.Value;
+            _error ??= product.Error;
+            _locations = (await Catalog.ListStorageLocationsAsync(household, CancellationToken.None)).Value ?? [];
+        }
+        else
+        {
+            _product = null;
+        }
+
+        _loading = false;
+    }
+}

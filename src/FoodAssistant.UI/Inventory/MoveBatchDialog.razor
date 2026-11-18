@@ -1,0 +1,96 @@
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Inventory
+@using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Inventory
+@inject IInventoryClient Inventory
+@inject SessionState Session
+@inject IStringLocalizer<InventoryText> T
+@inject IStringLocalizer<CommonText> Common
+
+@* Moves a batch; tells beforehand when the move freezes or thaws it. Closes with DialogResult.Ok(InventoryActionResponse). *@
+<MudDialog>
+    <TitleContent>@T["MoveTitle"]</TitleContent>
+    <DialogContent>
+        <ApiErrorAlert Error="_error" FeatureText="T" />
+        <div class="d-flex flex-column gap-3 mt-2">
+            <MudSelect T="Guid?" Label="@T["FieldLocation"]" Value="_locationId" ValueChanged="Select" Variant="Variant.Outlined">
+                @foreach (var location in Locations.Where(l => l.Id != Batch.StorageLocationId))
+                {
+                    <MudSelectItem T="Guid?" Value="@location.Id">@location.Name</MudSelectItem>
+                }
+            </MudSelect>
+            @if (Notice is { } notice)
+            {
+                <MudAlert Severity="@(Refreezes ? Severity.Warning : Severity.Info)" Variant="Variant.Outlined" role="status">@notice</MudAlert>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="_saving" OnClick="() => MudDialog.Cancel()">@Common["Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="@(_saving || _locationId is null || Refreezes)"
+                   OnClick="SaveAsync">@T["MoveConfirm"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private Guid? _locationId;
+    private bool _saving;
+    private ApiError? _error;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public BatchDto Batch { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<StorageLocationDto> Locations { get; set; } = [];
+
+    /// <summary>Preselected target, e.g. the freezer for an "freeze" shortcut.</summary>
+    [Parameter]
+    public Guid? LocationId { get; set; }
+
+    protected override void OnInitialized() => _locationId = LocationId;
+
+    private StorageTypeDto? TargetType => Locations.FirstOrDefault(l => l.Id == _locationId)?.Type;
+
+    private bool Refreezes => TargetType == StorageTypeDto.Frozen && Batch.State == BatchStateDto.Thawed;
+
+    private string? Notice => TargetType switch
+    {
+        null => null,
+        _ when Refreezes => T["MoveRefreeze"].Value,
+        StorageTypeDto.Frozen when Batch.StorageType != StorageTypeDto.Frozen => T["MoveWillFreeze"].Value,
+        not StorageTypeDto.Frozen when Batch.StorageType == StorageTypeDto.Frozen => T["MoveWillThaw"].Value,
+        _ => null,
+    };
+
+    private void Select(Guid? id) => _locationId = id;
+
+    private async Task SaveAsync()
+    {
+        if (_locationId is not { } target || Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        _saving = true;
+        _error = null;
+        var result = await Inventory.MoveBatchAsync(household, Batch.Id, new MoveBatchRequest(target), $"\"{Batch.Version}\"", CancellationToken.None);
+        _saving = false;
+        if (result.IsSuccess)
+        {
+            MudDialog.Close(DialogResult.Ok(result.Value!));
+            return;
+        }
+
+        // Changed or removed by someone else: the card reloads and shows why.
+        if (result.Error!.Status is 412 or 404)
+        {
+            MudDialog.Close(DialogResult.Ok(result.Error));
+            return;
+        }
+
+        _error = result.Error;
+    }
+}

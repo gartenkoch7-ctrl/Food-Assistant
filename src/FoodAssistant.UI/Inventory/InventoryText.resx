@@ -14,4 +14,107 @@
   <data name="StatusOk" xml:space="preserve"><value>Haltbar</value></data>
   <data name="StatusNoDate" xml:space="preserve"><value>Kein Datum</value></data>
   <data name="StatusDetailPrefix" xml:space="preserve"><value>{0}: </value></data>
+  <data name="FilterLabel" xml:space="preserve"><value>Filter</value></data>
+  <data name="FilterAll" xml:space="preserve"><value>Alle</value></data>
+  <data name="FilterSoon" xml:space="preserve"><value>Läuft bald ab</value></data>
+  <data name="FilterExpired" xml:space="preserve"><value>Abgelaufen</value></data>
+  <data name="FilterLocation" xml:space="preserve"><value>Lagerort</value></data>
+  <data name="Search" xml:space="preserve"><value>Vorrat durchsuchen</value></data>
+  <data name="AddBatch" xml:space="preserve"><value>Einbuchen</value></data>
+  <data name="AddTitle" xml:space="preserve"><value>Einbuchen</value></data>
+  <data name="ListLabel" xml:space="preserve"><value>Vorrat</value></data>
+  <data name="BatchCountOne" xml:space="preserve"><value>1 Charge</value></data>
+  <data name="BatchCountMany" xml:space="preserve"><value>{0} Chargen</value></data>
+  <data name="ProductOpen" xml:space="preserve"><value>Chargen von {0}</value></data>
+  <data name="NoResultsHeading" xml:space="preserve"><value>Nichts gefunden</value></data>
+  <data name="NoResultsText" xml:space="preserve"><value>Passe Filter oder Suche an.</value></data>
+  <data name="LoadMore" xml:space="preserve"><value>Mehr laden</value></data>
+  <data name="LiveChanged" xml:space="preserve"><value>Der Vorrat wurde von jemand anderem geändert.</value></data>
+  <data name="ExpiryNoDate" xml:space="preserve"><value>kein Datum</value></data>
+  <data name="ExpiredYesterday" xml:space="preserve"><value>seit gestern abgelaufen</value></data>
+  <data name="ExpiredDays" xml:space="preserve"><value>seit {0} Tagen abgelaufen</value></data>
+  <data name="ExpiresToday" xml:space="preserve"><value>heute</value></data>
+  <data name="ExpiresTomorrow" xml:space="preserve"><value>morgen</value></data>
+  <data name="ExpiresInDays" xml:space="preserve"><value>noch {0} Tage</value></data>
+  <data name="ExpiresUntil" xml:space="preserve"><value>bis {0}</value></data>
+  <data name="ShortDateFormat" xml:space="preserve"><value>d.M.</value></data>
+  <data name="HintBestBeforeExpired" xml:space="preserve"><value>Mindesthaltbarkeit überschritten – oft noch gut. Riech und schau, bevor du es wegwirfst.</value></data>
+  <data name="HintUseByExpired" xml:space="preserve"><value>Verbrauchsdatum überschritten – nicht mehr essen.</value></data>
+  <data name="Kind.BestBefore" xml:space="preserve"><value>MHD</value></data>
+  <data name="Kind.UseBy" xml:space="preserve"><value>Verbrauchsdatum</value></data>
+  <data name="State.Sealed" xml:space="preserve"><value>verschlossen</value></data>
+  <data name="State.Opened" xml:space="preserve"><value>geöffnet</value></data>
+  <data name="State.Frozen" xml:space="preserve"><value>eingefroren</value></data>
+  <data name="State.Thawed" xml:space="preserve"><value>aufgetaut</value></data>
+  <data name="State.Leftover" xml:space="preserve"><value>Rest</value></data>
+  <data name="BatchActions" xml:space="preserve"><value>Aktionen für {0}</value></data>
+  <data name="ActionUsedUp" xml:space="preserve"><value>Aufgebraucht</value></data>
+  <data name="ActionPartial" xml:space="preserve"><value>Teilweise …</value></data>
+  <data name="ActionDiscard" xml:space="preserve"><value>Entsorgt …</value></data>
+  <data name="ActionOpen" xml:space="preserve"><value>Geöffnet</value></data>
+  <data name="ActionMove" xml:space="preserve"><value>Verschieben …</value></data>
+  <data name="ActionCorrect" xml:space="preserve"><value>Korrigieren …</value></data>
+  <data name="ActionLeftover" xml:space="preserve"><value>Rest anlegen …</value></data>
+  <data name="Done.Added" xml:space="preserve"><value>Eingebucht</value></data>
+  <data name="Done.UsedUp" xml:space="preserve"><value>Als aufgebraucht markiert</value></data>
+  <data name="Done.Partial" xml:space="preserve"><value>Verbrauch gespeichert</value></data>
+  <data name="Done.Discarded" xml:space="preserve"><value>Als entsorgt markiert</value></data>
+  <data name="Done.Opened" xml:space="preserve"><value>Als geöffnet markiert</value></data>
+  <data name="Done.Moved" xml:space="preserve"><value>Verschoben</value></data>
+  <data name="Done.Corrected" xml:space="preserve"><value>Korrigiert</value></data>
+  <data name="Done.Leftover" xml:space="preserve"><value>Rest angelegt</value></data>
+  <data name="SheetNoBatches" xml:space="preserve"><value>Keine Chargen vorhanden.</value></data>
+  <data name="Close" xml:space="preserve"><value>Schließen</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Produkt</value></data>
+  <data name="FieldLocation" xml:space="preserve"><value>Lagerort</value></data>
+  <data name="FieldQuantity" xml:space="preserve"><value>Menge</value></data>
+  <data name="FieldQuantityOptional" xml:space="preserve"><value>Menge (leer = alles)</value></data>
+  <data name="FieldDate" xml:space="preserve"><value>Ablaufdatum</value></data>
+  <data name="FieldKind" xml:space="preserve"><value>Art des Datums</value></data>
+  <data name="FieldReason" xml:space="preserve"><value>Grund</value></data>
+  <data name="SelfFrozen" xml:space="preserve"><value>Selbst eingefroren</value></data>
+  <data name="FrozenAtHomeHint" xml:space="preserve"><value>Gilt als selbst eingefroren: Das Datum kommt ab heute aus der Regel „gefroren“.</value></data>
+  <data name="BoughtFrozenHint" xml:space="preserve"><value>Gilt als gekaufte Tiefkühlware: Das Datum der Packung zählt.</value></data>
+  <data name="PartialTitle" xml:space="preserve"><value>Teilweise verbraucht</value></data>
+  <data name="DiscardTitle" xml:space="preserve"><value>Entsorgt</value></data>
+  <data name="Reason.Expired" xml:space="preserve"><value>abgelaufen</value></data>
+  <data name="Reason.Spoiled" xml:space="preserve"><value>verdorben</value></data>
+  <data name="Reason.DislikedTaste" xml:space="preserve"><value>schmeckt nicht</value></data>
+  <data name="Reason.TooMuchCooked" xml:space="preserve"><value>zu viel gekocht</value></data>
+  <data name="Reason.Other" xml:space="preserve"><value>sonstiges</value></data>
+  <data name="MoveTitle" xml:space="preserve"><value>Verschieben</value></data>
+  <data name="MoveConfirm" xml:space="preserve"><value>Verschieben</value></data>
+  <data name="MoveWillFreeze" xml:space="preserve"><value>Die Charge wird eingefroren; das Datum kommt dann aus der Regel „gefroren“.</value></data>
+  <data name="MoveWillThaw" xml:space="preserve"><value>Die Charge wird aufgetaut; aufgetaut hält sie nur kurz.</value></data>
+  <data name="MoveRefreeze" xml:space="preserve"><value>Aufgetautes darf nicht wieder eingefroren werden.</value></data>
+  <data name="CorrectTitle" xml:space="preserve"><value>Korrigieren</value></data>
+  <data name="CorrectDateLocked" xml:space="preserve"><value>Das Datum ist gesperrt: Nach dem Öffnen, Einfrieren oder Auftauen kommt es aus der Haltbarkeitsregel. Korrigieren kannst du nur die Menge.</value></data>
+  <data name="LeftoverTitle" xml:space="preserve"><value>Rest anlegen</value></data>
+  <data name="LeftoverHint" xml:space="preserve"><value>Das Ablaufdatum kommt aus der Regel „Rest“ für den Lagerort.</value></data>
+  <data name="BatchTitle" xml:space="preserve"><value>Charge</value></data>
+  <data name="BatchGoneHeading" xml:space="preserve"><value>Diese Charge gibt es nicht mehr</value></data>
+  <data name="BatchGoneText" xml:space="preserve"><value>Sie wurde aufgebraucht, entsorgt oder gehört zu einem anderen Haushalt.</value></data>
+  <data name="FieldError.required" xml:space="preserve"><value>Bitte ausfüllen.</value></data>
+  <data name="FieldError.invalid" xml:space="preserve"><value>Ungültiger Wert.</value></data>
+  <data name="FieldError.invalid_unit" xml:space="preserve"><value>Unbekannte Einheit.</value></data>
+  <data name="FieldError.must_be_positive" xml:space="preserve"><value>Die Menge muss größer als 0 sein.</value></data>
+  <data name="FieldError.must_be_none" xml:space="preserve"><value>Ohne Datum gibt es keine Art.</value></data>
+  <data name="FieldError.must_be_less_than_remaining" xml:space="preserve"><value>Teilweise heißt: weniger als der Rest.</value></data>
+  <data name="FieldError.exceeds_remaining" xml:space="preserve"><value>Mehr als der Rest geht nicht.</value></data>
+  <data name="FieldError.must_be_empty" xml:space="preserve"><value>Hier keine Menge angeben.</value></data>
+  <data name="FieldError.too_long" xml:space="preserve"><value>Zu lang.</value></data>
+  <data name="Error.inventory.batch_not_found" xml:space="preserve"><value>Die Charge gibt es nicht mehr.</value></data>
+  <data name="Error.inventory.activity_not_found" xml:space="preserve"><value>Diese Aktion gibt es nicht mehr.</value></data>
+  <data name="Error.inventory.batch_exists" xml:space="preserve"><value>Diese Charge ist schon eingebucht.</value></data>
+  <data name="Error.inventory.validation_failed" xml:space="preserve"><value>Bitte prüfe die markierten Felder.</value></data>
+  <data name="Error.inventory.invalid_state" xml:space="preserve"><value>Das geht in diesem Zustand der Charge nicht.</value></data>
+  <data name="Error.inventory.refreeze_not_allowed" xml:space="preserve"><value>Aufgetautes darf nicht wieder eingefroren werden.</value></data>
+  <data name="Error.inventory.date_locked" xml:space="preserve"><value>Das Datum lässt sich nur bei verschlossenen Chargen ändern.</value></data>
+  <data name="Error.inventory.not_enough_stock" xml:space="preserve"><value>Es ist nicht genug Vorrat da.</value></data>
+  <data name="Error.inventory.undo_not_possible" xml:space="preserve"><value>Rückgängig ist nicht mehr möglich.</value></data>
+  <data name="Error.inventory.unit_mismatch" xml:space="preserve"><value>Die Einheit passt nicht zur Charge.</value></data>
+  <data name="Error.catalog.product_not_found" xml:space="preserve"><value>Das Produkt gibt es nicht mehr.</value></data>
+  <data name="Error.catalog.location_not_found" xml:space="preserve"><value>Den Lagerort gibt es nicht mehr.</value></data>
+  <data name="LeftoverOtherProduct" xml:space="preserve"><value>Anderes Produkt wählen</value></data>
+  <data name="Undone" xml:space="preserve"><value>Rückgängig gemacht</value></data>
 </root>

@@ -1,0 +1,89 @@
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Inventory
+@using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Common
+@using FoodAssistant.Contracts.Inventory
+@using FoodAssistant.UI.Catalog
+@inject IInventoryClient Inventory
+@inject SessionState Session
+@inject IStringLocalizer<InventoryText> T
+@inject IStringLocalizer<CommonText> Common
+
+@* Records a leftover; its date comes from the rule "as leftover". Closes with DialogResult.Ok(InventoryActionResponse). *@
+<MudDialog>
+    <TitleContent>@T["LeftoverTitle"]</TitleContent>
+    <DialogContent>
+        <ApiErrorAlert Error="_error" FeatureText="T" />
+        <div class="d-flex flex-column gap-3 mt-2">
+            <p class="ma-0"><strong>@_product.Name</strong></p>
+            <ProductPicker Label="@T["LeftoverOtherProduct"]" ProductSelected="SelectProduct" />
+            <MudSelect T="Guid?" Label="@T["FieldLocation"]" @bind-Value="_locationId" Variant="Variant.Outlined">
+                @foreach (var location in Locations)
+                {
+                    <MudSelectItem T="Guid?" Value="@location.Id">@location.Name</MudSelectItem>
+                }
+            </MudSelect>
+            <QuantityInput @bind-Value="_quantity" Label="@T["FieldQuantity"]" Required="true" DefaultUnit="@_product.DefaultUnit" />
+            @if (InventoryFields.ErrorOf(_error, "quantity", T) is { } quantityError)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Error" role="alert">@quantityError</MudText>
+            }
+            <p class="ma-0 mud-text-secondary">@T["LeftoverHint"]</p>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="_saving" OnClick="() => MudDialog.Cancel()">@Common["Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="@(_saving || _locationId is null)" OnClick="SaveAsync">@Common["Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private ProductSummaryDto _product = default!;
+    private Guid? _locationId;
+    private QuantityDto? _quantity;
+    private bool _saving;
+    private ApiError? _error;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public ProductSummaryDto Product { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<StorageLocationDto> Locations { get; set; } = [];
+
+    /// <summary>Preselected location, e.g. the one of the batch the leftover comes from.</summary>
+    [Parameter]
+    public Guid? LocationId { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _product = Product;
+        _locationId = LocationId ?? Locations.FirstOrDefault()?.Id;
+    }
+
+    // A leftover is often a dish of its own (soup from vegetables), so another product can be chosen.
+    private void SelectProduct(ProductSummaryDto product) => _product = product;
+
+    private async Task SaveAsync()
+    {
+        if (_locationId is not { } location || Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        _saving = true;
+        _error = null;
+        var result = await Inventory.CreateLeftoverAsync(
+            household, new CreateLeftoverRequest(null, _product.Id, location, _quantity!), CancellationToken.None);
+        _saving = false;
+        if (result.IsSuccess)
+        {
+            MudDialog.Close(DialogResult.Ok(result.Value!));
+            return;
+        }
+
+        _error = result.Error;
+    }
+}

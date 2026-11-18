@@ -1,0 +1,103 @@
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Inventory
+@using FoodAssistant.Contracts.Common
+@using FoodAssistant.Contracts.Inventory
+@inject IInventoryClient Inventory
+@inject SessionState Session
+@inject IStringLocalizer<InventoryText> T
+@inject IStringLocalizer<CommonText> Common
+
+@* Corrects typing errors (F14): the amount always, date and kind only while sealed. Closes with DialogResult.Ok(InventoryActionResponse). *@
+<MudDialog>
+    <TitleContent>@T["CorrectTitle"]</TitleContent>
+    <DialogContent>
+        <ApiErrorAlert Error="_error" FeatureText="T" />
+        <div class="d-flex flex-column gap-3 mt-2">
+            <QuantityInput @bind-Value="_quantity" Label="@T["FieldQuantity"]" Required="true" DefaultUnit="@Batch.Quantity.Unit" />
+            @if (InventoryFields.ErrorOf(_error, "quantity", T) is { } quantityError)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Error" role="alert">@quantityError</MudText>
+            }
+            @if (Batch.State == BatchStateDto.Sealed)
+            {
+                <DateOnlyField @bind-Value="_date" Label="@T["FieldDate"]" />
+                @if (_date is not null)
+                {
+                    <OptionGroup TValue="ExpiryKindDto?" Legend="@T["FieldKind"]" Options="_kindOptions" @bind-Value="_kind" />
+                @if ((_kindMissing ? T["FieldError.required"].Value : InventoryFields.ErrorOf(_error, "packageExpiryKind", T)) is { } kindError)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Error" role="alert">@kindError</MudText>
+                }
+                }
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@T["CorrectDateLocked"]</MudAlert>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="_saving" OnClick="() => MudDialog.Cancel()">@Common["Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_saving" OnClick="SaveAsync">@Common["Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private IReadOnlyList<ChoiceOption<ExpiryKindDto?>> _kindOptions = [];
+    private bool _kindMissing;
+    private QuantityDto? _quantity;
+    private DateOnly? _date;
+    private ExpiryKindDto? _kind;
+    private bool _saving;
+    private ApiError? _error;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public BatchDto Batch { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        _kindOptions =
+        [
+            new(ExpiryKindDto.BestBefore, T["Kind.BestBefore"]),
+            new(ExpiryKindDto.UseBy, T["Kind.UseBy"]),
+        ];
+        _quantity = Batch.Quantity;
+        _date = Batch.PackageExpiresOn;
+        _kind = Batch.PackageExpiryKind == ExpiryKindDto.None ? null : Batch.PackageExpiryKind;
+    }
+
+    private async Task SaveAsync()
+    {
+        _kindMissing = Batch.State == BatchStateDto.Sealed && _date is not null && _kind is null;
+        if (_kindMissing || Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        // Not sealed: the printed values go back unchanged, only the amount is corrected.
+        var request = Batch.State == BatchStateDto.Sealed
+            ? new CorrectBatchRequest(_quantity!, _date, _date is null ? ExpiryKindDto.None : _kind!.Value)
+            : new CorrectBatchRequest(_quantity!, Batch.PackageExpiresOn, Batch.PackageExpiryKind);
+        _saving = true;
+        _error = null;
+        var result = await Inventory.CorrectBatchAsync(household, Batch.Id, request, $"\"{Batch.Version}\"", CancellationToken.None);
+        _saving = false;
+        if (result.IsSuccess)
+        {
+            MudDialog.Close(DialogResult.Ok(result.Value!));
+            return;
+        }
+
+        // Changed or removed by someone else: the card reloads and shows why.
+        if (result.Error!.Status is 412 or 404)
+        {
+            MudDialog.Close(DialogResult.Ok(result.Error));
+            return;
+        }
+
+        _error = result.Error;
+    }
+}

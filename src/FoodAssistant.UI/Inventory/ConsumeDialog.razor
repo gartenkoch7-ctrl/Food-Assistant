@@ -1,0 +1,90 @@
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Inventory
+@using FoodAssistant.Contracts.Common
+@using FoodAssistant.Contracts.Inventory
+@inject IInventoryClient Inventory
+@inject SessionState Session
+@inject IStringLocalizer<InventoryText> T
+@inject IStringLocalizer<CommonText> Common
+
+@* Partly used (amount required) or discarded (reason required, amount optional = the rest). Closes with DialogResult.Ok(InventoryActionResponse). *@
+<MudDialog>
+    <TitleContent>@(Mode == ConsumptionKindDto.Partial ? T["PartialTitle"] : T["DiscardTitle"])</TitleContent>
+    <DialogContent>
+        <ApiErrorAlert Error="_error" FeatureText="T" />
+        <div class="d-flex flex-column gap-3 mt-2">
+            @if (Mode == ConsumptionKindDto.Discarded)
+            {
+                <OptionGroup TValue="ConsumptionReasonDto?" Legend="@T["FieldReason"]" Options="_reasonOptions" @bind-Value="_reason" />
+                @if ((_reasonMissing ? T["FieldError.required"].Value : InventoryFields.ErrorOf(_error, "reason", T)) is { } reasonError)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Error" role="alert">@reasonError</MudText>
+                }
+            }
+            <QuantityInput @bind-Value="_quantity" Required="@(Mode == ConsumptionKindDto.Partial)" DefaultUnit="@Batch.Quantity.Unit"
+                           Label="@(Mode == ConsumptionKindDto.Partial ? T["FieldQuantity"] : T["FieldQuantityOptional"])" />
+            @if (InventoryFields.ErrorOf(_error, "quantity", T) is { } quantityError)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Error" role="alert">@quantityError</MudText>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="_saving" OnClick="() => MudDialog.Cancel()">@Common["Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_saving" OnClick="SaveAsync">@Common["Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private IReadOnlyList<ChoiceOption<ConsumptionReasonDto?>> _reasonOptions = [];
+    private ConsumptionReasonDto? _reason;
+    private QuantityDto? _quantity;
+    private bool _reasonMissing;
+    private bool _saving;
+    private ApiError? _error;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public BatchDto Batch { get; set; } = default!;
+
+    /// <summary><see cref="ConsumptionKindDto.Partial"/> or <see cref="ConsumptionKindDto.Discarded"/>.</summary>
+    [Parameter]
+    public ConsumptionKindDto Mode { get; set; } = ConsumptionKindDto.Partial;
+
+    protected override void OnInitialized() =>
+        _reasonOptions =
+        [
+            .. Enum.GetValues<ConsumptionReasonDto>().Select(r => new ChoiceOption<ConsumptionReasonDto?>(r, T["Reason." + r])),
+        ];
+
+    private async Task SaveAsync()
+    {
+        _reasonMissing = Mode == ConsumptionKindDto.Discarded && _reason is null;
+        if (_reasonMissing || Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        _saving = true;
+        _error = null;
+        var request = new ConsumeBatchRequest(Mode, _quantity, Mode == ConsumptionKindDto.Discarded ? _reason : null);
+        var result = await Inventory.ConsumeBatchAsync(household, Batch.Id, request, $"\"{Batch.Version}\"", CancellationToken.None);
+        _saving = false;
+        if (result.IsSuccess)
+        {
+            MudDialog.Close(DialogResult.Ok(result.Value!));
+            return;
+        }
+
+        // Changed or removed by someone else: the card reloads and shows why.
+        if (result.Error!.Status is 412 or 404)
+        {
+            MudDialog.Close(DialogResult.Ok(result.Error));
+            return;
+        }
+
+        _error = result.Error;
+    }
+}
