@@ -47,6 +47,29 @@ public sealed class CheckoutStoreTests(PostgresContainerFixture postgres)
         Assert.Equal(bread.Id, Assert.Single(await app.RowsAsync<ShoppingItem>()).Id);
     }
 
+    [Fact]
+    public async Task Commit_ProductArchivedAfterPlanning_IsStale_OthersAreApplied()
+    {
+        await using var app = await InventoryApp.StartAsync(postgres);
+        var listId = await DefaultListAsync(app);
+        var butter = await HouseholdDataSeed.ProductAsync(app.Services, app.HouseholdId, "Butter");
+        var milk = await AddItemAsync(app, listId, app.Milk.Id);
+        var butterItem = await AddItemAsync(app, listId, butter.Id);
+        await UpdateProductAsync(app, app.Milk.Id, p => p.ArchivedAt = DateTimeOffset.UtcNow);
+
+        var result = await CommitAsync(
+            app,
+            listId,
+            Line(milk.Id, milk.Version, app.Milk.Id, app.Fridge),
+            Line(butterItem.Id, butterItem.Version, butter.Id, app.Fridge));
+
+        var committed = Assert.IsType<CheckoutCommitted>(result.Value);
+        Assert.Equal(new[] { milk.Id }, committed.StaleItemIds);
+        Assert.Equal(butter.Id, Assert.Single(await app.RowsAsync<StockBatchRecord>()).ProductId);
+        Assert.Equal(milk.Id, Assert.Single(await app.RowsAsync<ShoppingItem>()).Id);
+        Assert.DoesNotContain(await app.RowsAsync<HouseholdActivity>(), a => a.Area == ActivityArea.Inventory && a.ProductId == app.Milk.Id);
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

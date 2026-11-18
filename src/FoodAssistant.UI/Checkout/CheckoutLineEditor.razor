@@ -27,7 +27,7 @@
             {
                 <p class="ma-0 mud-text-secondary">@string.Format(CultureInfo.CurrentCulture, T["RuleDateInfo"].Value, ruleDate.ToString("d", CultureInfo.CurrentCulture))</p>
             }
-            <DateOnlyField @bind-Value="_date" Label="@Inventory["FieldDate"]" />
+            <DateOnlyField Value="_date" ValueChanged="SelectDate" Label="@Inventory["FieldDate"]" />
             @if (_date is not null)
             {
                 <OptionGroup TValue="ExpiryKindDto?" Legend="@Inventory["FieldKind"]" Options="_kindOptions" @bind-Value="_kind" />
@@ -103,6 +103,14 @@
         {
             (_date, _kind, _suggestionDropped) = (null, null, true);
         }
+    }
+
+    // A date the person enters has no preselected kind (safety, as when adding a batch); only the
+    // untouched suggestion keeps the kind it came with.
+    private void SelectDate(DateOnly? date)
+    {
+        _date = date;
+        _kind = date is not null && date == Line.Date && Line.Suggested && !_suggestionDropped ? Line.Kind : null;
     }
 
     // Once dropped, a date typed in again is the person's own, even if it equals the old suggestion.

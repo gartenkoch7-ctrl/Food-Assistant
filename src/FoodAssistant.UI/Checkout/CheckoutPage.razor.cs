@@ -119,6 +119,7 @@ public sealed partial class CheckoutPage
         return changed;
     }
 
+    // The guard covers the whole submit, including the location check before the request goes out.
     private async Task SubmitAsync()
     {
         if (_saving || Session.ActiveHouseholdId is not { } household)
@@ -126,6 +127,19 @@ public sealed partial class CheckoutPage
             return;
         }
 
+        _saving = true;
+        try
+        {
+            await SubmitCoreAsync(household);
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task SubmitCoreAsync(Guid household)
+    {
         _rowErrors = CheckoutErrors.Missing(_lines, T, Inventory);
         _checkLines = _rowErrors.Count > 0;
         _locationsChanged = !_checkLines && await LocationsRetypedAsync(household);
@@ -141,10 +155,9 @@ public sealed partial class CheckoutPage
             (_idempotencyKey, _unansweredBody) = (Guid.CreateVersion7(), body);
         }
 
-        _saving = true;
         _error = null;
         var result = await Checkout.CompleteAsync(household, ListId, request, _idempotencyKey, CancellationToken.None);
-        _saving = false;
+
         // No answer yet (network, offline, or the first attempt still running on the server): the outcome
         // is unknown, so the same request must go out with the same key again.
         if (result.Error is { ErrorCode: ClientErrorCodes.Network or ClientErrorCodes.Offline or ErrorCodes.IdempotencyRequestInProgress } unanswered)

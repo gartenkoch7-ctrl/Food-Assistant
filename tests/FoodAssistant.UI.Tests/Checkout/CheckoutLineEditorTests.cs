@@ -94,6 +94,20 @@ public sealed class CheckoutLineEditorTests : CheckoutTestContext
     }
 
     [Fact]
+    public async Task SuggestedDateReplaced_TheKindIsNoLongerPreselected()
+    {
+        var line = new CheckoutLine(AddEntry("Milch", Guid.CreateVersion7(), Fridge.Id, Today.AddDays(7), ExpiryKindDto.BestBefore));
+        await EditAsync(line);
+        Dialogs.WaitForAssertion(() => Assert.Contains(Dialogs.FindAll("label.fa-option input"), i => i.HasAttribute("checked")), Timeout);
+
+        await Dialogs.InvokeAsync(() => Dialogs.Find(".fa-date-field input").Change("30.11.2026")).WaitAsync(Timeout, Ct);
+        Assert.DoesNotContain(Dialogs.FindAll("label.fa-option input"), i => i.HasAttribute("checked"));
+        await Dialogs.InvokeAsync(() => ButtonByText(Dialogs, "Speichern").Click()).WaitAsync(Timeout, Ct);
+
+        Assert.Contains("Bitte ausfüllen.", Dialogs.Markup, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task Fridge_HasNoFreezerSwitch_AmountIsTakenOver()
     {
         var line = new CheckoutLine(AddEntry("Milch", Guid.CreateVersion7(), Fridge.Id, Today.AddDays(7), ExpiryKindDto.BestBefore));
