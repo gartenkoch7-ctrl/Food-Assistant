@@ -110,8 +110,10 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
   „1 Stück“ ohne Menge im Eintrag (`quantityFromEntry = false`) seine Standardeinheit und den ersten Ort
   vom Lagertyp seiner Kategorie. Meldet der Server `lines[i].productId` (Produkt inzwischen archiviert),
   bietet die Zeile wieder den `ProductPicker` an. Vor dem Senden liest die Seite die Lagerorte neu: Hat
-  einer seit dem Laden zwischen Gefrierort und anderem gewechselt, werden die Zeilen dort „umgezogen“
-  (nicht selbst eingetragene Daten fallen weg) und erst angezeigt statt gesendet. Auf 409
+  einer seit dem Laden den Lagertyp gewechselt, werden die Zeilen dort „umgezogen“ (beim Wechsel zwischen
+  Gefrierort und anderem fallen nicht selbst eingetragene Daten weg) und erst angezeigt statt gesendet.
+  Ein anderes Produkt in einer Zeile nimmt deren Vorschläge (letzter Kauf, Regeldatum, Standardeinheit
+  bei nicht geänderter Standardmenge) nicht mit. Auf 409
   `common.conflict` (Lagerort zwischen Planung und Speichern geändert) lädt die Seite Vorschlag und
   Lagerorte neu. Ein Datum, das der
   Nutzer nicht selbst eingetragen hat (Regel „gefroren“, letzter Kauf), fällt weg, sobald die Zeile
@@ -119,7 +121,7 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
   **Offen:** Der Server merkt sich beim letzten Kauf nicht den Lagertyp; wurde zuletzt TK-Ware gekauft,
   schlägt er deren Tage auch für einen Kühlschrank-Vorschlag vor (Entscheidung nötig, z. B. Spalte
   `LastStorageType` oder nur aus nicht gefrorenen Chargen lernen). Der Client nimmt denselben `Idempotency-Key` nur für dieselbe Anfrage nach einem Fehler
-  ohne Antwort (Netz/offline); jede andere Anfrage bekommt einen neuen (sonst 422 `common.idempotency_key_reused`).
+  ohne Antwort (Netz/offline oder 409 `common.idempotency_request_in_progress`); jede andere Anfrage bekommt einen neuen (sonst 422 `common.idempotency_key_reused`).
   Erfolg: Ansage + Snackbar, zurück zur Liste; mit `staleItemIds` bleibt die Seite, lädt neu und nennt die Anzahl.
 
 ## Mindestbestand

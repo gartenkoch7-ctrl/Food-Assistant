@@ -128,6 +128,7 @@
         var fromFreezer = Locations.FirstOrDefault(l => l.Id == Line.LocationId)?.Type == StorageTypeDto.Frozen;
         var edited = Line.Copy();
         edited.Quantity = _quantity!;
+        edited.QuantityIsDefault = Line.QuantityIsDefault && _quantity == Line.Quantity;
         if (_date is { } date)
         {
             // Only a changed date counts as the person's own; an untouched suggestion stays one, so

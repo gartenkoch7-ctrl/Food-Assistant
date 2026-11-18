@@ -17,7 +17,7 @@ public sealed class CheckoutLine
         ProductId = entry.ProductId;
         Name = entry.Text;
         Quantity = entry.Quantity;
-        QuantityFromEntry = entry.QuantityFromEntry;
+        QuantityIsDefault = !entry.QuantityFromEntry;
         LocationId = entry.StorageLocationId;
         Date = entry.ExpiresOn;
         Kind = entry.ExpiryKind;
@@ -42,8 +42,11 @@ public sealed class CheckoutLine
 
     public QuantityDto Quantity { get; set; }
 
-    /// <summary>The amount came from the list entry (not a default), so an assigned product keeps it.</summary>
-    public bool QuantityFromEntry { get; }
+    /// <summary>
+    /// The amount is the server's default ("1 × default unit", "1 piece" for free text): neither from the
+    /// list entry nor edited. Only then does another product bring its own default unit.
+    /// </summary>
+    public bool QuantityIsDefault { get; set; }
 
     public Guid? LocationId { get; set; }
 
@@ -72,6 +75,36 @@ public sealed class CheckoutLine
     public CheckoutLine Copy() => (CheckoutLine)MemberwiseClone();
 
     /// <summary>
+    /// Assigns a (different) product. Suggestions made for the previous product (its last purchase, its
+    /// rule date, its default unit) do not fit the new one and go; what the person entered stays.
+    /// </summary>
+    public void AssignProduct(Guid productId, string name, string? defaultUnit)
+    {
+        (ProductId, Name) = (productId, name);
+        if (QuantityIsDefault && !string.IsNullOrEmpty(defaultUnit))
+        {
+            Quantity = new QuantityDto(1m, defaultUnit);
+        }
+
+        DropSuggestedDate();
+    }
+
+    /// <summary>Removes the product so another one can be picked; its suggested date goes with it.</summary>
+    public void ClearProduct()
+    {
+        (ProductId, Name) = (null, Text);
+        DropSuggestedDate();
+    }
+
+    private void DropSuggestedDate()
+    {
+        if (Suggested || FromRule)
+        {
+            (Date, Kind, Suggested, FromRule) = (null, ExpiryKindDto.None, false, false);
+        }
+    }
+
+    /// <summary>
     /// Moves the line. A date the person did not enter (rule "frozen", last purchase) goes when the line
     /// moves between a freezer and any other place: a freezer date must never end up in the fridge.
     /// </summary>
@@ -96,8 +129,8 @@ public sealed class CheckoutLine
     public void Apply(CheckoutLine edited)
     {
         ArgumentNullException.ThrowIfNull(edited);
-        (Quantity, LocationId, Date, Kind, FromRule, Suggested, SelfFrozen) =
-            (edited.Quantity, edited.LocationId, edited.Date, edited.Kind, edited.FromRule, edited.Suggested, edited.SelfFrozen);
+        (Quantity, QuantityIsDefault, LocationId, Date, Kind, FromRule, Suggested, SelfFrozen) =
+            (edited.Quantity, edited.QuantityIsDefault, edited.LocationId, edited.Date, edited.Kind, edited.FromRule, edited.Suggested, edited.SelfFrozen);
     }
 
     public CheckoutLineRequest ToRequest()

@@ -114,13 +114,16 @@ public sealed class CheckoutPageTests : CheckoutTestContext
         Assert.Contains("Der Server ist nicht erreichbar", cut.Markup, StringComparison.Ordinal);
         CheckoutClient.Entries.RemoveAt(1);
         await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
+        Assert.Contains("1 Eintrag wurde nicht gebucht", cut.Markup, StringComparison.Ordinal);
         await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
 
         Assert.Equal(3, CheckoutClient.Completions.Count);
         Assert.Equal(CheckoutClient.Completions[0].Key, CheckoutClient.Completions[1].Key);
         Assert.NotEqual(CheckoutClient.Completions[1].Key, CheckoutClient.Completions[2].Key);
         Assert.Single(CheckoutClient.Completions[2].Request.Lines);
-        Assert.Contains("1 Eintrag wurde nicht gebucht", cut.Markup, StringComparison.Ordinal);
+
+        // The hint belonged to the previous attempt; the next one starts without it.
+        Assert.DoesNotContain("1 Eintrag wurde nicht gebucht", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]

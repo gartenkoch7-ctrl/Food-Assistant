@@ -140,6 +140,8 @@ public sealed partial class CheckoutPage
 
     private async Task SubmitCoreAsync(Guid household)
     {
+        // The stale hint belongs to the previous attempt only.
+        _staleCount = 0;
         _rowErrors = CheckoutErrors.Missing(_lines, T, Inventory);
         _checkLines = _rowErrors.Count > 0;
         _locationsChanged = !_checkLines && await LocationsRetypedAsync(household);
@@ -184,7 +186,7 @@ public sealed partial class CheckoutPage
             // A product archived meanwhile: the line offers the product picker again instead of only "skip".
             foreach (var index in CheckoutErrors.LinesWithField(result.Error, "productId", _lines.Count))
             {
-                (_lines[index].ProductId, _lines[index].Name) = (null, _lines[index].Text);
+                _lines[index].ClearProduct();
             }
 
             return;

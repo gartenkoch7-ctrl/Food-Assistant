@@ -118,6 +118,28 @@ public sealed class CheckoutCompleteTests(PostgresContainerFixture postgres)
     }
 
     [Fact]
+    public async Task Complete_NewProductIntoFreezerWithoutDate_IsFrozenAtHomeByCategoryRule()
+    {
+        await using var app = await InventoryApp.StartAsync(postgres);
+        app.Rules.Set(StorageType.Frozen, new ShelfLifeRule { DaysFrozen = 120 });
+        var today = app.Today();
+        var listId = await DefaultListAsync(app);
+        await AddItemAsync(app, listId, text: "Berries");
+        var entry = Assert.Single((await ProposeAsync(app, listId)).Entries);
+
+        await CompleteAsync(app, listId, Book(entry) with
+        {
+            NewProduct = new NewProductLine("Berries", ProductCategories.Fruit, "g"),
+            Quantity = new QuantityDto(500m, "g"),
+            StorageLocationId = app.Freezer.Id,
+        });
+
+        var batch = Assert.Single(await app.RowsAsync<StockBatchRecord>());
+        Assert.Equal((BatchState.Frozen, today, today.AddDays(120), ExpiryKind.UseBy), (batch.State, batch.FrozenOn, batch.ExpiresOn, batch.ExpiryKind));
+        Assert.Null(Assert.Single(await app.RowsAsync<Product>(), p => p.Name == "Berries").LastShelfLifeDays);
+    }
+
+    [Fact]
     public async Task Complete_BatchAdded_CanBeUndoneLikeAManualOne()
     {
         await using var app = await InventoryApp.StartAsync(postgres);
