@@ -55,6 +55,24 @@ public sealed class SessionStateHouseholdSwitchTests
     }
 
     [Fact]
+    public async Task Switch_WhileASignOutWaitsForTheLock_DoesNotUndoTheSignOut()
+    {
+        var session = Create();
+        await session.LoadAsync(Ct);
+        var second = _accounts.Me!.Households[1].Id;
+        _live.HoldStart = new TaskCompletionSource();
+
+        var reload = session.LoadAsync(Ct);
+        var signOut = session.SignOutAsync(Ct);
+        await session.SelectHouseholdAsync(second, Ct);
+        _live.HoldStart.SetResult();
+        await Task.WhenAll(reload, signOut);
+
+        Assert.Equal(SessionStatus.SignedOut, session.Status);
+        Assert.Null(session.ActiveHouseholdId);
+    }
+
+    [Fact]
     public async Task Switch_ToAnUnknownHousehold_ChangesNothingAndKeepsTheReload()
     {
         var session = Create();

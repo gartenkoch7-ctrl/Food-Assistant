@@ -76,7 +76,7 @@ else
         // The token sits in the URL fragment, which the browser never sends to the server. After a detour
         // over the login page the fragment is gone, then the in-memory draft has it.
         _token = TokenFromFragment() ?? Draft.Token;
-        Draft.Token = _token;
+        Draft.Token = null;
         Session.Changed += OnSessionChanged;
         await Session.EnsureLoadedAsync();
     }
@@ -95,7 +95,11 @@ else
         return null;
     }
 
-    private void GoToLogin() => Navigation.NavigateTo("/login?returnUrl=" + Uri.EscapeDataString("/invite"));
+    private void GoToLogin()
+    {
+        Draft.Token = _token;
+        Navigation.NavigateTo("/login?returnUrl=" + Uri.EscapeDataString("/invite"));
+    }
 
     private Task JoinAsync() => AcceptAsync(new AcceptInvitationRequest(_token!), signIn: null);
 
@@ -121,7 +125,6 @@ else
             return;
         }
 
-        Draft.Token = null;
         var signedIn = signIn is null || (await Accounts.LoginAsync(signIn, CancellationToken.None)).IsSuccess;
         _password = string.Empty;
         await Session.LoadAsync();

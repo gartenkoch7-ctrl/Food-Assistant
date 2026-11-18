@@ -30,11 +30,11 @@
                     @if (IsOwner)
                     {
                         <div class="fa-member-actions">
-                            <select class="fa-select" aria-label="@T["MemberRoleLabel", member.DisplayName]"
+                            <select class="fa-select" value="@PendingRole(member).ToString().ToLowerInvariant()" aria-label="@T["MemberRoleLabel", member.DisplayName]"
                                     @onchange="e => SelectRole(member.UserId, e.Value as string)">
                                 @foreach (var role in Roles)
                                 {
-                                    <option value="@role.ToString().ToLowerInvariant()" selected="@(PendingRole(member) == role)">@T[AccountsKeys.Role(role)]</option>
+                                    <option value="@role.ToString().ToLowerInvariant()">@T[AccountsKeys.Role(role)]</option>
                                 }
                             </select>
                             @if (PendingRole(member) != member.Role)

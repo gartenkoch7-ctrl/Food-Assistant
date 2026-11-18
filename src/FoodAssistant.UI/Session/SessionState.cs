@@ -31,6 +31,7 @@ public sealed class SessionState : IDisposable
     // generation, and a change of an older generation is dropped (e.g. a reload that ends after sign-out).
     private readonly SemaphoreSlim _transition = new(1, 1);
     private int _generation;
+    private int _signOutsPending;
     private bool _loadRequested;
     private Task? _expiryReload;
     private DateTimeOffset? _lastExpiryReload;
@@ -110,7 +111,8 @@ public sealed class SessionState : IDisposable
 
     public async Task SelectHouseholdAsync(Guid householdId, CancellationToken cancellationToken = default)
     {
-        if (Me?.Households.All(h => h.Id != householdId) ?? true)
+        // A sign-out in progress wins over a switch (shared devices must end up signed out).
+        if (Volatile.Read(ref _signOutsPending) > 0 || (Me?.Households.All(h => h.Id != householdId) ?? true))
         {
             return;
         }
@@ -147,8 +149,18 @@ public sealed class SessionState : IDisposable
         }
 
         // A reload still in flight belongs to the old session and must not sign anyone back in.
-        var generation = Interlocked.Increment(ref _generation);
-        await TransitionAsync(generation, () => SignedOutAsync(SessionStatus.SignedOut)).ConfigureAwait(false);
+        // A household switch must not take over this generation while the sign-out waits for the lock.
+        Interlocked.Increment(ref _signOutsPending);
+        try
+        {
+            var generation = Interlocked.Increment(ref _generation);
+            await TransitionAsync(generation, () => SignedOutAsync(SessionStatus.SignedOut)).ConfigureAwait(false);
+        }
+        finally
+        {
+            Interlocked.Decrement(ref _signOutsPending);
+        }
+
         return null;
     }
 

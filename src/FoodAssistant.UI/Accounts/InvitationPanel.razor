@@ -158,7 +158,7 @@
         }
 
         await LoadAsync();
-        _error = failure;
+        _error = failure ?? _error;
         _busy = false;
         if (result.IsSuccess)
         {

@@ -5,6 +5,7 @@
 @inject IAccountClient Accounts
 @inject SessionState Session
 @inject NavigationManager Navigation
+@inject ILiveAnnouncer Announcer
 @inject IStringLocalizer<AccountsText> T
 
 <PageTitle>@T["SetupTitle"] – @AppInfo.Name</PageTitle>
@@ -77,6 +78,7 @@
         _repeatError = _password == _passwordRepeat ? null : T["FieldError.password_mismatch"].Value;
         if (_repeatError is not null)
         {
+            Announcer.Announce(_repeatError);
             return;
         }
 
