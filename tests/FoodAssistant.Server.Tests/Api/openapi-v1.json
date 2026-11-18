@@ -1,0 +1,79 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Food-Assistant API",
+    "license": {
+      "name": "MIT"
+    },
+    "version": "v1"
+  },
+  "paths": {
+    "/api/v1/info": {
+      "get": {
+        "tags": [
+          "Info"
+        ],
+        "summary": "Server version, supported API and app versions, enabled functions.",
+        "operationId": "GetServerInfo",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerInfoDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ServerFeaturesDto": {
+        "required": [
+          "ai"
+        ],
+        "type": "object",
+        "properties": {
+          "ai": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ServerInfoDto": {
+        "required": [
+          "serverVersion",
+          "minimumAppVersion",
+          "apiVersions",
+          "features"
+        ],
+        "type": "object",
+        "properties": {
+          "serverVersion": {
+            "type": "string"
+          },
+          "minimumAppVersion": {
+            "type": "string"
+          },
+          "apiVersions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "features": {
+            "$ref": "#/components/schemas/ServerFeaturesDto"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Info"
+    }
+  ]
+}

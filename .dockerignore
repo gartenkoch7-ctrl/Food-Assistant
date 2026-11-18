@@ -1,0 +1,23 @@
+# Only src/ and the root build files are needed to build the server image.
+**/bin/
+**/obj/
+**/TestResults/
+**/*.user
+.git/
+.github/
+.githooks/
+.vs/
+.vscode/
+.idea/
+.claude/
+artifacts/
+docs/
+deploy/
+scripts/
+tests/
+.env
+.env.*
+**/appsettings.*.local.json
+docker-compose*.yml
+Dockerfile
+*.md

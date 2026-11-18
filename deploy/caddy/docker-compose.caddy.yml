@@ -1,0 +1,30 @@
+# Adds Caddy as HTTPS reverse proxy. Use together with the main file:
+#   docker compose -f docker-compose.yml -f deploy/caddy/docker-compose.caddy.yml up -d
+# Needs FOODASSISTANT_DOMAIN in .env (e.g. food.example.com). Paths are relative to the
+# directory of docker-compose.yml.
+
+services:
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      server:
+        condition: service_healthy
+    environment:
+      FOODASSISTANT_DOMAIN: ${FOODASSISTANT_DOMAIN:?Set FOODASSISTANT_DOMAIN in .env, e.g. food.example.com}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+  server:
+    environment:
+      FOODASSISTANT__PUBLICURL: https://${FOODASSISTANT_DOMAIN:?Set FOODASSISTANT_DOMAIN in .env}
+
+volumes:
+  caddy-data:
+  caddy-config:

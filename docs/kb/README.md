@@ -19,4 +19,4 @@ als Erstes braucht, und trägt sie hier ein. Grundsatzentscheidungen stehen in [
 | export-schema.md | JSON-Export/-Import eines Haushalts | offen |
 | testumgebung.md | Testen, Testcontainers, Geräte | offen |
 | build-und-tooling.md | Build, MAUI, Docker | offen |
-| telemetrie.md | Katalog: Logs, Abläufe, Messwerte | offen |
+| [telemetrie.md](telemetrie.md) | Katalog: Logs, Abläufe, Messwerte | angelegt |

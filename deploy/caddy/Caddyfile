@@ -1,0 +1,11 @@
+# HTTPS in front of Food-Assistant (ADR-0007). Caddy gets and renews the certificate itself
+# (Let's Encrypt); the domain must point to this machine and ports 80/443 must be reachable.
+# Caddy sends X-Forwarded-For/-Proto; the server trusts them from the Docker network.
+#
+# No `encode` here: it changes the ETags of compressed API responses ("42" -> "42-zstd"), and
+# If-Match with such a tag would never match (ADR-0004). Static web-app files are served
+# precompressed by the server anyway.
+
+{$FOODASSISTANT_DOMAIN} {
+    reverse_proxy server:8080
+}
