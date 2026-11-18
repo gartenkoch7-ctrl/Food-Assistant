@@ -17,15 +17,36 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
   Standardliste machen setzt die alte in derselben Transaktion zurück. Die Standardliste kann weder
   gelöscht noch „entstandardisiert“ werden (409 `shopping.default_list`).
 - Liste löschen löscht ihre Einträge (auch Tombstones) einzeln über den Context, damit das
-  Änderungsprotokoll jeden Eintrag sieht; die Listenzeile ist dabei gesperrt (`FOR UPDATE`), damit
-  kein neuer Eintrag an der Datenbank-Kaskade vorbei verschwindet.
+  Änderungsprotokoll jeden Eintrag sieht. Die Transaktion nimmt zuerst die Änderungsprotokoll-Sperre
+  des Haushalts, dann die Listenzeile (`FOR UPDATE`): kein neuer Eintrag verschwindet an der
+  Datenbank-Kaskade vorbei, ein gleichzeitiges Anlegen bekommt danach 404 `shopping.list_not_found`.
 - Eintrag mit Produkt: Text = Produktname, Bereich = Bereich des Produkts oder der Kategorie
   (`StoreSections.ForCategory`); Freitext ohne Bereich → `other`. Archivierte Produkte → 404.
+
+## Läden und Bereichsreihenfolge (F3)
+- Feste Bereichsliste `StoreSections.All` (11 Schlüssel, Namen übersetzt die UI); je Laden wird
+  nur die **Reihenfolge** gespeichert. `GET …/shopping/sections` = Standardreihenfolge ohne Laden.
+- **Lernen:** Abhaken (offen → abgehakt) auf einer Liste mit Laden zählt den Übergang
+  „Bereich des letzten Abhakens → aktueller Bereich“, wenn das letzte Abhaken in diesem Laden
+  höchstens 2 h zurückliegt und der Bereich ein anderer ist (`SectionOrderLearner.IsSameTrip`).
+  Danach merkt sich der Laden Bereich und Zeit (`LastCheckedSectionKey/At`).
+- **Reihenfolge:** Punktzahl je Bereich = Ankünfte − Abgänge; aufsteigend sortiert, Gleichstand in
+  Standardreihenfolge. Widersprüchliche Einkäufe heben sich auf, statt die Reihenfolge hin und her
+  springen zu lassen. Manuelle Positionen kommen zuerst, der Rest folgt gelernt;
+  `DELETE …/section-order` führt zur gelernten zurück.
+- Das Abhaken ändert die Ladenzeile (`LastChecked*`, nur über den Context, ADR-0005-Regel) und
+  damit die Version (ETag) des Ladens. Wer gleichzeitig den Laden umbenennt, bekommt 412 und lädt neu.
+- Zwei gleichzeitige Abhaken im selben Laden: das zweite wird einmal mit dem neuen Stand wiederholt;
+  verliert es erneut, wird nur dieser Übergang ausgelassen (das Abhaken selbst ist dann schon gespeichert).
+- Laden löschen setzt `StoreId` der Listen über den Context auf `null` (Kaskade umgeht sonst das
+  Änderungsprotokoll); Reihenfolge-Daten gehen per Datenbank-Kaskade mit (nicht synchronisiert).
 
 ## Rechte
 - **Eingeschränkt: nur abhaken/ergänzen.** Eingeschränkte Mitglieder dürfen Einträge anlegen und
   abhaken (auch zurücknehmen). Ein `PUT` ist nur erlaubt, wenn sich Text, Bereich, Menge und Notiz
   nicht vom **aktuellen** Serverzustand unterscheiden; sonst 403 `shopping.restricted_change`.
+  Einen gelöschten Eintrag dürfen sie nur abgehakt zurückholen („abgehakt gewinnt gegen gelöscht“),
+  nicht unabgehakt.
   Löschen, Verschieben, Listen und Läden: ab Mitglied.
 
 ## Änderungen und Konflikte (API)

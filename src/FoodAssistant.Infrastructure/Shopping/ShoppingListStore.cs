@@ -10,7 +10,11 @@ using Microsoft.EntityFrameworkCore;
 namespace FoodAssistant.Infrastructure.Shopping;
 
 /// <summary>Shopping lists; the active-household filter applies to every query. Store pattern of docs/kb/datenmodell.md.</summary>
-internal sealed class ShoppingListStore(AppDbContext db, IHouseholdContext householdContext) : IShoppingListStore
+internal sealed class ShoppingListStore(
+    AppDbContext db,
+    IHouseholdContext householdContext,
+    ShoppingListReader reader,
+    ShoppingListRemover remover) : IShoppingListStore
 {
     private DbSet<ShoppingList> Lists => db.Set<ShoppingList>();
 
@@ -25,14 +29,13 @@ internal sealed class ShoppingListStore(AppDbContext db, IHouseholdContext house
             .ThenBy(l => l.Id)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
-        var counts = await CountItemsAsync(listId: null, cancellationToken).ConfigureAwait(false);
-        return [.. lists.Select(l => ToDto(l, counts))];
+        return await reader.ToDtosAsync(lists, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<ShoppingListDto?> GetListAsync(Guid listId, CancellationToken cancellationToken)
     {
         var list = await Lists.AsNoTracking().SingleOrDefaultAsync(l => l.Id == listId, cancellationToken).ConfigureAwait(false);
-        return list is null ? null : await ToDtoAsync(list, cancellationToken).ConfigureAwait(false);
+        return list is null ? null : await reader.ToDtoAsync(list, cancellationToken).ConfigureAwait(false);
     }
 
     public Task<bool> ListExistsAsync(Guid listId, CancellationToken cancellationToken) =>
@@ -50,10 +53,20 @@ internal sealed class ShoppingListStore(AppDbContext db, IHouseholdContext house
             return OperationResult<ShoppingListDto>.Conflict(ErrorCodes.Conflict);
         }
 
-        var list = await InsertAsync(id, name, storeId, isDefault: false, now, cancellationToken).ConfigureAwait(false);
+        ShoppingList? list;
+        try
+        {
+            list = await InsertAsync(id, name, storeId, isDefault: false, now, cancellationToken).ConfigureAwait(false);
+        }
+        catch (DbUpdateException exception) when (ShoppingDbErrors.IsForeignKeyViolation(exception))
+        {
+            db.ChangeTracker.Clear();
+            return StoreGone();
+        }
+
         return list is null
             ? OperationResult<ShoppingListDto>.Conflict(ErrorCodes.Conflict)
-            : OperationResult<ShoppingListDto>.Created(ToDto(list, open: 0, done: 0));
+            : OperationResult<ShoppingListDto>.Created(ShoppingListReader.ToDto(list, open: 0, done: 0));
     }
 
     public async Task<OperationResult<ShoppingListDto>> UpdateListAsync(
@@ -110,52 +123,22 @@ internal sealed class ShoppingListStore(AppDbContext db, IHouseholdContext house
             await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
             return await ReloadedMismatchAsync(listId, cancellationToken).ConfigureAwait(false);
         }
+        catch (DbUpdateException exception) when (ShoppingDbErrors.IsForeignKeyViolation(exception))
+        {
+            await transaction.RollbackAsync(cancellationToken).ConfigureAwait(false);
+            db.ChangeTracker.Clear();
+            return StoreGone();
+        }
 
-        return OperationResult<ShoppingListDto>.Ok(await ToDtoAsync(list, cancellationToken).ConfigureAwait(false));
+        return OperationResult<ShoppingListDto>.Ok(await reader.ToDtoAsync(list, cancellationToken).ConfigureAwait(false));
     }
 
-    public async Task<OperationResult<ShoppingListDto>> DeleteListAsync(
+
+    public Task<OperationResult<ShoppingListDto>> DeleteListAsync(
         Guid listId,
         long? expectedVersion,
-        CancellationToken cancellationToken)
-    {
-        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-
-        // Blocks new entries for this list until the commit (their foreign-key check waits for the
-        // row lock), so none can slip past the change log through the database cascade below.
-        await db.Database.ExecuteSqlAsync(
-                $"SELECT 1 FROM \"ShoppingLists\" WHERE \"Id\" = {listId} AND \"HouseholdId\" = {ActiveHouseholdId} FOR UPDATE",
-                cancellationToken)
-            .ConfigureAwait(false);
-        var list = await Lists.SingleOrDefaultAsync(l => l.Id == listId, cancellationToken).ConfigureAwait(false);
-        if (list is null)
-        {
-            return OperationResult<ShoppingListDto>.NotFound(ShoppingErrorCodes.ListNotFound);
-        }
-
-        if (expectedVersion is { } expected && expected != list.Version)
-        {
-            return await MismatchAsync(list, cancellationToken).ConfigureAwait(false);
-        }
-
-        if (list.IsDefault)
-        {
-            return OperationResult<ShoppingListDto>.Conflict(ShoppingErrorCodes.DefaultList);
-        }
-
-        // The cascade ShoppingItems.ListId would bypass the change log (docs/kb/datenmodell.md):
-        // delete the entries, tombstones included, through the context so each one is recorded.
-        var items = await db.Set<ShoppingItem>()
-            .IgnoreQueryFilters([AppDbContext.NotDeletedFilter])
-            .Where(i => i.ListId == listId)
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-        db.RemoveRange(items);
-        Lists.Remove(list);
-        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
-        return OperationResult<ShoppingListDto>.Deleted();
-    }
+        CancellationToken cancellationToken) =>
+        remover.DeleteAsync(listId, expectedVersion, cancellationToken);
 
     public async Task<ShoppingListDto> EnsureDefaultListAsync(DateTimeOffset now, CancellationToken cancellationToken)
     {
@@ -170,7 +153,7 @@ internal sealed class ShoppingListStore(AppDbContext db, IHouseholdContext house
             current ??= await Lists.AsNoTracking().SingleAsync(l => l.IsDefault, cancellationToken).ConfigureAwait(false);
         }
 
-        return await ToDtoAsync(current, cancellationToken).ConfigureAwait(false);
+        return await reader.ToDtoAsync(current, cancellationToken).ConfigureAwait(false);
     }
 
     public Task<bool> StoreExistsAsync(Guid storeId, CancellationToken cancellationToken) =>
@@ -214,8 +197,14 @@ internal sealed class ShoppingListStore(AppDbContext db, IHouseholdContext house
         return list;
     }
 
+    // The store was deleted between validation and save (its row lock makes the insert fail).
+    private static OperationResult<ShoppingListDto> StoreGone() =>
+        OperationResult<ShoppingListDto>.Invalid(
+            new Dictionary<string, string[]>(StringComparer.Ordinal) { ["storeId"] = ["not_found"] },
+            ShoppingErrorCodes.ValidationFailed);
+
     private async Task<OperationResult<ShoppingListDto>> MismatchAsync(ShoppingList list, CancellationToken cancellationToken) =>
-        OperationResult<ShoppingListDto>.VersionMismatch(list.Version, await ToDtoAsync(list, cancellationToken).ConfigureAwait(false));
+        OperationResult<ShoppingListDto>.VersionMismatch(list.Version, await reader.ToDtoAsync(list, cancellationToken).ConfigureAwait(false));
 
     private async Task<OperationResult<ShoppingListDto>> ReloadedMismatchAsync(Guid listId, CancellationToken cancellationToken)
     {
@@ -225,29 +214,4 @@ internal sealed class ShoppingListStore(AppDbContext db, IHouseholdContext house
             ? OperationResult<ShoppingListDto>.NotFound(ShoppingErrorCodes.ListNotFound)
             : await MismatchAsync(current, cancellationToken).ConfigureAwait(false);
     }
-
-    private async Task<ShoppingListDto> ToDtoAsync(ShoppingList list, CancellationToken cancellationToken) =>
-        ToDto(list, await CountItemsAsync(list.Id, cancellationToken).ConfigureAwait(false));
-
-    private async Task<Dictionary<Guid, (int Open, int Done)>> CountItemsAsync(Guid? listId, CancellationToken cancellationToken)
-    {
-        var items = db.Set<ShoppingItem>().AsNoTracking();
-        if (listId is { } id)
-        {
-            items = items.Where(i => i.ListId == id);
-        }
-
-        var counts = await items
-            .GroupBy(i => i.ListId)
-            .Select(g => new { ListId = g.Key, Open = g.Count(i => !i.Checked), Done = g.Count(i => i.Checked) })
-            .ToListAsync(cancellationToken)
-            .ConfigureAwait(false);
-        return counts.ToDictionary(c => c.ListId, c => (c.Open, c.Done));
-    }
-
-    private static ShoppingListDto ToDto(ShoppingList list, Dictionary<Guid, (int Open, int Done)> counts) =>
-        counts.TryGetValue(list.Id, out var count) ? ToDto(list, count.Open, count.Done) : ToDto(list, 0, 0);
-
-    private static ShoppingListDto ToDto(ShoppingList list, int open, int done) =>
-        new(list.Id, list.Name, list.StoreId, list.IsDefault, list.SortOrder, open, done, list.Version);
 }

@@ -15,6 +15,8 @@ Schemaänderungen nur über Migrationen, nur vorwärts (ADR-0007).
 - **Version/ETag:** `uint Version` + `IsRowVersion()` = PostgreSQL-`xmin`. Ausnahme
   `ShoppingItems.Version` (`long`, `IsConcurrencyToken()`): die Anwendung erhöht sie bei **jeder**
   Änderung selbst, weil die Konfliktregeln der Offline-Einkaufsliste sie brauchen (ADR-0005).
+  `xmin` nicht in einer LINQ-Projektion in `long` umwandeln (`Select(e => new Dto(…, e.Version))`):
+  PostgreSQL meldet `cannot cast type xid to bigint`. Erst laden, dann im Speicher abbilden.
 - Mengen als `…Value decimal(12,3)` + `…UnitCode` (16); Ablaufdaten als `DateOnly`.
 
 ## Haushaltstrennung und Filter
@@ -84,6 +86,11 @@ Regeln für Stores und Dienste:
   Wer die Elternzeile löscht, lädt die betroffenen Kinder vorher und ändert bzw. löscht sie über den
   Context (dann schreibt EF Core die Änderung selbst und der Interceptor sieht sie), oder archiviert
   statt zu löschen.
+- **Explizite Transaktion mit Zeilensperren** (`FOR UPDATE`, `ExecuteUpdate`) vor dem Speichern
+  synchronisierter Entitäten: zuerst `PostgresLocks.LockHouseholdChangeLogAsync(transaction.GetDbTransaction(), …)`
+  nehmen. Implizite Speichervorgänge nehmen diese Sperre zuerst und warten dann auf Zeilen
+  (Fremdschlüsselprüfung); wer umgekehrt sperrt, erzeugt eine Verklemmung (40P01 → 500). Die Sperre
+  ist wiedereintrittsfähig, der Interceptor darf sie danach erneut nehmen.
 - Eigene Savepoints: wird auf einen Savepoint zurückgerollt, meldet der Commit trotzdem die
   Änderungen danach (die Sequenzen fehlen dann im Protokoll). Clients laden ohnehin über das
   Protokoll nach; trotzdem keine eigenen Savepoints verwenden.

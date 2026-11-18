@@ -106,6 +106,26 @@ public sealed class ShoppingListEndpointTests(PostgresContainerFixture postgres)
         api.CountAsync<ChangeLogEntry>(e => e.EntityId == itemId && e.EntityType == SyncEntityTypes.ShoppingItem && e.Deleted);
 
     [Fact]
+    public async Task DeleteList_WhileEntriesAreAdded_NeitherFailsNorLeavesEntriesBehind()
+    {
+        await using var api = await ShoppingApi.StartAsync(postgres);
+        var list = await api.CreateListAsync("Market");
+        var url = $"{api.Base}/lists/{list.Id}/items";
+
+        var adds = Enumerable.Range(0, 8).Select(async i =>
+        {
+            using var response = await api.Owner.PostAsync(url, new CreateShoppingItemRequest(null, null, $"Item {i}", null, null, null));
+            return response.StatusCode;
+        }).ToList();
+        using var delete = await ShoppingApi.SendAsync<object>(api.Owner, HttpMethod.Delete, $"{api.Base}/lists/{list.Id}", null, "*");
+        var statuses = await Task.WhenAll(adds);
+
+        Assert.Equal(HttpStatusCode.NoContent, delete.StatusCode);
+        Assert.All(statuses, s => Assert.Contains(s, new[] { HttpStatusCode.Created, HttpStatusCode.NotFound }));
+        Assert.Equal(0, await api.CountAsync<ShoppingItem>(i => i.ListId == list.Id));
+    }
+
+    [Fact]
     public async Task CreateList_InvalidInput_Returns400WithFieldErrors()
     {
         await using var api = await ShoppingApi.StartAsync(postgres);

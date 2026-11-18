@@ -3,6 +3,7 @@ using System.Text.Json;
 using FoodAssistant.Application.Activity;
 using FoodAssistant.Application.Shopping;
 using FoodAssistant.Contracts.Common;
+using FoodAssistant.Contracts.Households;
 using FoodAssistant.Contracts.Shopping;
 using FoodAssistant.Infrastructure.Activity;
 using FoodAssistant.Server.Tests.Auth;
@@ -146,6 +147,24 @@ public sealed class ShoppingConflictEndpointTests(PostgresContainerFixture postg
         Assert.Equal(ShoppingConflictOutcomeDto.BothDeleted, both.Outcome);
         Assert.Equal((ShoppingConflictOutcomeDto.NoConflict, 2L), (again.Outcome, again.Item.Version));
         Assert.Empty(await api.ItemsAsync(list.Id));
+    }
+
+    [Fact]
+    public async Task Restricted_RevivesADeletedEntryOnlyByCheckingIt()
+    {
+        await using var api = await ShoppingApi.StartAsync(postgres);
+        var list = await api.DefaultListAsync();
+        var (kid, _) = await api.AddMemberAsync(HouseholdRole.Restricted, "kid");
+        using var _ = kid;
+        var stale = await api.AddTextAsync(list.Id, "Bread");
+        await api.DeleteOkAsync(api.Owner, stale.Id, stale.Version);
+
+        using var revive = await api.ChangeAsync(kid, ShoppingApi.ToChange(stale), stale.Id);
+        var check = await api.ChangeOkAsync(kid, stale, c => c with { Checked = true });
+
+        await TestClient.AssertProblemAsync(revive, HttpStatusCode.Forbidden, ShoppingErrorCodes.RestrictedChange);
+        Assert.Equal(ShoppingConflictOutcomeDto.CheckedWinsOverDelete, check.Outcome);
+        Assert.True(Assert.Single(await api.ItemsAsync(list.Id)).Checked);
     }
 
     [Fact]

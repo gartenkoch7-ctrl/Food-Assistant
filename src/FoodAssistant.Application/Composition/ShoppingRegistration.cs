@@ -1,7 +1,6 @@
 using FoodAssistant.Application.Shopping;
 using FoodAssistant.Application.Stores;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace FoodAssistant.Application.Composition;
 
@@ -14,7 +13,8 @@ public static class ShoppingRegistration
         services.AddScoped<ShoppingListService>();
         services.AddScoped<ShoppingItemService>();
         services.AddScoped<ShoppingItemChangeService>();
-        services.TryAddScoped<ISectionOrderLearning, NoSectionOrderLearning>();
+        services.AddScoped<StoreService>();
+        services.AddScoped<ISectionOrderLearning, SectionOrderLearning>();
         return services;
     }
 }

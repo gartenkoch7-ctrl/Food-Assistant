@@ -88,9 +88,11 @@ public sealed class ShoppingItemService(
         }
 
         var normalized = item with { Text = item.Text.Trim(), Note = ShoppingValidation.NormalizeNote(item.Note) };
-        var (added, created) = await InsertAsync(listId, normalized, cancellationToken).ConfigureAwait(false);
+        var (added, created, listGone) = await InsertAsync(listId, normalized, cancellationToken).ConfigureAwait(false);
         activity?.SetTag("foodassistant.outcome", created ? nameof(OperationStatus.Created) : nameof(OperationStatus.Ok));
-        return added ?? throw new InvalidOperationException("The shopping item id is already used by another household.");
+        return added ?? throw new InvalidOperationException(listGone
+            ? "The shopping list was deleted meanwhile."
+            : "The shopping item id is already used by another household.");
     }
 
     /// <summary>Moves an entry to another list of the household (member and owner).</summary>
@@ -161,15 +163,18 @@ public sealed class ShoppingItemService(
             sectionKey,
             ShoppingItemOrigin.Manual,
             userId);
-        var (added, created) = await InsertAsync(listId, item, cancellationToken).ConfigureAwait(false);
-        return added is null ? OperationResult<ShoppingItemDto>.Conflict(ErrorCodes.Conflict)
-            : created ? OperationResult<ShoppingItemDto>.Created(added)
-            : OperationResult<ShoppingItemDto>.Ok(added);
+        var (added, created, listGone) = await InsertAsync(listId, item, cancellationToken).ConfigureAwait(false);
+        return added is not null
+            ? (created ? OperationResult<ShoppingItemDto>.Created(added) : OperationResult<ShoppingItemDto>.Ok(added))
+            : listGone
+                ? OperationResult<ShoppingItemDto>.NotFound(ShoppingErrorCodes.ListNotFound)
+                : OperationResult<ShoppingItemDto>.Conflict(ErrorCodes.Conflict);
     }
 
     // Inserts the entry. If a concurrent request inserted the same id first, returns that entry
-    // (not created); if the id belongs to another household, returns no entry.
-    private async Task<(ShoppingItemDto? Item, bool Created)> InsertAsync(
+    // (not created). Otherwise no entry: the list was deleted meanwhile, or the id belongs to
+    // another household.
+    private async Task<(ShoppingItemDto? Item, bool Created, bool ListGone)> InsertAsync(
         Guid listId,
         NewShoppingItem item,
         CancellationToken cancellationToken)
@@ -179,11 +184,15 @@ public sealed class ShoppingItemService(
         var added = await items.AddItemAsync(listId, item, ShoppingTime.Now(time), cancellationToken).ConfigureAwait(false);
         if (added is not null)
         {
-            return (ShoppingMapping.ToDto(added), true);
+            return (ShoppingMapping.ToDto(added), true, false);
         }
 
-        var raced = await items.GetItemAsync(item.Id, includeDeleted: true, cancellationToken).ConfigureAwait(false);
-        return (raced is null ? null : ShoppingMapping.ToDto(raced), false);
+        if (await items.GetItemAsync(item.Id, includeDeleted: true, cancellationToken).ConfigureAwait(false) is { } raced)
+        {
+            return (ShoppingMapping.ToDto(raced), false, false);
+        }
+
+        return (null, false, !await lists.ListExistsAsync(listId, cancellationToken).ConfigureAwait(false));
     }
 
     private async Task<OperationResult<ShoppingItemDto>?> TryMoveAsync(

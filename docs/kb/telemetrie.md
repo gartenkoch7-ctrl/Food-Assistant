@@ -110,6 +110,10 @@ Rest frei für weitere API-Konventionen.
 | `ShoppingListCreated` / 3401 | Log, Information | Einkauf | Einkaufsliste angelegt | `ListId` |
 | `ShoppingListDeleted` / 3402 | Log, Information | Einkauf | Einkaufsliste samt Einträgen gelöscht | `ListId` |
 | `RestrictedChangeDenied` / 3403 | Log, Information | Einkauf | Eingeschränktes Mitglied wollte mehr als abhaken → 403 `shopping.restricted_change` | – |
+| `StoreCreated` / 3450 | Log, Information | Läden | Laden angelegt | `StoreId` |
+| `StoreDeleted` / 3451 | Log, Information | Läden | Laden gelöscht (Listen verlieren den Laden) | `StoreId` |
+| `SectionOrderSet` / 3452 | Log, Information | Läden | Eigene Bereichsreihenfolge gespeichert | `StoreId` |
+| `SectionOrderReset` / 3453 | Log, Information | Läden | Zurück zur gelernten Reihenfolge | `StoreId` |
 | `BrowserCallUnavailable` / 4000 | Log, Debug | UI | Browser-Aufruf nicht verfügbar; nur Operationsname | `Operation`, Exception |
 | `NetworkError` / 4010 | Log, Debug | Client | API-Aufruf ohne Antwort fehlgeschlagen (auch Zeitüberschreitung des HttpClient); nur HTTP-Methode, nie Pfad/Query | `Method`, Exception |
 | `InvalidResponse` / 4011 | Log, Warning | Client | Erfolgsantwort der API mit unlesbarem JSON-Körper (z. B. HTML eines Proxys); nur HTTP-Methode, ohne Exception (Meldung kann Teile des Körpers zitieren) | `Method` |
@@ -138,6 +142,11 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.shopping.delete_list` | Einkauf | Einkaufsliste löschen | `foodassistant.outcome` |
 | `foodassistant.shopping.move_item` | Einkauf | Eintrag auf andere Liste verschieben | `foodassistant.outcome` |
 | `foodassistant.shopping.update_list` | Einkauf | Einkaufsliste ändern (auch Standardliste wechseln) | `foodassistant.outcome` |
+| `foodassistant.stores.create` | Läden | Laden anlegen | `foodassistant.outcome` |
+| `foodassistant.stores.delete` | Läden | Laden löschen | `foodassistant.outcome` |
+| `foodassistant.stores.reset_section_order` | Läden | Eigene Reihenfolge verwerfen | `foodassistant.outcome` |
+| `foodassistant.stores.set_section_order` | Läden | Eigene Reihenfolge setzen | `foodassistant.outcome` |
+| `foodassistant.stores.update` | Läden | Laden umbenennen | `foodassistant.outcome` |
 | HTTP-Anfragen | – | Kommen aus der ASP.NET-Core-Instrumentierung, nicht aus eigenen Abläufen | – |
 
 ## Messwerte

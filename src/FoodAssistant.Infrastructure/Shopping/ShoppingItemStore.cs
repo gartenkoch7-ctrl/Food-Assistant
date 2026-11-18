@@ -4,7 +4,6 @@ using FoodAssistant.Domain.Quantities;
 using FoodAssistant.Infrastructure.Catalog;
 using FoodAssistant.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace FoodAssistant.Infrastructure.Shopping;
 
@@ -72,7 +71,7 @@ internal sealed class ShoppingItemStore(AppDbContext db, IHouseholdContext house
         {
             await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
-        catch (DbUpdateException exception) when (IsKeyConflict(exception))
+        catch (DbUpdateException exception) when (ShoppingDbErrors.IsKeyConflict(exception))
         {
             // Id taken by a concurrent insert (or another household), or the list was deleted meanwhile.
             db.ChangeTracker.Clear();
@@ -122,7 +121,7 @@ internal sealed class ShoppingItemStore(AppDbContext db, IHouseholdContext house
             db.ChangeTracker.Clear();
             return false;
         }
-        catch (DbUpdateException exception) when (IsKeyConflict(exception))
+        catch (DbUpdateException exception) when (ShoppingDbErrors.IsKeyConflict(exception))
         {
             // Moved to a list that was deleted meanwhile; the retry reports it as not found.
             db.ChangeTracker.Clear();
@@ -146,10 +145,6 @@ internal sealed class ShoppingItemStore(AppDbContext db, IHouseholdContext house
             .ConfigureAwait(false);
         return product is null ? null : (product.Name, product.CategoryKey, product.SectionKey);
     }
-
-    private static bool IsKeyConflict(DbUpdateException exception) =>
-        PostgresErrors.IsUniqueViolation(exception)
-        || exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.ForeignKeyViolation };
 
     private static ShoppingItemRecord ToRecord(ShoppingItem item) => new(
         item.Id,
