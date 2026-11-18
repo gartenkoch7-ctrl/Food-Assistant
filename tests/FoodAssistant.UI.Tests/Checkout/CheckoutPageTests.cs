@@ -212,6 +212,23 @@ public sealed class CheckoutPageTests : CheckoutTestContext
     }
 
     [Fact]
+    public async Task LocationDeletedSinceLoading_ClearsItAndTheFreezerDate_ThenAsksForALocation()
+    {
+        var peas = AddEntry("Erbsen", Guid.CreateVersion7(), Freezer.Id, Today.AddDays(90), ExpiryKindDto.UseBy, fromRule: true);
+        var cut = RenderPage();
+        Catalog.Locations.Remove(Freezer);
+
+        await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
+        Assert.Contains("Lagerorte haben sich inzwischen geändert", cut.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain("16.02.2027", Row(cut, "Erbsen").TextContent, StringComparison.Ordinal);
+        await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
+
+        Assert.Empty(CheckoutClient.Completions);
+        Assert.Contains("Lagerort: Bitte ausfüllen.", Row(cut, "Erbsen").TextContent, StringComparison.Ordinal);
+        Assert.Equal(peas.ItemId, cut.FindComponent<FoodAssistant.UI.Checkout.CheckoutLineRow>().Instance.Line.ItemId);
+    }
+
+    [Fact]
     public async Task ProductArchivedMeanwhile_OffersThePickerAgain()
     {
         AddEntry("Butter", Guid.CreateVersion7(), Fridge.Id);

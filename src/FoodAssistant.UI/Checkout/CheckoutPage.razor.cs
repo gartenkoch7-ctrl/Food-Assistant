@@ -108,9 +108,12 @@ public sealed partial class CheckoutPage
         {
             var before = _locations.FirstOrDefault(l => l.Id == line.LocationId)?.Type;
             var after = current.FirstOrDefault(l => l.Id == line.LocationId)?.Type;
-            if (before is { } was && after is { } now && was != now)
+            if (before is { } was && after != was)
             {
-                line.MoveTo(line.LocationId, now == StorageTypeDto.Frozen, was == StorageTypeDto.Frozen);
+                // A deleted location leaves the line without one (the person picks again, the check before
+                // sending asks for it); its freezer dates go like on any move out of the freezer.
+                var now = after ?? StorageTypeDto.Ambient;
+                line.MoveTo(after is null ? null : line.LocationId, now == StorageTypeDto.Frozen, was == StorageTypeDto.Frozen);
                 changed = true;
             }
         }

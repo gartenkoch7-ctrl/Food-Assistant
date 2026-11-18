@@ -110,7 +110,8 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
   „1 Stück“ ohne Menge im Eintrag (`quantityFromEntry = false`) seine Standardeinheit und – solange der
   Nutzer keinen Ort gewählt hat – den ersten Ort vom Lagertyp seiner Kategorie. Meldet der Server `lines[i].productId` (Produkt inzwischen archiviert),
   bietet die Zeile wieder den `ProductPicker` an. Vor dem Senden liest die Seite die Lagerorte neu: Hat
-  einer seit dem Laden den Lagertyp gewechselt, werden die Zeilen dort „umgezogen“ (beim Wechsel zwischen
+  einer seit dem Laden den Lagertyp gewechselt (oder ist gelöscht – dann verliert die Zeile ihren Ort und
+  muss neu wählen), werden die Zeilen dort „umgezogen“ (beim Wechsel zwischen
   Gefrierort und anderem fallen nicht selbst eingetragene Daten weg) und erst angezeigt statt gesendet.
   Ein anderes Produkt in einer Zeile nimmt deren Vorschläge (letzter Kauf, Regeldatum, Standardeinheit
   bei nicht geänderter Standardmenge) nicht mit. Auf 409
