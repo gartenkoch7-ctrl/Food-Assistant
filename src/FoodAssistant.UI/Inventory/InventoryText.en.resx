@@ -13,4 +13,107 @@
   <data name="StatusOk" xml:space="preserve"><value>Good</value></data>
   <data name="StatusNoDate" xml:space="preserve"><value>No date</value></data>
   <data name="StatusDetailPrefix" xml:space="preserve"><value>{0}: </value></data>
+  <data name="FilterLabel" xml:space="preserve"><value>Filter</value></data>
+  <data name="FilterAll" xml:space="preserve"><value>All</value></data>
+  <data name="FilterSoon" xml:space="preserve"><value>Expiring soon</value></data>
+  <data name="FilterExpired" xml:space="preserve"><value>Expired</value></data>
+  <data name="FilterLocation" xml:space="preserve"><value>Location</value></data>
+  <data name="Search" xml:space="preserve"><value>Search stock</value></data>
+  <data name="AddBatch" xml:space="preserve"><value>Add stock</value></data>
+  <data name="AddTitle" xml:space="preserve"><value>Add stock</value></data>
+  <data name="ListLabel" xml:space="preserve"><value>Stock</value></data>
+  <data name="BatchCountOne" xml:space="preserve"><value>1 batch</value></data>
+  <data name="BatchCountMany" xml:space="preserve"><value>{0} batches</value></data>
+  <data name="ProductOpen" xml:space="preserve"><value>Batches of {0}</value></data>
+  <data name="NoResultsHeading" xml:space="preserve"><value>Nothing found</value></data>
+  <data name="NoResultsText" xml:space="preserve"><value>Change the filter or the search.</value></data>
+  <data name="LoadMore" xml:space="preserve"><value>Load more</value></data>
+  <data name="LiveChanged" xml:space="preserve"><value>Someone else changed the stock.</value></data>
+  <data name="ExpiryNoDate" xml:space="preserve"><value>no date</value></data>
+  <data name="ExpiredYesterday" xml:space="preserve"><value>expired yesterday</value></data>
+  <data name="ExpiredDays" xml:space="preserve"><value>expired {0} days ago</value></data>
+  <data name="ExpiresToday" xml:space="preserve"><value>today</value></data>
+  <data name="ExpiresTomorrow" xml:space="preserve"><value>tomorrow</value></data>
+  <data name="ExpiresInDays" xml:space="preserve"><value>{0} days left</value></data>
+  <data name="ExpiresUntil" xml:space="preserve"><value>until {0}</value></data>
+  <data name="ShortDateFormat" xml:space="preserve"><value>M/d</value></data>
+  <data name="HintBestBeforeExpired" xml:space="preserve"><value>Best-before date passed – often still fine. Smell and look before you throw it away.</value></data>
+  <data name="HintUseByExpired" xml:space="preserve"><value>Use-by date passed – do not eat it any more.</value></data>
+  <data name="Kind.BestBefore" xml:space="preserve"><value>Best before</value></data>
+  <data name="Kind.UseBy" xml:space="preserve"><value>Use by</value></data>
+  <data name="State.Sealed" xml:space="preserve"><value>sealed</value></data>
+  <data name="State.Opened" xml:space="preserve"><value>opened</value></data>
+  <data name="State.Frozen" xml:space="preserve"><value>frozen</value></data>
+  <data name="State.Thawed" xml:space="preserve"><value>thawed</value></data>
+  <data name="State.Leftover" xml:space="preserve"><value>leftover</value></data>
+  <data name="BatchActions" xml:space="preserve"><value>Actions for {0}</value></data>
+  <data name="ActionUsedUp" xml:space="preserve"><value>Used up</value></data>
+  <data name="ActionPartial" xml:space="preserve"><value>Partly …</value></data>
+  <data name="ActionDiscard" xml:space="preserve"><value>Thrown away …</value></data>
+  <data name="ActionOpen" xml:space="preserve"><value>Opened</value></data>
+  <data name="ActionMove" xml:space="preserve"><value>Move …</value></data>
+  <data name="ActionCorrect" xml:space="preserve"><value>Correct …</value></data>
+  <data name="ActionLeftover" xml:space="preserve"><value>Add leftover …</value></data>
+  <data name="Done.Added" xml:space="preserve"><value>Added</value></data>
+  <data name="Done.UsedUp" xml:space="preserve"><value>Marked as used up</value></data>
+  <data name="Done.Partial" xml:space="preserve"><value>Use saved</value></data>
+  <data name="Done.Discarded" xml:space="preserve"><value>Marked as thrown away</value></data>
+  <data name="Done.Opened" xml:space="preserve"><value>Marked as opened</value></data>
+  <data name="Done.Moved" xml:space="preserve"><value>Moved</value></data>
+  <data name="Done.Corrected" xml:space="preserve"><value>Corrected</value></data>
+  <data name="Done.Leftover" xml:space="preserve"><value>Leftover added</value></data>
+  <data name="SheetNoBatches" xml:space="preserve"><value>No batches left.</value></data>
+  <data name="Close" xml:space="preserve"><value>Close</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Product</value></data>
+  <data name="FieldLocation" xml:space="preserve"><value>Location</value></data>
+  <data name="FieldQuantity" xml:space="preserve"><value>Amount</value></data>
+  <data name="FieldQuantityOptional" xml:space="preserve"><value>Amount (empty = all)</value></data>
+  <data name="FieldDate" xml:space="preserve"><value>Expiry date</value></data>
+  <data name="FieldKind" xml:space="preserve"><value>Kind of date</value></data>
+  <data name="FieldReason" xml:space="preserve"><value>Reason</value></data>
+  <data name="SelfFrozen" xml:space="preserve"><value>Frozen at home</value></data>
+  <data name="FrozenAtHomeHint" xml:space="preserve"><value>Counts as frozen at home: the date comes from the "frozen" rule, starting today.</value></data>
+  <data name="BoughtFrozenHint" xml:space="preserve"><value>Counts as bought frozen food: the date on the package applies.</value></data>
+  <data name="PartialTitle" xml:space="preserve"><value>Partly used</value></data>
+  <data name="DiscardTitle" xml:space="preserve"><value>Thrown away</value></data>
+  <data name="Reason.Expired" xml:space="preserve"><value>expired</value></data>
+  <data name="Reason.Spoiled" xml:space="preserve"><value>spoiled</value></data>
+  <data name="Reason.DislikedTaste" xml:space="preserve"><value>did not taste good</value></data>
+  <data name="Reason.TooMuchCooked" xml:space="preserve"><value>cooked too much</value></data>
+  <data name="Reason.Other" xml:space="preserve"><value>other</value></data>
+  <data name="MoveTitle" xml:space="preserve"><value>Move</value></data>
+  <data name="MoveConfirm" xml:space="preserve"><value>Move</value></data>
+  <data name="MoveWillFreeze" xml:space="preserve"><value>The batch will be frozen; its date then comes from the "frozen" rule.</value></data>
+  <data name="MoveWillThaw" xml:space="preserve"><value>The batch will be thawed; thawed food keeps only briefly.</value></data>
+  <data name="MoveRefreeze" xml:space="preserve"><value>Thawed food must not be frozen again.</value></data>
+  <data name="CorrectTitle" xml:space="preserve"><value>Correct</value></data>
+  <data name="CorrectDateLocked" xml:space="preserve"><value>The date is locked: after opening, freezing or thawing it comes from the shelf-life rule. You can only correct the amount.</value></data>
+  <data name="LeftoverTitle" xml:space="preserve"><value>Add leftover</value></data>
+  <data name="LeftoverHint" xml:space="preserve"><value>The expiry date comes from the "leftover" rule for the location.</value></data>
+  <data name="BatchTitle" xml:space="preserve"><value>Batch</value></data>
+  <data name="BatchGoneHeading" xml:space="preserve"><value>This batch no longer exists</value></data>
+  <data name="BatchGoneText" xml:space="preserve"><value>It was used up, thrown away or belongs to another household.</value></data>
+  <data name="FieldError.required" xml:space="preserve"><value>Please fill in.</value></data>
+  <data name="FieldError.invalid" xml:space="preserve"><value>Invalid value.</value></data>
+  <data name="FieldError.invalid_unit" xml:space="preserve"><value>Unknown unit.</value></data>
+  <data name="FieldError.must_be_positive" xml:space="preserve"><value>The amount must be greater than 0.</value></data>
+  <data name="FieldError.must_be_none" xml:space="preserve"><value>Without a date there is no kind.</value></data>
+  <data name="FieldError.must_be_less_than_remaining" xml:space="preserve"><value>Partly means: less than what is left.</value></data>
+  <data name="FieldError.exceeds_remaining" xml:space="preserve"><value>It cannot be more than what is left.</value></data>
+  <data name="FieldError.must_be_empty" xml:space="preserve"><value>Do not enter an amount here.</value></data>
+  <data name="FieldError.too_long" xml:space="preserve"><value>Too long.</value></data>
+  <data name="Error.inventory.batch_not_found" xml:space="preserve"><value>This batch no longer exists.</value></data>
+  <data name="Error.inventory.activity_not_found" xml:space="preserve"><value>This action no longer exists.</value></data>
+  <data name="Error.inventory.batch_exists" xml:space="preserve"><value>This batch has already been added.</value></data>
+  <data name="Error.inventory.validation_failed" xml:space="preserve"><value>Please check the marked fields.</value></data>
+  <data name="Error.inventory.invalid_state" xml:space="preserve"><value>That is not possible in the batch's current state.</value></data>
+  <data name="Error.inventory.refreeze_not_allowed" xml:space="preserve"><value>Thawed food must not be frozen again.</value></data>
+  <data name="Error.inventory.date_locked" xml:space="preserve"><value>The date can only be changed while the batch is sealed.</value></data>
+  <data name="Error.inventory.not_enough_stock" xml:space="preserve"><value>There is not enough stock.</value></data>
+  <data name="Error.inventory.undo_not_possible" xml:space="preserve"><value>Undo is no longer possible.</value></data>
+  <data name="Error.inventory.unit_mismatch" xml:space="preserve"><value>The unit does not fit the batch.</value></data>
+  <data name="Error.catalog.product_not_found" xml:space="preserve"><value>This product no longer exists.</value></data>
+  <data name="Error.catalog.location_not_found" xml:space="preserve"><value>This location no longer exists.</value></data>
+  <data name="LeftoverOtherProduct" xml:space="preserve"><value>Choose another product</value></data>
+  <data name="Undone" xml:space="preserve"><value>Undone</value></data>
 </root>

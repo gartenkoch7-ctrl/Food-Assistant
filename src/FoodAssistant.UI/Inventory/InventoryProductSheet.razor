@@ -1,0 +1,126 @@
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Inventory
+@using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Inventory
+@inject IInventoryClient Inventory
+@inject SessionState Session
+@inject IBrowserInterop Browser
+@inject IStringLocalizer<InventoryText> T
+@inject IStringLocalizer<CommonText> Common
+
+@* The batches of one product with their actions. Undo is offered inside the sheet: the dialog's focus trap keeps the keyboard away from snackbars. *@
+<MudDialog>
+    <TitleContent>@(_product?.Product.Name ?? Product.Name)</TitleContent>
+    <DialogContent>
+        <ApiErrorAlert Error="_error" FeatureText="T" />
+        @if (_statusText is not null)
+        {
+            <div id="@StatusId" tabindex="-1" class="d-flex flex-wrap align-center gap-2 mb-3" role="status">
+                <span>@_statusText</span>
+                @if (_undoActivity is not null)
+                {
+                    <MudButton id="@UndoButtonId" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Primary" Disabled="_undoing"
+                               OnClick="UndoAsync">@Common["Undo"]</MudButton>
+                }
+            </div>
+        }
+        @if (_product is null && _error is null)
+        {
+            <LoadingState />
+        }
+        else if (_product is { Batches.Count: 0 })
+        {
+            <p>@T["SheetNoBatches"]</p>
+        }
+        else if (_product is not null)
+        {
+            <div class="d-flex flex-column gap-4">
+                @foreach (var batch in _product.Batches)
+                {
+                    <BatchCard @key="batch.Id" Batch="batch" Product="_product.Product" Locations="Locations"
+                               Changed="ReloadAsync" OnDone="OnDoneAsync" />
+                }
+            </div>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => MudDialog.Close(DialogResult.Ok(true))">@T["Close"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private const string UndoButtonId = "fa-sheet-undo";
+    private const string StatusId = "fa-sheet-status";
+
+    private InventoryProductDto? _product;
+    private ApiError? _error;
+    private string? _statusText;
+    private Guid? _undoActivity;
+    private string? _focusTarget;
+    private bool _undoing;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public ProductSummaryDto Product { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<StorageLocationDto> Locations { get; set; } = [];
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    // The acted-on card may disappear (used up), and after an undo the button goes: focus moves to the
+    // undo button or the status line, which also tell what happened.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusTarget is { } target)
+        {
+            _focusTarget = null;
+            await Browser.FocusElementAsync(target);
+        }
+    }
+
+    private Task OnDoneAsync(string message, Guid activityId)
+    {
+        _statusText = message;
+        _undoActivity = activityId;
+        _focusTarget = UndoButtonId;
+        return Task.CompletedTask;
+    }
+
+    private async Task UndoAsync()
+    {
+        if (_undoActivity is not { } activityId || Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        _undoing = true;
+        var result = await Inventory.UndoAsync(household, activityId, CancellationToken.None);
+        _undoing = false;
+        _undoActivity = null;
+        _statusText = result.IsSuccess ? T["Undone"].Value : null;
+        _focusTarget = result.IsSuccess ? StatusId : null;
+        await LoadAsync();
+        _error = result.Error ?? _error;
+    }
+
+    private async Task ReloadAsync()
+    {
+        await LoadAsync();
+        StateHasChanged();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        var result = await Inventory.GetProductAsync(household, Product.Id, CancellationToken.None);
+        _error = result.Error;
+        _product = result.Value ?? _product;
+    }
+}
