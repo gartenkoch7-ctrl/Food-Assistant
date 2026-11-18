@@ -2,8 +2,10 @@ using System.Globalization;
 using Bunit;
 using FoodAssistant.Client.Accounts;
 using FoodAssistant.Client.Catalog;
+using FoodAssistant.Client.FoodFacts;
 using FoodAssistant.Client.Http;
 using FoodAssistant.Client.Inventory;
+using FoodAssistant.Client.Scan;
 using FoodAssistant.Client.Sync;
 using FoodAssistant.Contracts.Households;
 using FoodAssistant.UI.Common;
@@ -21,6 +23,10 @@ namespace FoodAssistant.UI.Tests.Support;
 /// </summary>
 public abstract class UiTestContext : BunitContext
 {
+    // The 1 s default is too short when the whole solution runs in parallel (debounced searches,
+    // MudBlazor popovers); waits still return as soon as the assertion holds.
+    static UiTestContext() => DefaultWaitTimeout = TimeSpan.FromSeconds(10);
+
     protected UiTestContext(string culture = "de", bool signedIn = true, HouseholdRole role = HouseholdRole.Member)
     {
         UseCulture(culture);
@@ -39,6 +45,10 @@ public abstract class UiTestContext : BunitContext
         Inventory = new FakeInventoryClient();
         Services.AddSingleton<IInventoryClient>(Inventory);
         Services.AddSingleton<ILiveUpdates>(Live);
+        FoodFacts = new FakeFoodFactsClient();
+        Scanner = new FakeBarcodeScanner();
+        Services.AddSingleton<IFoodFactsClient>(FoodFacts);
+        Services.AddSingleton<IBarcodeScanner>(Scanner);
 
         // Built by hand (not resolved) so tests can still register more services before the first render.
         // The fakes answer synchronously, so loading does not block.
@@ -61,6 +71,10 @@ public abstract class UiTestContext : BunitContext
     protected FakeInventoryClient Inventory { get; }
 
     protected FakeLiveUpdates Live { get; }
+
+    protected FakeFoodFactsClient FoodFacts { get; }
+
+    protected FakeBarcodeScanner Scanner { get; }
 
     protected SessionState Session { get; }
 

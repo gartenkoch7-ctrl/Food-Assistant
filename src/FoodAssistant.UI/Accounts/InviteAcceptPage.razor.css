@@ -1,0 +1,15 @@
+.fa-invite-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fa-space-4);
+    max-width: 28rem;
+    margin-top: var(--fa-space-4);
+}
+
+.fa-invite-join {
+    max-width: 28rem;
+}
+
+.fa-invite-login {
+    margin-top: var(--fa-space-6);
+}

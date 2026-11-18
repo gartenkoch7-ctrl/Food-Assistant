@@ -15,6 +15,7 @@ als Erstes braucht, und trägt sie hier ein. Grundsatzentscheidungen stehen in [
 | architektur.md | Schichten und Projekte im Detail | offen |
 | [datenmodell.md](datenmodell.md) | Entitäten, Speicherung, Migrationen, Änderungsprotokoll, Store-Muster | angelegt |
 | [vorrat-und-haltbarkeit.md](vorrat-und-haltbarkeit.md) | Bestand, MHD/Verbrauchsdatum, Erinnerungstexte | angelegt |
+| [haltbarkeitsregeln.md](haltbarkeitsregeln.md) | Mitgelieferte Standard-Haltbarkeitsregeln: Werte, Quellen, Auslegungen, Freigabe | angelegt |
 | [einkauf.md](einkauf.md) | Einkaufslisten, Nachkauf-Logik | angelegt |
 | export-schema.md | JSON-Export/-Import eines Haushalts | offen |
 | testumgebung.md | Testen, Testcontainers, Geräte | offen |

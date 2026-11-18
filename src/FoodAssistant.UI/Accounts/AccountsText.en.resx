@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="FieldDisplayName" xml:space="preserve"><value>Display name</value></data>
+  <data name="FieldUserName" xml:space="preserve"><value>User name</value></data>
+  <data name="FieldPassword" xml:space="preserve"><value>Password</value></data>
+  <data name="FieldPasswordRepeat" xml:space="preserve"><value>Repeat password</value></data>
+  <data name="PasswordHint" xml:space="preserve"><value>At least 10 characters.</value></data>
+  <data name="FieldHouseholdName" xml:space="preserve"><value>Household name</value></data>
+  <data name="FieldTimeZone" xml:space="preserve"><value>Time zone</value></data>
+  <data name="TimeZoneHint" xml:space="preserve"><value>For example Europe/Berlin. Expiry dates apply in this time zone.</value></data>
+  <data name="FieldError.required" xml:space="preserve"><value>Please fill this in.</value></data>
+  <data name="FieldError.too_long" xml:space="preserve"><value>The text is too long.</value></data>
+  <data name="FieldError.password_too_short" xml:space="preserve"><value>The password needs at least 10 characters.</value></data>
+  <data name="FieldError.password_mismatch" xml:space="preserve"><value>The passwords do not match.</value></data>
+  <data name="FieldError.invalid_time_zone" xml:space="preserve"><value>Unknown time zone. Use a value like Europe/Berlin.</value></data>
+  <data name="FieldError.invalid_user_name" xml:space="preserve"><value>The user name contains invalid characters.</value></data>
+  <data name="FieldError.out_of_range" xml:space="preserve"><value>The value is outside the allowed range.</value></data>
+  <data name="FieldError.invalid" xml:space="preserve"><value>Invalid input.</value></data>
+  <data name="Error.accounts.validation_failed" xml:space="preserve"><value>Please check the marked fields.</value></data>
+  <data name="Error.accounts.username_taken" xml:space="preserve"><value>This user name is already taken.</value></data>
+  <data name="Error.accounts.setup_already_done" xml:space="preserve"><value>Setup is already complete. Sign in with your account.</value></data>
+  <data name="Error.common.rate_limited" xml:space="preserve"><value>Too many attempts. Please wait a moment.</value></data>
+  <data name="Error.invitations.invalid_or_expired" xml:space="preserve"><value>The invitation is invalid, expired, revoked or already used. Ask the owner of the household for a new one.</value></data>
+  <data name="Error.invitations.already_member" xml:space="preserve"><value>You are already a member of this household.</value></data>
+  <data name="Error.invitations.already_accepted" xml:space="preserve"><value>The invitation was already accepted.</value></data>
+  <data name="Error.invitations.not_found" xml:space="preserve"><value>This invitation no longer exists.</value></data>
+  <data name="Error.households.validation_failed" xml:space="preserve"><value>Please check the marked fields.</value></data>
+  <data name="Error.households.last_owner" xml:space="preserve"><value>The household needs at least one owner. Make someone else an owner first.</value></data>
+  <data name="Error.households.member_not_found" xml:space="preserve"><value>This member no longer exists.</value></data>
+  <data name="Error.households.forbidden" xml:space="preserve"><value>You are not allowed to do this.</value></data>
+  <data name="Error.households.not_found" xml:space="preserve"><value>The household was not found.</value></data>
+  <data name="Role.owner" xml:space="preserve"><value>Owner</value></data>
+  <data name="Role.member" xml:space="preserve"><value>Member</value></data>
+  <data name="Role.restricted" xml:space="preserve"><value>Restricted</value></data>
+  <data name="RoleHint.owner" xml:space="preserve"><value>May do everything, including managing invitations and roles.</value></data>
+  <data name="RoleHint.member" xml:space="preserve"><value>May do everything except managing members and the household.</value></data>
+  <data name="RoleHint.restricted" xml:space="preserve"><value>Sees inventory and shopping list, may check off and add shopping items.</value></data>
+  <data name="SetupTitle" xml:space="preserve"><value>Set up your household</value></data>
+  <data name="SetupIntro" xml:space="preserve"><value>Create the first account. It manages the server and owns your household.</value></data>
+  <data name="SetupSubmit" xml:space="preserve"><value>Set up</value></data>
+  <data name="SetupBusy" xml:space="preserve"><value>Setting up …</value></data>
+  <data name="InviteTitle" xml:space="preserve"><value>Accept invitation</value></data>
+  <data name="InviteIntro" xml:space="preserve"><value>You have been invited to a household.</value></data>
+  <data name="InviteSignedInAs" xml:space="preserve"><value>You are signed in as {0}. Join with this account?</value></data>
+  <data name="InviteJoin" xml:space="preserve"><value>Join household</value></data>
+  <data name="InviteJoinBusy" xml:space="preserve"><value>Joining …</value></data>
+  <data name="InviteNewAccountHeading" xml:space="preserve"><value>Create a new account</value></data>
+  <data name="InviteCreateAndJoin" xml:space="preserve"><value>Create account and join</value></data>
+  <data name="InviteHaveAccount" xml:space="preserve"><value>I have an account – sign in</value></data>
+  <data name="InviteMissingHeading" xml:space="preserve"><value>Invitation link incomplete</value></data>
+  <data name="InviteMissingText" xml:space="preserve"><value>This link is missing the invitation code. Open the link from the invitation again.</value></data>
+  <data name="HouseholdTitle" xml:space="preserve"><value>Household</value></data>
+  <data name="SwitcherHeading" xml:space="preserve"><value>Switch household</value></data>
+  <data name="SwitcherLegend" xml:space="preserve"><value>Active household</value></data>
+  <data name="SwitcherApply" xml:space="preserve"><value>Switch</value></data>
+  <data name="SwitcherSwitched" xml:space="preserve"><value>Switched to household {0}.</value></data>
+  <data name="SettingsHeading" xml:space="preserve"><value>Settings</value></data>
+  <data name="SettingsLeadDays" xml:space="preserve"><value>Lead time for "expires soon" (days)</value></data>
+  <data name="SettingsLeadDaysHint" xml:space="preserve"><value>Stock counts as "expires soon" this many days before its expiry date (0 to 14).</value></data>
+  <data name="SettingsSaved" xml:space="preserve"><value>Settings saved.</value></data>
+  <data name="SettingsReadOnly" xml:space="preserve"><value>Only owners can change the settings.</value></data>
+  <data name="MembersHeading" xml:space="preserve"><value>Members</value></data>
+  <data name="MemberYou" xml:space="preserve"><value>(you)</value></data>
+  <data name="MemberRoleLabel" xml:space="preserve"><value>Role of {0}</value></data>
+  <data name="MemberApplyRole" xml:space="preserve"><value>Apply role</value></data>
+  <data name="MemberApplyRoleLabel" xml:space="preserve"><value>Apply the new role for {0}</value></data>
+  <data name="MemberRemove" xml:space="preserve"><value>Remove</value></data>
+  <data name="MemberRemoveLabel" xml:space="preserve"><value>Remove {0}</value></data>
+  <data name="MemberRemoveAsk" xml:space="preserve"><value>Really remove {0} from the household?</value></data>
+  <data name="MemberRemoveConfirm" xml:space="preserve"><value>Yes, remove</value></data>
+  <data name="MemberRoleChanged" xml:space="preserve"><value>Role of {0} changed.</value></data>
+  <data name="MemberRemoved" xml:space="preserve"><value>{0} was removed.</value></data>
+  <data name="InvitationsHeading" xml:space="preserve"><value>Invitations</value></data>
+  <data name="InvitationRoleLegend" xml:space="preserve"><value>Role of the invited person</value></data>
+  <data name="InvitationCreate" xml:space="preserve"><value>Create invitation</value></data>
+  <data name="InvitationCreated" xml:space="preserve"><value>Invitation created.</value></data>
+  <data name="InvitationLinkLabel" xml:space="preserve"><value>Invitation link</value></data>
+  <data name="InvitationCopy" xml:space="preserve"><value>Copy link</value></data>
+  <data name="InvitationCopied" xml:space="preserve"><value>Link copied.</value></data>
+  <data name="InvitationCopyFailed" xml:space="preserve"><value>Copying is not possible. Select the link and copy it by hand.</value></data>
+  <data name="InvitationValidUntil" xml:space="preserve"><value>Valid until {0}. The link is shown only now.</value></data>
+  <data name="InvitationQrLabel" xml:space="preserve"><value>QR code with the invitation link. Without a camera use the link above it.</value></data>
+  <data name="InvitationListHeading" xml:space="preserve"><value>Previous invitations</value></data>
+  <data name="InvitationListEmpty" xml:space="preserve"><value>There are no invitations yet.</value></data>
+  <data name="InvitationRoleAndStatus" xml:space="preserve"><value>{0}, {1}, valid until {2}</value></data>
+  <data name="InvitationStatus.pending" xml:space="preserve"><value>open</value></data>
+  <data name="InvitationStatus.accepted" xml:space="preserve"><value>accepted</value></data>
+  <data name="InvitationStatus.revoked" xml:space="preserve"><value>revoked</value></data>
+  <data name="InvitationStatus.expired" xml:space="preserve"><value>expired</value></data>
+  <data name="InvitationRevoke" xml:space="preserve"><value>Revoke</value></data>
+  <data name="InvitationRevokeLabel" xml:space="preserve"><value>Revoke invitation: {0}</value></data>
+  <data name="InvitationRevoked" xml:space="preserve"><value>Invitation revoked.</value></data>
+</root>

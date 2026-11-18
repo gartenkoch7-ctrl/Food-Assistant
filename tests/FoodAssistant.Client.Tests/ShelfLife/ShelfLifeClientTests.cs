@@ -13,7 +13,7 @@ public sealed class ShelfLifeClientTests
     private static readonly Guid Product = Guid.Parse("018f0000-0000-7000-8000-000000000002");
 
     private const string RowJson =
-        """{"categoryKey":"dairy","storageType":"chilled","default":{"daysAfterOpening":3,"daysFrozen":null,"daysAfterThawing":null,"daysAsLeftover":null},"override":null,"effective":{"daysAfterOpening":3,"daysFrozen":null,"daysAfterThawing":null,"daysAsLeftover":null},"sourceKey":"bzfe"}""";
+        """{"categoryKey":"dairy","storageType":"chilled","default":{"daysAfterOpening":3,"daysFrozen":null,"daysAfterThawing":null,"daysAsLeftover":null},"override":null,"effective":{"daysAfterOpening":3,"daysFrozen":null,"daysAfterThawing":null,"daysAsLeftover":null},"defaultSources":{"daysAfterOpening":"bzfe","daysFrozen":null,"daysAfterThawing":null,"daysAsLeftover":null}}""";
 
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
@@ -34,7 +34,7 @@ public sealed class ShelfLifeClientTests
 
         Assert.Equal($"https://food.test/api/v1/households/{Household}/shelf-life/rules", handler.Requests[0].Uri.ToString());
         var row = Assert.Single(result.Value!);
-        Assert.Equal((StorageTypeDto.Chilled, 3, "bzfe"), (row.StorageType, row.Effective.DaysAfterOpening, row.SourceKey));
+        Assert.Equal((StorageTypeDto.Chilled, 3, "bzfe"), (row.StorageType, row.Effective.DaysAfterOpening, row.DefaultSources.DaysAfterOpening));
     }
 
     [Fact]

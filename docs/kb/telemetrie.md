@@ -89,12 +89,15 @@ Rest frei für weitere API-Konventionen.
 | `HttpsRequired` / 1115 | Log, Warning | Anmeldung | Antiforgery-Token über einfaches HTTP angefragt; Web-Anmeldung braucht HTTPS (Antwort 400 `accounts.https_required`) | – |
 | `HubJoinDenied` / 1300 | Log, Information | Sync | Beitritt zur Live-Gruppe eines Haushalts abgelehnt: kein Mitglied (unbekannt oder fremd) | – |
 | `HubJoined` / 1301 | Log, Debug | Sync | Verbindung empfängt Live-Updates eines Haushalts | `HouseholdId` |
+| `ConnectionRevoked` / 1302 | Log, Information | Sync | Verbindung eines entfernten Mitglieds aus der Live-Gruppe des Haushalts genommen | `HouseholdId` |
+| `RevocationFailed` / 1303 | Log, Warning | Sync | Verbindung eines entfernten Mitglieds konnte nicht aus der Gruppe genommen werden; die Entfernung bleibt gültig | `HouseholdId`, Exception |
 | `DatabaseUpToDate` / 2000 | Log, Information | Persistenz | Datenbankschema ist aktuell | – |
 | `MigrationsStarting` / 2001 | Log, Information | Persistenz | Migrationen beginnen | `Count` |
 | `MigrationsApplied` / 2002 | Log, Information | Persistenz | Migrationen angewendet | `Count`, `ElapsedMilliseconds` |
 | `MigrationFailed` / 2003 | Log, Critical | Persistenz | Migration fehlgeschlagen; der Server stoppt | Exception |
 | `AccountCreationRefused` / 2020 | Log, Information | Konten | Konto nicht angelegt; nur Fehlercodes, keine Eingaben | `ErrorCodes` |
 | `InvitationRedemptionConflict` / 2021 | Log, Warning | Konten | Einladung parallel eingelöst; diese Einlösung zurückgerollt | `InvitationId` |
+| `FetchFailed` / 2450 | Log, Warning | Open Food Facts | Abruf bei Open Food Facts fehlgeschlagen (ohne Barcode und Antwortinhalt) | `Reason`: `throttled`, `timeout`, `network`, `invalid_response`, `http_<status>` |
 | `ChangeNotificationFailed` / 2200 | Log, Warning | Sync | Live-Update nach dem Commit nicht gesendet; die Speicherung bleibt gültig, Clients holen über das Änderungsprotokoll nach | `HouseholdId`, Exception |
 | `SetupCompleted` / 3000 | Log, Information | Konten | Ersteinrichtung abgeschlossen | `UserId`, `HouseholdId` |
 | `SetupRejected` / 3001 | Log, Warning | Konten | Ersteinrichtung abgelehnt, sie war bereits abgeschlossen | – |
@@ -119,6 +122,10 @@ Rest frei für weitere API-Konventionen.
 | `UndoApplied` / 3303 | Log, Information | Vorrat | Aktion rückgängig gemacht | `ActivityId` |
 | `UndoRejected` / 3304 | Log, Information | Vorrat | Rückgängig abgelehnt (409) | `Reason`: `already_undone`, `not_undoable`, `expired`, `invalid_payload`, `changed`, `concurrent` |
 | `StockHandlerFailed` / 3305 | Log, Warning | Vorrat | Ein `IStockChangedHandler` ist nach dem Speichern gescheitert; die Änderung bleibt gültig | Exception |
+| `LookupUnavailable` / 3350 | Log, Warning | Open Food Facts | Barcode-Abfrage nicht möglich und nichts im Cache; Antwort 503 (der Barcode wird nie geloggt) | – |
+| `ServedStale` / 3351 | Log, Information | Open Food Facts | Open Food Facts nicht erreichbar; abgelaufener Cache-Eintrag ausgeliefert | – |
+| `SettingsChanged` / 3026 | Log, Information | Haushalte | Haushaltseinstellungen geändert | `HouseholdId` |
+| `CameraUnavailable` / 4400 | Log, Information | Scan (UI) | Kamera-Scan im Browser nicht möglich (kein Zugriff, keine `BarcodeDetector`-API); nie ein gescannter Code | `Reason` (`NotStarted` oder .NET-Ausnahmetyp, z. B. `JSException`) |
 | `ShoppingConflictResolved` / 3400 | Log, Information | Einkauf | Konflikt eines Einkaufslisten-Eintrags nach ADR-0005 aufgelöst (Ergebnis ≠ `Created`/`NoConflict`) | `ItemId`, `Outcome` |
 | `ShoppingListCreated` / 3401 | Log, Information | Einkauf | Einkaufsliste angelegt | `ListId` |
 | `ShoppingListDeleted` / 3402 | Log, Information | Einkauf | Einkaufsliste samt Einträgen gelöscht | `ListId` |
@@ -130,7 +137,13 @@ Rest frei für weitere API-Konventionen.
 | `BrowserCallUnavailable` / 4000 | Log, Debug | UI | Browser-Aufruf nicht verfügbar; nur Operationsname | `Operation`, Exception |
 | `NetworkError` / 4010 | Log, Debug | Client | API-Aufruf ohne Antwort fehlgeschlagen (auch Zeitüberschreitung des HttpClient); nur HTTP-Methode, nie Pfad/Query | `Method`, Exception |
 | `InvalidResponse` / 4011 | Log, Warning | Client | Erfolgsantwort der API mit unlesbarem JSON-Körper (z. B. HTML eines Proxys); nur HTTP-Methode, ohne Exception (Meldung kann Teile des Körpers zitieren) | `Method` |
+| `LiveConnectionLost` / 4100 | Log, Information | Client – Sync | Live-Verbindung abgebrochen, Wiederverbindung läuft | – |
+| `LiveReconnected` / 4101 | Log, Information | Client – Sync | Live-Verbindung wiederhergestellt, Haushalt neu beigetreten | – |
+| `LiveJoinFailed` / 4102 | Log, Warning | Client – Sync | Beitritt zu den Live-Updates abgelehnt (kein Mitglied); kein Wiederholen | `ErrorCode` |
+| `LiveConnectFailed` / 4103 | Log, Debug | Client – Sync | Verbindungsversuch fehlgeschlagen, neuer Versuch nach 30 s | Exception |
+| `LiveHandlerFailed` / 4104 | Log, Warning | Client – Sync | Ein Seiten-Handler von `Changed`/`Resynced`/`StateChanged` hat geworfen | Exception |
 | `ExpiryReloadFailed` / 4200 | Log, Warning | UI – Sitzung | Neuladen der Sitzung nach einer 401-Antwort eines Datenaufrufs ist mit einer Exception gescheitert (das Neuladen läuft ohne Aufrufer; höchstens einmal je 30 s) | Exception |
+| `ClipboardUnavailable` / 4210 | Log, Debug | UI – Konten | Einladungslink konnte nicht in die Zwischenablage kopiert werden (Berechtigung, kein sicherer Kontext); nur die Exception, nie Link oder Token | Exception |
 
 ## Abläufe (Activities)
 
@@ -148,6 +161,8 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.catalog.delete_location` | Katalog | Lagerort löschen | `foodassistant.outcome` |
 | `foodassistant.catalog.update_location` | Katalog | Lagerort ändern | `foodassistant.outcome` |
 | `foodassistant.catalog.update_product` | Katalog | Produkt ändern | `foodassistant.outcome` |
+| `foodassistant.food_facts.fetch` | Open Food Facts | Abruf der Produktdaten (Span-Art Client; nur Server-Aufruf, nur Barcode im Pfad, der in `url.full` gekürzt wird) | `foodassistant.outcome` (`found`, `not_found`, `timeout`, `network`, `invalid_response`, `http_<status>`), `http.response.status_code` |
+| `foodassistant.food_facts.lookup` | Open Food Facts | Barcode-Abfrage mit Cache | `foodassistant.cache` (`hit`, `miss`, `stale`), `foodassistant.outcome` (`found`, `not_found`, `unavailable`) |
 | `foodassistant.households.change_member_role` | Haushalte | Mitgliedsrolle ändern | `foodassistant.outcome` |
 | `foodassistant.households.create` | Haushalte | Haushalt anlegen | `foodassistant.household_id` |
 | `foodassistant.households.create_invitation` | Haushalte | Einladung erstellen | – |
@@ -161,6 +176,7 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.inventory.move_batch` | Vorrat | Charge verschieben (ggf. einfrieren/auftauen) | `foodassistant.outcome` |
 | `foodassistant.inventory.open_batch` | Vorrat | Charge öffnen | `foodassistant.outcome` |
 | `foodassistant.inventory.undo` | Vorrat | Aktion rückgängig machen | `foodassistant.outcome`, `foodassistant.batches` |
+| `foodassistant.households.update_settings` | Haushalte | Haushaltseinstellungen ändern | `foodassistant.outcome` |
 | `foodassistant.persistence.migrate` | Persistenz | Datenbank-Migration | `foodassistant.migrations.pending` |
 | `foodassistant.shelf_life.reset_override` | Haltbarkeit | Eigene Haltbarkeitswerte zurücksetzen | `foodassistant.scope` (`category`/`product`), `foodassistant.outcome` (`ok`, `not_found`) |
 | `foodassistant.shelf_life.set_override` | Haltbarkeit | Eigene Haltbarkeitswerte speichern | `foodassistant.scope`, `foodassistant.outcome` (`ok`, `invalid`, `not_found`) |
@@ -187,5 +203,7 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.catalog.products.created` | Counter `{product}` | Katalog | Angelegte Produkte | `source`: `manual`, `food_facts` |
 | `foodassistant.inventory.batches.added` | Counter `{batch}` | Vorrat | Eingebuchte Chargen (auch Reste) | `origin`: `Manual`, `Scanned`, `Purchase`, `Import`, `Leftover` |
 | `foodassistant.inventory.consumptions` | Counter `{event}` | Vorrat | Verbrauchsereignisse (je Charge) | `kind`: `UsedUp`, `Partial`, `Discarded`; `reason`: Grund oder `none` |
+| `foodassistant.food_facts.lookups` | Counter `{lookup}` | Open Food Facts | Barcode-Abfragen nach Cache-Zustand und Ergebnis | `cache`: `hit`, `miss`, `stale`; `outcome`: `found`, `not_found`, `unavailable` |
+| `foodassistant.food_facts.fetch.duration` | Histogramm `s` | Open Food Facts | Dauer der Aufrufe bei Open Food Facts | `outcome` wie beim Ablauf `fetch` |
 | `foodassistant.shopping.conflicts` | Counter `{conflict}` | Einkauf | Nach ADR-0005 aufgelöste Konflikte von Einträgen | `outcome`: `CheckedWins`, `ChangeWinsOverDelete`, `CheckedWinsOverDelete`, `BothDeleted`, `LastWriteWins` |
 | `foodassistant.shopping.items.checked` | Counter `{item}` | Einkauf | Abgehakte Einträge (Übergang offen → abgehakt) | – |

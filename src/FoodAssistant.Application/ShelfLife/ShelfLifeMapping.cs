@@ -53,18 +53,33 @@ internal static class ShelfLifeMapping
     /// <param name="storageType">Storage type of the row.</param>
     /// <param name="inherited">Values of the less specific levels, already resolved.</param>
     /// <param name="own">The household's values at this level.</param>
-    /// <param name="sourceKey">Source of the shipped default, if any.</param>
+    /// <param name="sources">Sources of the shipped values in <paramref name="inherited"/>.</param>
     public static ShelfLifeRuleRowDto ToRow(
         string categoryKey,
         StorageType storageType,
         ShelfLifeRule inherited,
         ShelfLifeRule? own,
-        string? sourceKey) =>
+        ShelfLifeSourceKeysDto sources) =>
         new(
             categoryKey,
             ToDto(storageType),
             ToDto(inherited),
             own is null ? null : ToDto(own),
             ToDto(ShelfLifeRuleResolver.Resolve(own, null, inherited)),
-            sourceKey);
+            sources);
+
+    /// <summary>
+    /// Source per inherited value: the shipped value's source, unless a category override replaces that
+    /// value (then it is the household's own value and has no source).
+    /// </summary>
+    public static ShelfLifeSourceKeysDto SourcesOf(DefaultShelfLifeRow? shipped, ShelfLifeRule? categoryOverride) =>
+        shipped is null
+            ? NoSources
+            : new(
+                categoryOverride?.DaysAfterOpening is null ? shipped.Sources.DaysAfterOpening : null,
+                categoryOverride?.DaysFrozen is null ? shipped.Sources.DaysFrozen : null,
+                categoryOverride?.DaysAfterThawing is null ? shipped.Sources.DaysAfterThawing : null,
+                categoryOverride?.DaysAsLeftover is null ? shipped.Sources.DaysAsLeftover : null);
+
+    private static ShelfLifeSourceKeysDto NoSources { get; } = new(null, null, null, null);
 }

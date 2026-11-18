@@ -280,7 +280,8 @@ _(nach dem Meilenstein: Einstufungen zu hoch/zu niedrig, Nahtstellen, Dauer je S
 Alle Fragen F1–F14 vom Nutzer beantwortet: **jeweils die Empfehlung (a)**. Damit sind die
 Annahmen fest und die Blockaden aufgehoben, außer:
 - **F2:** Die Tabelle der Standardwerte entwirft B1.1 (Opus); sie wird erst nach **Freigabe durch den
-  Nutzer** gemergt.
+  Nutzer** gemergt. **Freigegeben am 2026-11-18** (mit Format v2: Quelle je Wert), aktiv; siehe
+  [haltbarkeitsregeln.md](../kb/haltbarkeitsregeln.md).
 - **F8:** Kontakt = `https://github.com/gartenkoch7-ctrl/Food-Assistant`, überschreibbar.
 - **F13:** Der Nutzer installiert Microsoft OpenJDK 21 (Adminrechte); die SDK-Installation samt
   Lizenzannahme bestätigt er vor dem Start von Spur M ausdrücklich. Bis dahin bleibt M blockiert.

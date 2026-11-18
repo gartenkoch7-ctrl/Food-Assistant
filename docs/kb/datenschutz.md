@@ -12,9 +12,11 @@ wird hier eingetragen.
 | Schlüsselring (Data Protection) und Token-Schlüssel (mit dem Schlüsselring verschlüsselt; wer das Volume lesen kann, kann beide lesen) | Volume `FoodAssistant__DataProtectionPath` | dauerhaft; Verlust beendet Sitzungen |
 | Vorrat, Einkaufslisten, Rezepte | PostgreSQL (Server) | bis Haushalt gelöscht + 30 Tage |
 | Offline-Cache | SQLite auf dem Handy | bis Abmeldung/Haushaltswechsel |
+| Open-Food-Facts-Cache (Barcode + öffentliche Produktdaten, ohne Haushalts- oder Personenbezug; serverweit) | PostgreSQL (Server) | 30 Tage (gefunden) bzw. 2 Tage (nicht gefunden), danach bei Bedarf erneuert; Einträge, die 90 Tage niemand abgefragt hat, werden beim nächsten Schreiben gelöscht; gehört nicht in den Haushaltsexport |
 | Sitzungs-Cookie `__Host-FoodAssistant.Session` (HttpOnly, Secure, SameSite=Strict) und Antiforgery-Cookie | Browser | Sitzungs-Cookie 14 Tage gleitend (persistent), Antiforgery-Cookie bis Browserende; beide bis Abmeldung (ADR-0003) |
 | Sprachwahl: Cookie `.AspNetCore.Culture` und `localStorage` `foodassistant.language` | Browser | bis der Nutzer sie löscht; nur der Sprachcode, technisch notwendig |
 | Farbschema: `localStorage` `foodassistant.theme` | Browser | bis der Nutzer es löscht; nur `light`/`dark`/`system`/Kontrast |
+| Einladungs-Token im Link `/invite#token=…`: nur im URL-Fragment (der Browser sendet es nie an den Server, also auch nicht in Server- oder Proxy-Logs); der Server erhält es nur im Annahme-Request. Beim Umweg über die Anmeldeseite hält es ein Dienst im Arbeitsspeicher der Seite (`InvitationDraft`), nie Browser-Speicher; ein Neuladen vergisst es | Browser (Arbeitsspeicher) | bis Annahme oder Neuladen; der Einladungslink wird nur direkt nach dem Erstellen angezeigt |
 | Idempotenz-Speicher (Fingerprint der Anfrage, gespeicherte Antwort) | Arbeitsspeicher des Servers | 24 h, geht beim Neustart verloren (ADR-0004) |
 | Aktivitätsverlauf | PostgreSQL | 90 Tage |
 | Sicherheitsprotokoll | PostgreSQL | 180 Tage |
@@ -26,7 +28,8 @@ wird hier eingetragen.
 |---|---|---|
 | KI-Anbieter (Cloud) | nur wenn konfiguriert und Funktion genutzt | nur nötige Fachdaten (z. B. Vorratsnamen, Mengen, Rezeptwunsch), keine Personendaten |
 | Ollama | wie oben, bleibt im eigenen Netz | wie oben |
-| Open Food Facts | Barcode-Abfrage unbekannter Produkte | nur der Barcode |
+| Open Food Facts | Barcode-Abfrage unbekannter Produkte, nur durch den Server; abschaltbar mit `FoodAssistant__OpenFoodFacts__Enabled=false` | nur der Barcode; der `User-Agent` nennt App-Version und das Projekt als Kontakt (kein Nutzerbezug); die IP des Servers ist für Open Food Facts sichtbar |
+| Kamera (Barcode-Scan im Browser) | nur nach Knopfdruck auf der Scan-Seite | nichts: das Kamerabild bleibt im Browser; an den Server geht nur der erkannte Barcode bzw. die Chargenkennung |
 | ntfy | wenn konfiguriert | Text der Benachrichtigung |
 | Web-Push-Dienst des Browsers | Benachrichtigungen im Web | verschlüsselter Inhalt der Benachrichtigung |
 | OTLP-Ziel | wenn konfiguriert | Telemetrie ohne Nutzerinhalte |

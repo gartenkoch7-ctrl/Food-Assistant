@@ -25,5 +25,6 @@ public interface ILiveUpdates
     /// </summary>
     Task StartAsync(Guid householdId, CancellationToken cancellationToken);
 
+    /// <summary>Ends the connection. <see cref="State"/> becomes Disconnected, but <see cref="StateChanged"/> is not raised: the caller asked for it, so it is no connection loss to show.</summary>
     Task StopAsync();
 }

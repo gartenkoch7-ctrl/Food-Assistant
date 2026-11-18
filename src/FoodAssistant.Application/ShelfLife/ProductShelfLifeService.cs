@@ -130,7 +130,7 @@ public sealed class ProductShelfLifeService(
         var shipped = defaults.Find(categoryKey, type);
         var categoryOverride = await store.GetForCategoryAsync(categoryKey, type, cancellationToken).ConfigureAwait(false);
         var inherited = ShelfLifeRuleResolver.Resolve(null, categoryOverride, shipped?.Rule);
-        return ShelfLifeMapping.ToRow(categoryKey, type, inherited, own, shipped?.SourceKey);
+        return ShelfLifeMapping.ToRow(categoryKey, type, inherited, own, ShelfLifeMapping.SourcesOf(shipped, categoryOverride));
     }
 
     private static OperationResult<ShelfLifeRuleRowDto>? RouteNotFound(string? categoryKey, string storageType, out StorageType type)

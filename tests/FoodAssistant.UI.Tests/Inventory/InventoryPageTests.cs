@@ -88,7 +88,7 @@ public sealed class InventoryPageTests : InventoryTestContext
     }
 
     [Fact]
-    public void Add_PickedProduct_SavesReloadsAndOffersUndo()
+    public async Task Add_PickedProduct_SavesReloadsAndOffersUndo()
     {
         Catalog.Products.Add(Product("Milch"));
         var activity = Guid.CreateVersion7();
@@ -99,10 +99,11 @@ public sealed class InventoryPageTests : InventoryTestContext
 
         Dialogs.Find("input").Input("Mil");
         Popovers.WaitForAssertion(() => Assert.Contains("Milch", Popovers.Markup, StringComparison.Ordinal));
-        Popovers.FindAll(".mud-list-item").First(i => i.TextContent.Contains("Milch", StringComparison.Ordinal)).Click();
-        ButtonByText(Dialogs, "Speichern").Click();
+        // Find and click in one step: the picker re-renders while its search settles.
+        await Popovers.InvokeAsync(() => Popovers.FindAll(".mud-list-item").First(i => i.TextContent.Contains("Milch", StringComparison.Ordinal)).Click());
+        await Dialogs.InvokeAsync(() => ButtonByText(Dialogs, "Speichern").Click());
 
-        Assert.Contains("add", Inventory.Calls);
+        cut.WaitForAssertion(() => Assert.Contains("add", Inventory.Calls));
         Snackbars.WaitForAssertion(() => Assert.Contains("Eingebucht", Snackbars.Markup, StringComparison.Ordinal));
         Snackbars.Find(".mud-snackbar-action-button, .mud-snackbar-action button").Click();
         Snackbars.WaitForAssertion(() => Assert.Contains($"undo:{activity}", Inventory.Calls));

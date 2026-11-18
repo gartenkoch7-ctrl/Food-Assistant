@@ -8,7 +8,7 @@ keine Allergene/Nährwerte in M1. KB: [externe-daten](../../kb/externe-daten.md)
 Branch `feat/m01-c1-food-facts` · ein Paket.
 
 ## Aufgaben
-- [ ] C1 OFF-Client, Cache, Kategorie-Zuordnung, Endpunkt, Tests, KB
+- [x] C1 OFF-Client, Cache, Kategorie-Zuordnung, Endpunkt, Tests, KB
 
 ## Detailplan
 

@@ -8,13 +8,16 @@ using FoodAssistant.Domain.Inventory;
 namespace FoodAssistant.Infrastructure.ShelfLife;
 
 /// <summary>
-/// The default shelf-life table shipped as embedded <c>default-shelf-life-rules.json</c> (format in
-/// docs/plan/features/m01-b1-haltbarkeitsregeln.md). Loaded once; every inconsistency fails loudly
+/// The default shelf-life table shipped as embedded <c>default-shelf-life-rules.json</c> (format and
+/// approval in docs/kb/haltbarkeitsregeln.md). Loaded once; every inconsistency fails loudly
 /// because a wrong default would silently produce wrong use-by dates.
 /// </summary>
 internal sealed class EmbeddedDefaultShelfLifeRules : IDefaultShelfLifeRules
 {
     internal const string ResourceName = "FoodAssistant.Infrastructure.ShelfLife.default-shelf-life-rules.json";
+
+    // Version 1 (one source per row) was never shipped with data; only version 2 is read.
+    private const int SupportedVersion = 2;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -54,7 +57,7 @@ internal sealed class EmbeddedDefaultShelfLifeRules : IDefaultShelfLifeRules
         return Parse(reader.ReadToEnd());
     }
 
-    /// <summary>Parses and checks a table (version 1).</summary>
+    /// <summary>Parses and checks a table (version 2: one source per value).</summary>
     /// <exception cref="InvalidOperationException">The JSON is malformed or the table inconsistent.</exception>
     internal static EmbeddedDefaultShelfLifeRules Parse(string json)
     {
@@ -69,7 +72,7 @@ internal sealed class EmbeddedDefaultShelfLifeRules : IDefaultShelfLifeRules
             throw new InvalidOperationException($"The shelf-life table is not valid JSON: {exception.Message}", exception);
         }
 
-        if (table.Version != 1)
+        if (table.Version != SupportedVersion)
         {
             throw new InvalidOperationException($"Unsupported shelf-life table version {table.Version}.");
         }
@@ -79,13 +82,20 @@ internal sealed class EmbeddedDefaultShelfLifeRules : IDefaultShelfLifeRules
         var seen = new HashSet<(string, StorageType)>();
         foreach (var rule in table.Rules)
         {
-            var row = ToRow(rule, sources);
+            var row = DefaultShelfLifeRowParser.ToRow(rule, sources);
             if (!seen.Add((row.CategoryKey, row.StorageType)))
             {
                 throw new InvalidOperationException($"Duplicate shelf-life rule {row.CategoryKey}/{row.StorageType}.");
             }
 
             rows.Add(row);
+        }
+
+        // A listed source nobody cites is a leftover of an edit; the source list must match the table.
+        var unused = sources.Keys.Except(rows.SelectMany(r => r.Sources.Keys), StringComparer.Ordinal).ToList();
+        if (unused.Count > 0)
+        {
+            throw new InvalidOperationException($"Shelf-life sources not cited by any rule: {string.Join(", ", unused)}.");
         }
 
         return new EmbeddedDefaultShelfLifeRules(rows, sources);
@@ -106,63 +116,7 @@ internal sealed class EmbeddedDefaultShelfLifeRules : IDefaultShelfLifeRules
         return new ShelfLifeSource(key, source.Title, url, source.Retrieved);
     }
 
-    private static DefaultShelfLifeRow ToRow(RuleJson rule, Dictionary<string, ShelfLifeSource> sources)
-    {
-        var name = $"{rule.Category}/{rule.StorageType}";
-        if (!ProductCategories.IsKnown(rule.Category))
-        {
-            throw new InvalidOperationException($"Shelf-life rule {name}: unknown category.");
-        }
-
-        if (!Enum.IsDefined(rule.StorageType))
-        {
-            throw new InvalidOperationException($"Shelf-life rule {name}: unknown storage type.");
-        }
-
-        if (!sources.ContainsKey(rule.Source))
-        {
-            throw new InvalidOperationException($"Shelf-life rule {name}: unknown source '{rule.Source}'.");
-        }
-
-        if (rule.DaysAfterOpening is null && rule.DaysFrozen is null && rule.DaysAfterThawing is null && rule.DaysAsLeftover is null)
-        {
-            throw new InvalidOperationException($"Shelf-life rule {name}: no value.");
-        }
-
-        int?[] days = [rule.DaysAfterOpening, rule.DaysFrozen, rule.DaysAfterThawing, rule.DaysAsLeftover];
-        if (days.Any(d => d > ShelfLifeLimits.MaxDays))
-        {
-            // Same range as user input: more than ten years is a typing error in the table.
-            throw new InvalidOperationException($"Shelf-life rule {name}: more than {ShelfLifeLimits.MaxDays} days.");
-        }
-
-        try
-        {
-            var values = new ShelfLifeRule
-            {
-                DaysAfterOpening = rule.DaysAfterOpening,
-                DaysFrozen = rule.DaysFrozen,
-                DaysAfterThawing = rule.DaysAfterThawing,
-                DaysAsLeftover = rule.DaysAsLeftover,
-            };
-            return new DefaultShelfLifeRow(rule.Category, rule.StorageType, values, rule.Source);
-        }
-        catch (ArgumentOutOfRangeException exception)
-        {
-            throw new InvalidOperationException($"Shelf-life rule {name}: negative days.", exception);
-        }
-    }
-
-    private sealed record TableJson(int Version, Dictionary<string, SourceJson> Sources, List<RuleJson> Rules);
+    private sealed record TableJson(int Version, Dictionary<string, SourceJson> Sources, List<DefaultShelfLifeRowParser.RuleJson> Rules);
 
     private sealed record SourceJson(string Title, string Url, DateOnly Retrieved);
-
-    private sealed record RuleJson(
-        string Category,
-        StorageType StorageType,
-        int? DaysAfterOpening,
-        int? DaysFrozen,
-        int? DaysAfterThawing,
-        int? DaysAsLeftover,
-        string Source);
 }

@@ -1,0 +1,157 @@
+@using FoodAssistant.Client.Households
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Contracts.Households
+@inject IHouseholdClient Households
+@inject SessionState Session
+@inject ILiveAnnouncer Announcer
+@inject IStringLocalizer<AccountsText> T
+@inject IStringLocalizer<CommonText> Common
+
+<section class="fa-household-section" aria-labelledby="@_headingId">
+    <h2 id="@_headingId">@T["MembersHeading"]</h2>
+    <ApiErrorAlert Error="_error" FeatureText="T" />
+    @if (_members is null)
+    {
+        @if (_error is null)
+        {
+            <LoadingState />
+        }
+    }
+    else
+    {
+        <ul class="fa-member-list">
+            @foreach (var member in _members)
+            {
+                <li class="fa-member" @key="member.UserId">
+                    <div class="fa-member-info">
+                        <span class="fa-member-name">@(IsMe(member) ? $"{member.DisplayName} {T["MemberYou"].Value}" : member.DisplayName)</span>
+                        <span class="fa-member-role">@T[AccountsKeys.Role(member.Role)]</span>
+                    </div>
+                    @if (IsOwner)
+                    {
+                        <div class="fa-member-actions">
+                            <select class="fa-select" value="@PendingRole(member).ToString().ToLowerInvariant()" aria-label="@T["MemberRoleLabel", member.DisplayName]"
+                                    @onchange="e => SelectRole(member.UserId, e.Value as string)">
+                                @foreach (var role in Roles)
+                                {
+                                    <option value="@role.ToString().ToLowerInvariant()">@T[AccountsKeys.Role(role)]</option>
+                                }
+                            </select>
+                            @if (PendingRole(member) != member.Role)
+                            {
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy"
+                                           aria-label="@T["MemberApplyRoleLabel", member.DisplayName]"
+                                           OnClick="() => ApplyRoleAsync(member)">@T["MemberApplyRole"]</MudButton>
+                            }
+                            <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_busy"
+                                       aria-label="@T["MemberRemoveLabel", member.DisplayName]"
+                                       OnClick="() => _confirmRemove = member.UserId">@T["MemberRemove"]</MudButton>
+                        </div>
+                        @if (_confirmRemove == member.UserId)
+                        {
+                            <div class="fa-member-confirm" role="group" aria-label="@T["MemberRemoveAsk", member.DisplayName]">
+                                <span>@T["MemberRemoveAsk", member.DisplayName]</span>
+                                <MudButton Variant="Variant.Filled" Color="Color.Error" Disabled="_busy"
+                                           OnClick="() => RemoveAsync(member)">@T["MemberRemoveConfirm"]</MudButton>
+                                <MudButton Variant="Variant.Text" OnClick="() => _confirmRemove = null">@Common["Cancel"]</MudButton>
+                            </div>
+                        }
+                    }
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+@code {
+    private static readonly HouseholdRole[] Roles = [HouseholdRole.Owner, HouseholdRole.Member, HouseholdRole.Restricted];
+
+    private readonly string _headingId = $"fa-members-{Guid.NewGuid():N}";
+    private readonly Dictionary<Guid, HouseholdRole> _pendingRoles = [];
+    private IReadOnlyList<HouseholdMemberResponse>? _members;
+    private Guid? _confirmRemove;
+    private bool _busy;
+    private ApiError? _error;
+
+    [Parameter, EditorRequired]
+    public Guid HouseholdId { get; set; }
+
+    /// <summary>Owners change roles and remove members (ADR-0002).</summary>
+    [Parameter]
+    public bool IsOwner { get; set; }
+
+    private bool IsMe(HouseholdMemberResponse member) => member.UserId == Session.Me?.UserId;
+
+    private HouseholdRole PendingRole(HouseholdMemberResponse member) =>
+        _pendingRoles.TryGetValue(member.UserId, out var role) ? role : member.Role;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var result = await Households.ListMembersAsync(HouseholdId, CancellationToken.None);
+        if (!result.IsSuccess)
+        {
+            _error = result.Error;
+            return;
+        }
+
+        _members = result.Value;
+        _pendingRoles.Clear();
+    }
+
+    private void SelectRole(Guid userId, string? value)
+    {
+        if (Enum.TryParse<HouseholdRole>(value, ignoreCase: true, out var role))
+        {
+            _pendingRoles[userId] = role;
+        }
+    }
+
+    private async Task ApplyRoleAsync(HouseholdMemberResponse member)
+    {
+        var role = PendingRole(member);
+        await ChangeAsync(
+            member,
+            () => Households.ChangeMemberRoleAsync(HouseholdId, member.UserId, role, CancellationToken.None),
+            T["MemberRoleChanged", member.DisplayName]);
+    }
+
+    private Task RemoveAsync(HouseholdMemberResponse member) =>
+        ChangeAsync(
+            member,
+            () => Households.RemoveMemberAsync(HouseholdId, member.UserId, CancellationToken.None),
+            T["MemberRemoved", member.DisplayName]);
+
+    private async Task ChangeAsync(HouseholdMemberResponse member, Func<Task<ApiResult>> change, string announcement)
+    {
+        if (_busy)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        _confirmRemove = null;
+        var result = await change();
+        if (!result.IsSuccess)
+        {
+            // The list may have changed meanwhile (someone else removed the member); show what is true now.
+            var failure = result.Error;
+            await LoadAsync();
+            _error = failure;
+            _busy = false;
+            return;
+        }
+
+        await LoadAsync();
+        _busy = false;
+        Announcer.Announce(announcement);
+
+        // Changing or leaving one's own role changes what the whole session may do.
+        if (IsMe(member))
+        {
+            await Session.LoadAsync();
+        }
+    }
+}

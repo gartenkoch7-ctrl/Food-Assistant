@@ -59,6 +59,35 @@ public sealed class AccountClientTests
     }
 
     [Fact]
+    public async Task Setup_PostsTheRequest_AndReadsTheIds()
+    {
+        var (client, handler) = Create();
+        var userId = Guid.CreateVersion7();
+        var householdId = Guid.CreateVersion7();
+        handler.EnqueueJson(HttpStatusCode.Created, $$"""{"userId":"{{userId}}","householdId":"{{householdId}}"}""");
+
+        var result = await client.SetupAsync(new SetupRequest("anna", "secret", "Anna", "Home", "Europe/Berlin"), Ct);
+
+        Assert.EndsWith("api/v1/setup", handler.Requests[0].Uri.ToString(), StringComparison.Ordinal);
+        Assert.Equal(HttpMethod.Post, handler.Requests[0].Method);
+        Assert.Contains("\"householdName\":\"Home\"", handler.Requests[0].Body, StringComparison.Ordinal);
+        Assert.Equal(householdId, result.Value!.HouseholdId);
+    }
+
+    [Fact]
+    public async Task AcceptInvitation_PostsTheToken_AndReportsAnInvalidTokenAsErrorCode()
+    {
+        var (client, handler) = Create();
+        handler.EnqueueJson(HttpStatusCode.NotFound, """{"errorCode":"invitations.invalid_or_expired"}""", "application/problem+json");
+
+        var result = await client.AcceptInvitationAsync(new AcceptInvitationRequest("tok"), Ct);
+
+        Assert.EndsWith("api/v1/invitations/accept", handler.Requests[0].Uri.ToString(), StringComparison.Ordinal);
+        Assert.Contains("\"token\":\"tok\"", handler.Requests[0].Body, StringComparison.Ordinal);
+        Assert.Equal(InvitationErrorCodes.InvalidOrExpired, result.Error!.ErrorCode);
+    }
+
+    [Fact]
     public async Task SetupStatus_ReadsTheFlag()
     {
         var (client, handler) = Create();

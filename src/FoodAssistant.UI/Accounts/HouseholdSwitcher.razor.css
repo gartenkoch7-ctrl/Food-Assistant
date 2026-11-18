@@ -1,0 +1,8 @@
+.fa-switcher {
+    margin-top: var(--fa-space-6);
+    max-width: 28rem;
+}
+
+.fa-switcher ::deep .fa-switcher-apply {
+    margin-top: var(--fa-space-3);
+}

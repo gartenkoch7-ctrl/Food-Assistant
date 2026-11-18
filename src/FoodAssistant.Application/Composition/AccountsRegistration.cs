@@ -21,6 +21,7 @@ public static class AccountsRegistration
         services.AddScoped<HouseholdService>();
         services.AddScoped<InvitationService>();
         services.AddScoped<MemberService>();
+        services.AddScoped<HouseholdSettingsService>();
         return services;
     }
 }

@@ -30,6 +30,7 @@ public static class AccountsInfrastructureRegistration
         services.AddScoped<IAccountProvisioning, AccountProvisioning>();
         services.AddScoped<IHouseholdStore, HouseholdStore>();
         services.AddScoped<IInvitationStore, InvitationStore>();
+        services.AddScoped<IHouseholdSettingsStore, HouseholdSettingsStore>();
         return builder;
     }
 }

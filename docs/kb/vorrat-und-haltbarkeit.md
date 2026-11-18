@@ -71,7 +71,8 @@ Haushalt ─┬─ Produkt (Katalog des Haushalts)
 
 - Food-Assistant liefert **Standardregeln pro Kategorie** mit (Tage nach Öffnen, im Gefrierfach,
   nach Auftauen, als Rest – jeweils je Lagerort-Typ). Jede Regel nennt ihre **Quelle**
-  (z. B. Verbraucherzentrale, BZfE); die Tabelle liegt versioniert im Repository.
+  (z. B. Verbraucherzentrale, BZfE); die Tabelle liegt versioniert im Repository. Werte, Quellen und
+  Freigabe: [haltbarkeitsregeln.md](haltbarkeitsregeln.md).
 - Haushalte können pro Kategorie oder Produkt **überschreiben**; die UI zeigt, ob ein Wert
   Standard oder eigen ist.
 - Die **KI schlägt nie** Haltbarkeiten vor (AGENTS.md §2.3); sie darf Regeln nur zitieren.

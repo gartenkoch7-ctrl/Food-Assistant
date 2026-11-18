@@ -36,9 +36,16 @@ public sealed class FakeLiveUpdates : ILiveUpdates
     public Task StopAsync()
     {
         Stopped++;
+        // Like the real client: a requested stop raises no StateChanged.
         State = LiveConnectionState.Disconnected;
-        StateChanged?.Invoke();
         return Task.CompletedTask;
+    }
+
+    /// <summary>Moves to a state as the real connection would, for example "reconnecting".</summary>
+    public void SetState(LiveConnectionState state)
+    {
+        State = state;
+        StateChanged?.Invoke();
     }
 
     public Task RaiseChangedAsync(HouseholdChangesMessage message) => Changed?.Invoke(message) ?? Task.CompletedTask;

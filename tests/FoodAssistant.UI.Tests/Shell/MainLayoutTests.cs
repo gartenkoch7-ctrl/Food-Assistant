@@ -101,6 +101,17 @@ public sealed class MainLayoutTests : UiTestContext
     }
 
     [Fact]
+    public void Layout_ShowsTheLiveStatusInTheHeader_OnlyWhileTheFeedIsDown()
+    {
+        var cut = RenderLayout();
+        Assert.Empty(cut.FindAll("header .fa-live-status"));
+
+        Live.SetState(FoodAssistant.Client.Sync.LiveConnectionState.Reconnecting);
+
+        cut.WaitForAssertion(() => Assert.Single(cut.FindAll("header .fa-live-status")));
+    }
+
+    [Fact]
     public void Layout_ShowsTheWordmark()
     {
         var cut = RenderLayout();

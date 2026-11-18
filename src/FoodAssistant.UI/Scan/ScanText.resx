@@ -6,8 +6,44 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <!-- German is the neutral language of the project; ScanText.en.resx holds the English texts. -->
   <data name="ScanTitle" xml:space="preserve"><value>Scannen</value></data>
-  <data name="ScanComingSoonHeading" xml:space="preserve"><value>Der Barcode-Scan kommt in M1</value></data>
-  <data name="ScanComingSoonText" xml:space="preserve"><value>Bald scannst du Barcodes mit der Kamera. Bis dahin kannst du Artikel von Hand eingeben.</value></data>
-  <data name="ScanManualAction" xml:space="preserve"><value>Manuell eingeben</value></data>
-  <data name="ScanManualHint" xml:space="preserve"><value>Die manuelle Eingabe folgt zusammen mit dem Vorrat in M1.</value></data>
+  <data name="ModeLegend" xml:space="preserve"><value>Was möchtest du tun?</value></data>
+  <data name="ModeAdd" xml:space="preserve"><value>Einbuchen</value></data>
+  <data name="ModeUse" xml:space="preserve"><value>Verbraucht</value></data>
+  <data name="CameraHeading" xml:space="preserve"><value>Kamera</value></data>
+  <data name="CameraPrivacy" xml:space="preserve"><value>Das Kamerabild bleibt auf deinem Gerät. Nur der erkannte Code wird gesendet.</value></data>
+  <data name="CameraStart" xml:space="preserve"><value>Kamera starten</value></data>
+  <data name="CameraStop" xml:space="preserve"><value>Kamera stoppen</value></data>
+  <data name="CameraUnavailable" xml:space="preserve"><value>Die Kamera ist hier nicht verfügbar. Gib den Barcode unten ein oder suche das Produkt.</value></data>
+  <data name="CameraFailed" xml:space="preserve"><value>Die Kamera ließ sich nicht starten, vielleicht fehlt die Erlaubnis. Gib den Barcode unten ein oder suche das Produkt.</value></data>
+  <data name="VideoLabel" xml:space="preserve"><value>Kamerabild zum Scannen</value></data>
+  <data name="ManualHeading" xml:space="preserve"><value>Ohne Kamera</value></data>
+  <data name="BarcodeLabel" xml:space="preserve"><value>Barcode eingeben</value></data>
+  <data name="BarcodeHelp" xml:space="preserve"><value>8, 12, 13 oder 14 Ziffern</value></data>
+  <data name="BarcodeSubmit" xml:space="preserve"><value>Übernehmen</value></data>
+  <data name="SearchLabel" xml:space="preserve"><value>Produkt suchen</value></data>
+  <data name="ResultHeading" xml:space="preserve"><value>Ergebnis</value></data>
+  <data name="UndoAction" xml:space="preserve"><value>Rückgängig</value></data>
+  <data name="ChangeAmount" xml:space="preserve"><value>Menge ändern</value></data>
+  <data name="DoneAdded" xml:space="preserve"><value>{0}: eingebucht</value></data>
+  <data name="DoneUsed" xml:space="preserve"><value>{0}: verbraucht</value></data>
+  <data name="DoneUndone" xml:space="preserve"><value>Rückgängig gemacht.</value></data>
+  <data name="NotInStock" xml:space="preserve"><value>{0}: nichts im Vorrat, nichts verbraucht.</value></data>
+  <data name="UnknownProduct" xml:space="preserve"><value>Zu diesem Barcode gibt es noch kein Produkt. Wechsle zu „Einbuchen“, um es anzulegen.</value></data>
+  <data name="UnknownCode" xml:space="preserve"><value>Das ist weder ein Barcode noch ein Etikett dieser App. Barcodes haben 8, 12, 13 oder 14 Ziffern.</value></data>
+  <data name="Navigated" xml:space="preserve"><value>Die Charge wird geöffnet.</value></data>
+  <data name="ProductCreated" xml:space="preserve"><value>{0}: Produkt angelegt, aber nichts eingebucht.</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>Abgebrochen, nichts wurde geändert.</value></data>
+  <data name="AttributionPrefix" xml:space="preserve"><value>Vorschlag von</value></data>
+  <data name="AttributionCheck" xml:space="preserve"><value>Community-Daten, bitte prüfen.</value></data>
+  <data name="OpensInNewTab" xml:space="preserve"><value>(öffnet in neuem Tab)</value></data>
+  <data name="NoSuggestion" xml:space="preserve"><value>Open Food Facts hat keinen Vorschlag zu diesem Barcode oder ist nicht erreichbar. Bitte trage die Daten selbst ein.</value></data>
+  <data name="Error.scan.no_location" xml:space="preserve"><value>Lege zuerst unter „Lagerorte“ einen Lagerort an.</value></data>
+  <data name="Error.scan.no_household" xml:space="preserve"><value>Es ist kein Haushalt ausgewählt.</value></data>
+  <data name="Error.food_facts.not_found" xml:space="preserve"><value>Open Food Facts kennt diesen Barcode nicht.</value></data>
+  <data name="Error.food_facts.unavailable" xml:space="preserve"><value>Open Food Facts ist gerade nicht erreichbar.</value></data>
+  <data name="Error.food_facts.invalid_barcode" xml:space="preserve"><value>Ein Barcode hat 8, 12, 13 oder 14 Ziffern.</value></data>
+  <data name="Error.inventory.undo_not_possible" xml:space="preserve"><value>Rückgängig ist nicht mehr möglich.</value></data>
+  <data name="Error.inventory.activity_not_found" xml:space="preserve"><value>Diese Aktion gibt es nicht mehr.</value></data>
+  <data name="Error.inventory.not_enough_stock" xml:space="preserve"><value>Es ist nicht genug Vorrat da.</value></data>
+  <data name="Error.catalog.product_not_found" xml:space="preserve"><value>Das Produkt gibt es nicht mehr.</value></data>
 </root>

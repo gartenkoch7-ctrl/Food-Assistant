@@ -17,6 +17,7 @@ public static class HouseholdDataRegistration
 
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddSingleton<IHouseholdChangeNotifier, NullHouseholdChangeNotifier>();
+        services.TryAddSingleton<IMembershipRevocationNotifier, NullMembershipRevocationNotifier>();
         services.TryAddScoped<IShelfLifeRules, NoShelfLifeRules>();
         return services;
     }
