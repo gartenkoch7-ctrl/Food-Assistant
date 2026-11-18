@@ -1,0 +1,124 @@
+@using FoodAssistant.Client.Households
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Contracts.Households
+@inject IHouseholdClient Households
+@inject SessionState Session
+@inject ILiveAnnouncer Announcer
+@inject IStringLocalizer<AccountsText> T
+@inject IStringLocalizer<CommonText> Common
+
+<section class="fa-household-section" aria-labelledby="@_headingId">
+    <h2 id="@_headingId">@T["SettingsHeading"]</h2>
+    <ApiErrorAlert Error="_error" FeatureText="T" />
+    @if (_settings is null)
+    {
+        @if (_error is null)
+        {
+            <LoadingState />
+        }
+    }
+    else if (!IsOwner)
+    {
+        <dl class="fa-settings-readonly">
+            <dt>@T["FieldHouseholdName"]</dt>
+            <dd>@_settings.Name</dd>
+            <dt>@T["FieldTimeZone"]</dt>
+            <dd>@_settings.TimeZone</dd>
+            <dt>@T["SettingsLeadDays"]</dt>
+            <dd>@_settings.ExpiryLeadDays</dd>
+        </dl>
+        <p class="fa-settings-note">@T["SettingsReadOnly"]</p>
+    }
+    else
+    {
+        <form class="fa-settings-form" @onsubmit="SaveAsync" @onsubmit:preventDefault="true">
+            <MudTextField T="string" @bind-Value="_name" Label="@T["FieldHouseholdName"]" Variant="Variant.Outlined"
+                          Required="true" RequiredError="@T["FieldError.required"]" Immediate="true" Error="@HasError("name")" ErrorText="@Field("name")" />
+            <TimeZoneField @bind-Value="_timeZone" ErrorText="@Field("timeZone")" />
+            <MudNumericField T="int" @bind-Value="_leadDays" Label="@T["SettingsLeadDays"]" Variant="Variant.Outlined"
+                             Min="0" Max="14" Immediate="true" HelperText="@T["SettingsLeadDaysHint"]"
+                             Error="@HasError("expiryLeadDays")" ErrorText="@Field("expiryLeadDays")" />
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy">@Common["Save"]</MudButton>
+        </form>
+    }
+</section>
+
+@code {
+    private readonly string _headingId = $"fa-settings-{Guid.NewGuid():N}";
+    private HouseholdSettingsDto? _settings;
+    private string? _eTag;
+    private string _name = string.Empty;
+    private string _timeZone = string.Empty;
+    private int _leadDays;
+    private bool _busy;
+    private ApiError? _error;
+
+    [Parameter, EditorRequired]
+    public Guid HouseholdId { get; set; }
+
+    /// <summary>Owners edit; everybody else only reads (ADR-0002).</summary>
+    [Parameter]
+    public bool IsOwner { get; set; }
+
+    private bool HasError(string field) => Field(field) is not null;
+
+    private string? Field(string field) => AccountsKeys.FieldError(T, _error, field);
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        var result = await Households.GetSettingsAsync(HouseholdId, CancellationToken.None);
+        if (!result.IsSuccess)
+        {
+            _error = result.Error;
+            return;
+        }
+
+        _settings = result.Value;
+        _eTag = result.ETag;
+        _name = _settings!.Name;
+        _timeZone = _settings.TimeZone;
+        _leadDays = _settings.ExpiryLeadDays;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_busy || _eTag is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        var request = new UpdateHouseholdRequest(_name.Trim(), _timeZone.Trim(), _leadDays);
+        var result = await Households.UpdateSettingsAsync(HouseholdId, request, _eTag, CancellationToken.None);
+        if (!result.IsSuccess)
+        {
+            var failure = result.Error;
+
+            // Changed by someone else meanwhile: show what is stored now, the message tells to check and save again.
+            if (failure!.Status == 412)
+            {
+                await LoadAsync();
+            }
+
+            _error = failure;
+            _busy = false;
+            return;
+        }
+
+        var renamed = _settings is { } before && (before.Name != result.Value!.Name || before.TimeZone != result.Value.TimeZone);
+        _settings = result.Value;
+        _eTag = result.ETag;
+        _name = _settings!.Name;
+        _busy = false;
+        Announcer.Announce(T["SettingsSaved"]);
+
+        // The household names in the session (switcher, header) come from /me.
+        if (renamed)
+        {
+            await Session.LoadAsync();
+        }
+    }
+}

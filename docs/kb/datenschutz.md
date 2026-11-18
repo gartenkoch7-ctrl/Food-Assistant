@@ -16,6 +16,7 @@ wird hier eingetragen.
 | Sitzungs-Cookie `__Host-FoodAssistant.Session` (HttpOnly, Secure, SameSite=Strict) und Antiforgery-Cookie | Browser | Sitzungs-Cookie 14 Tage gleitend (persistent), Antiforgery-Cookie bis Browserende; beide bis Abmeldung (ADR-0003) |
 | Sprachwahl: Cookie `.AspNetCore.Culture` und `localStorage` `foodassistant.language` | Browser | bis der Nutzer sie löscht; nur der Sprachcode, technisch notwendig |
 | Farbschema: `localStorage` `foodassistant.theme` | Browser | bis der Nutzer es löscht; nur `light`/`dark`/`system`/Kontrast |
+| Einladungs-Token im Link `/invite#token=…`: nur im URL-Fragment (der Browser sendet es nie an den Server, also auch nicht in Server- oder Proxy-Logs); der Server erhält es nur im Annahme-Request. Beim Umweg über die Anmeldeseite hält es ein Dienst im Arbeitsspeicher der Seite (`InvitationDraft`), nie Browser-Speicher; ein Neuladen vergisst es | Browser (Arbeitsspeicher) | bis Annahme oder Neuladen; der Einladungslink wird nur direkt nach dem Erstellen angezeigt |
 | Idempotenz-Speicher (Fingerprint der Anfrage, gespeicherte Antwort) | Arbeitsspeicher des Servers | 24 h, geht beim Neustart verloren (ADR-0004) |
 | Aktivitätsverlauf | PostgreSQL | 90 Tage |
 | Sicherheitsprotokoll | PostgreSQL | 180 Tage |

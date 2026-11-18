@@ -1,0 +1,168 @@
+@using System.Globalization
+@using FoodAssistant.Client.Households
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Contracts.Households
+@inject IHouseholdClient Households
+@inject IClipboard Clipboard
+@inject NavigationManager Navigation
+@inject ILiveAnnouncer Announcer
+@inject IStringLocalizer<AccountsText> T
+
+<section class="fa-household-section" aria-labelledby="@_headingId">
+    <h2 id="@_headingId">@T["InvitationsHeading"]</h2>
+    <ApiErrorAlert Error="_error" FeatureText="T" />
+
+    <OptionGroup TValue="HouseholdRole" Legend="@T["InvitationRoleLegend"]" Options="_roleOptions" Value="_role" ValueChanged="r => _role = r" />
+    <MudButton Class="fa-invitation-create" Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy"
+               OnClick="CreateAsync">@T["InvitationCreate"]</MudButton>
+
+    @if (_link is not null)
+    {
+        <div class="fa-invitation-result">
+            <MudTextField T="string" Value="_link" ReadOnly="true" Label="@T["InvitationLinkLabel"]" Variant="Variant.Outlined" />
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="CopyAsync">@T["InvitationCopy"]</MudButton>
+            @if (_copyFailed)
+            {
+                <p class="fa-invitation-note" role="alert">@T["InvitationCopyFailed"]</p>
+            }
+            <p class="fa-invitation-note">@T["InvitationValidUntil", FormatDate(_created!.ExpiresAt)]</p>
+            <QrCodeSvg Text="@_link" Label="@T["InvitationQrLabel"]" />
+        </div>
+    }
+
+    <h3>@T["InvitationListHeading"]</h3>
+    @if (_invitations is null)
+    {
+        @if (_error is null)
+        {
+            <LoadingState />
+        }
+    }
+    else if (_invitations.Count == 0)
+    {
+        <p>@T["InvitationListEmpty"]</p>
+    }
+    else
+    {
+        <ul class="fa-invitation-list">
+            @foreach (var invitation in _invitations)
+            {
+                var summary = T["InvitationRoleAndStatus", T[AccountsKeys.Role(invitation.Role)].Value,
+                    T[AccountsKeys.Status(invitation.Status)].Value, FormatDate(invitation.ExpiresAt)].Value;
+                <li class="fa-invitation" @key="invitation.Id">
+                    <span>@summary</span>
+                    @if (invitation.Status == InvitationStatus.Pending)
+                    {
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_busy"
+                                   aria-label="@T["InvitationRevokeLabel", summary]"
+                                   OnClick="() => RevokeAsync(invitation)">@T["InvitationRevoke"]</MudButton>
+                    }
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+@code {
+    private readonly string _headingId = $"fa-invitations-{Guid.NewGuid():N}";
+    private IReadOnlyList<ChoiceOption<HouseholdRole>> _roleOptions = [];
+    private IReadOnlyList<InvitationResponse>? _invitations;
+    private CreatedInvitationResponse? _created;
+    private string? _link;
+    private HouseholdRole _role = HouseholdRole.Member;
+    private bool _busy;
+    private bool _copyFailed;
+    private ApiError? _error;
+
+    [Parameter, EditorRequired]
+    public Guid HouseholdId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _roleOptions =
+        [
+            new(HouseholdRole.Member, $"{T[AccountsKeys.Role(HouseholdRole.Member)]} – {T[AccountsKeys.RoleHint(HouseholdRole.Member)]}"),
+            new(HouseholdRole.Restricted, $"{T[AccountsKeys.Role(HouseholdRole.Restricted)]} – {T[AccountsKeys.RoleHint(HouseholdRole.Restricted)]}"),
+            new(HouseholdRole.Owner, $"{T[AccountsKeys.Role(HouseholdRole.Owner)]} – {T[AccountsKeys.RoleHint(HouseholdRole.Owner)]}"),
+        ];
+        await LoadAsync();
+    }
+
+    private static string FormatDate(DateTimeOffset value) =>
+        value.ToLocalTime().ToString("g", CultureInfo.CurrentCulture);
+
+    private async Task LoadAsync()
+    {
+        var result = await Households.ListInvitationsAsync(HouseholdId, CancellationToken.None);
+        if (result.IsSuccess)
+        {
+            _invitations = result.Value;
+        }
+        else
+        {
+            _error = result.Error;
+        }
+    }
+
+    private async Task CreateAsync()
+    {
+        if (_busy)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        _copyFailed = false;
+        var result = await Households.CreateInvitationAsync(HouseholdId, _role, CancellationToken.None);
+        if (!result.IsSuccess)
+        {
+            _error = result.Error;
+            _busy = false;
+            return;
+        }
+
+        // The token is part of the link only in the fragment, so no server or proxy log ever sees it.
+        _created = result.Value;
+        _link = $"{Navigation.BaseUri.TrimEnd('/')}/invite#token={Uri.EscapeDataString(_created!.Token)}";
+        await LoadAsync();
+        _busy = false;
+        Announcer.Announce(T["InvitationCreated"]);
+    }
+
+    private async Task CopyAsync()
+    {
+        _copyFailed = !await Clipboard.WriteTextAsync(_link!);
+        if (!_copyFailed)
+        {
+            Announcer.Announce(T["InvitationCopied"]);
+        }
+    }
+
+    private async Task RevokeAsync(InvitationResponse invitation)
+    {
+        if (_busy)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        var result = await Households.RevokeInvitationAsync(HouseholdId, invitation.Id, CancellationToken.None);
+        var failure = result.Error;
+        if (_created?.Id == invitation.Id && result.IsSuccess)
+        {
+            // A revoked invitation must not stay on screen as a working link.
+            _created = null;
+            _link = null;
+        }
+
+        await LoadAsync();
+        _error = failure ?? _error;
+        _busy = false;
+        if (result.IsSuccess)
+        {
+            Announcer.Announce(T["InvitationRevoked"]);
+        }
+    }
+}

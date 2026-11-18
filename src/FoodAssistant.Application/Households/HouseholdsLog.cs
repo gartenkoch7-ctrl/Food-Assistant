@@ -28,4 +28,7 @@ internal static partial class HouseholdsLog
     [LoggerMessage(EventId = 3025, Level = LogLevel.Warning,
         Message = "Change refused: it would leave household {HouseholdId} without an owner")]
     public static partial void LastOwnerProtected(ILogger logger, Guid householdId);
+
+    [LoggerMessage(EventId = 3026, Level = LogLevel.Information, Message = "Settings of household {HouseholdId} changed")]
+    public static partial void SettingsChanged(ILogger logger, Guid householdId);
 }

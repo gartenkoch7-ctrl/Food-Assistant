@@ -124,6 +124,7 @@ Rest frei für weitere API-Konventionen.
 | `StockHandlerFailed` / 3305 | Log, Warning | Vorrat | Ein `IStockChangedHandler` ist nach dem Speichern gescheitert; die Änderung bleibt gültig | Exception |
 | `LookupUnavailable` / 3350 | Log, Warning | Open Food Facts | Barcode-Abfrage nicht möglich und nichts im Cache; Antwort 503 (der Barcode wird nie geloggt) | – |
 | `ServedStale` / 3351 | Log, Information | Open Food Facts | Open Food Facts nicht erreichbar; abgelaufener Cache-Eintrag ausgeliefert | – |
+| `SettingsChanged` / 3026 | Log, Information | Haushalte | Haushaltseinstellungen geändert | `HouseholdId` |
 | `BrowserCallUnavailable` / 4000 | Log, Debug | UI | Browser-Aufruf nicht verfügbar; nur Operationsname | `Operation`, Exception |
 | `NetworkError` / 4010 | Log, Debug | Client | API-Aufruf ohne Antwort fehlgeschlagen (auch Zeitüberschreitung des HttpClient); nur HTTP-Methode, nie Pfad/Query | `Method`, Exception |
 | `InvalidResponse` / 4011 | Log, Warning | Client | Erfolgsantwort der API mit unlesbarem JSON-Körper (z. B. HTML eines Proxys); nur HTTP-Methode, ohne Exception (Meldung kann Teile des Körpers zitieren) | `Method` |
@@ -133,6 +134,7 @@ Rest frei für weitere API-Konventionen.
 | `LiveConnectFailed` / 4103 | Log, Debug | Client – Sync | Verbindungsversuch fehlgeschlagen, neuer Versuch nach 30 s | Exception |
 | `LiveHandlerFailed` / 4104 | Log, Warning | Client – Sync | Ein Seiten-Handler von `Changed`/`Resynced`/`StateChanged` hat geworfen | Exception |
 | `ExpiryReloadFailed` / 4200 | Log, Warning | UI – Sitzung | Neuladen der Sitzung nach einer 401-Antwort eines Datenaufrufs ist mit einer Exception gescheitert (das Neuladen läuft ohne Aufrufer; höchstens einmal je 30 s) | Exception |
+| `ClipboardUnavailable` / 4210 | Log, Debug | UI – Konten | Einladungslink konnte nicht in die Zwischenablage kopiert werden (Berechtigung, kein sicherer Kontext); nur die Exception, nie Link oder Token | Exception |
 
 ## Abläufe (Activities)
 
@@ -165,6 +167,7 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.inventory.move_batch` | Vorrat | Charge verschieben (ggf. einfrieren/auftauen) | `foodassistant.outcome` |
 | `foodassistant.inventory.open_batch` | Vorrat | Charge öffnen | `foodassistant.outcome` |
 | `foodassistant.inventory.undo` | Vorrat | Aktion rückgängig machen | `foodassistant.outcome`, `foodassistant.batches` |
+| `foodassistant.households.update_settings` | Haushalte | Haushaltseinstellungen ändern | `foodassistant.outcome` |
 | `foodassistant.persistence.migrate` | Persistenz | Datenbank-Migration | `foodassistant.migrations.pending` |
 | `foodassistant.shelf_life.reset_override` | Haltbarkeit | Eigene Haltbarkeitswerte zurücksetzen | `foodassistant.scope` (`category`/`product`), `foodassistant.outcome` (`ok`, `not_found`) |
 | `foodassistant.shelf_life.set_override` | Haltbarkeit | Eigene Haltbarkeitswerte speichern | `foodassistant.scope`, `foodassistant.outcome` (`ok`, `invalid`, `not_found`) |

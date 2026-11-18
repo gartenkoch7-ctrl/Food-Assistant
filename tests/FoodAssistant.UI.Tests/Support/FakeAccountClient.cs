@@ -84,6 +84,37 @@ public sealed class FakeAccountClient : IAccountClient
         return Task.FromResult(ApiResult.Success());
     }
 
+    /// <summary>When set, <see cref="SetupAsync"/> fails with this error.</summary>
+    public ApiError? SetupError { get; set; }
+
+    /// <summary>When set, <see cref="AcceptInvitationAsync"/> fails with this error.</summary>
+    public ApiError? AcceptError { get; set; }
+
+    public List<SetupRequest> SetupRequests { get; } = [];
+
+    public List<AcceptInvitationRequest> AcceptRequests { get; } = [];
+
+    /// <summary>Household the accepted invitation joins; the person signs in with <see cref="MeAfterLogin"/> afterwards.</summary>
+    public Guid AcceptedHouseholdId { get; set; } = TestHouseholdId;
+
+    public Task<ApiResult<SetupResponse>> SetupAsync(SetupRequest request, CancellationToken cancellationToken)
+    {
+        Calls.Add("setup-post");
+        SetupRequests.Add(request);
+        return Task.FromResult(SetupError is not null
+            ? ApiResult<SetupResponse>.Failure(SetupError)
+            : ApiResult<SetupResponse>.Success(new SetupResponse(Guid.CreateVersion7(), TestHouseholdId)));
+    }
+
+    public Task<ApiResult<AcceptInvitationResponse>> AcceptInvitationAsync(AcceptInvitationRequest request, CancellationToken cancellationToken)
+    {
+        Calls.Add("accept");
+        AcceptRequests.Add(request);
+        return Task.FromResult(AcceptError is not null
+            ? ApiResult<AcceptInvitationResponse>.Failure(AcceptError)
+            : ApiResult<AcceptInvitationResponse>.Success(new AcceptInvitationResponse(Guid.CreateVersion7(), AcceptedHouseholdId, HouseholdRole.Member)));
+    }
+
     public Task<ApiResult<SetupStatusResponse>> GetSetupStatusAsync(CancellationToken cancellationToken)
     {
         Calls.Add("setup");

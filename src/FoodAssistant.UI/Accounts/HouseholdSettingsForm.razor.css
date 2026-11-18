@@ -1,0 +1,22 @@
+.fa-household-section {
+    margin-top: var(--fa-space-8);
+}
+
+.fa-settings-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fa-space-4);
+    max-width: 28rem;
+}
+
+.fa-settings-readonly dt {
+    font: 700 0.9375rem/1.25rem var(--fa-font-text);
+}
+
+.fa-settings-readonly dd {
+    margin: 0 0 var(--fa-space-3);
+}
+
+.fa-settings-note {
+    color: var(--fa-ink-muted);
+}

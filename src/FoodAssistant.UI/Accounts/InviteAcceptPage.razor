@@ -1,0 +1,143 @@
+@page "/invite"
+@implements IDisposable
+@using FoodAssistant.Client.Accounts
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Contracts.Accounts
+@inject IAccountClient Accounts
+@inject SessionState Session
+@inject InvitationDraft Draft
+@inject NavigationManager Navigation
+@inject IStringLocalizer<AccountsText> T
+
+<PageTitle>@T["InviteTitle"] – @AppInfo.Name</PageTitle>
+
+@if (_token is null)
+{
+    <EmptyState Icon="@Icons.Material.Rounded.LinkOff" Heading="@T["InviteMissingHeading"]" Text="@T["InviteMissingText"]" />
+}
+else if (Session.Status is SessionStatus.Loading)
+{
+    <LoadingState />
+}
+else
+{
+    <h1>@T["InviteTitle"]</h1>
+    <p>@T["InviteIntro"]</p>
+    <ApiErrorAlert Error="_error" FeatureText="T" />
+
+    @if (Session.Me is not null)
+    {
+        @* Signed in: the invitation is for this account, nothing to type. *@
+        <div class="fa-invite-join">
+            <p>@T["InviteSignedInAs", Session.Me.DisplayName]</p>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy" OnClick="JoinAsync">
+                @(_busy ? T["InviteJoinBusy"] : T["InviteJoin"])
+            </MudButton>
+        </div>
+    }
+    else
+    {
+        <h2>@T["InviteNewAccountHeading"]</h2>
+        <form class="fa-invite-form" @onsubmit="CreateAccountAsync" @onsubmit:preventDefault="true">
+            <MudTextField T="string" @bind-Value="_displayName" Label="@T["FieldDisplayName"]" Variant="Variant.Outlined"
+                          Required="true" RequiredError="@T["FieldError.required"]" Immediate="true" Error="@HasError("displayName")" ErrorText="@Field("displayName")"
+                          UserAttributes="@(new Dictionary<string, object?> { ["autocomplete"] = "name" })" />
+            <MudTextField T="string" @bind-Value="_userName" Label="@T["FieldUserName"]" Variant="Variant.Outlined"
+                          Required="true" RequiredError="@T["FieldError.required"]" Immediate="true" Error="@HasError("userName")" ErrorText="@Field("userName")"
+                          UserAttributes="@(new Dictionary<string, object?> { ["autocomplete"] = "username" })" />
+            <MudTextField T="string" @bind-Value="_password" Label="@T["FieldPassword"]" Variant="Variant.Outlined"
+                          InputType="InputType.Password" Required="true" RequiredError="@T["FieldError.required"]" Immediate="true" HelperText="@T["PasswordHint"]"
+                          Error="@HasError("password")" ErrorText="@Field("password")"
+                          UserAttributes="@(new Dictionary<string, object?> { ["autocomplete"] = "new-password" })" />
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy">
+                @(_busy ? T["InviteJoinBusy"] : T["InviteCreateAndJoin"])
+            </MudButton>
+        </form>
+        <p class="fa-invite-login">
+            <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="GoToLogin">@T["InviteHaveAccount"]</MudButton>
+        </p>
+    }
+}
+
+@code {
+    private string? _token;
+    private string _displayName = string.Empty;
+    private string _userName = string.Empty;
+    private string _password = string.Empty;
+    private bool _busy;
+    private ApiError? _error;
+
+    private bool HasError(string field) => Field(field) is not null;
+
+    private string? Field(string field) => AccountsKeys.FieldError(T, _error, field);
+
+    protected override async Task OnInitializedAsync()
+    {
+        // The token sits in the URL fragment, which the browser never sends to the server. After a detour
+        // over the login page the fragment is gone, then the in-memory draft has it.
+        _token = TokenFromFragment() ?? Draft.Token;
+        Draft.Token = null;
+        Session.Changed += OnSessionChanged;
+        await Session.EnsureLoadedAsync();
+    }
+
+    private string? TokenFromFragment()
+    {
+        var fragment = new Uri(Navigation.Uri).Fragment.TrimStart('#');
+        foreach (var part in fragment.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (part.StartsWith("token=", StringComparison.Ordinal) && part.Length > "token=".Length)
+            {
+                return Uri.UnescapeDataString(part["token=".Length..]);
+            }
+        }
+
+        return null;
+    }
+
+    private void GoToLogin()
+    {
+        Draft.Token = _token;
+        Navigation.NavigateTo("/login?returnUrl=" + Uri.EscapeDataString("/invite"));
+    }
+
+    private Task JoinAsync() => AcceptAsync(new AcceptInvitationRequest(_token!), signIn: null);
+
+    private Task CreateAccountAsync() =>
+        AcceptAsync(
+            new AcceptInvitationRequest(_token!, _userName.Trim(), _password, _displayName.Trim()),
+            new LoginRequest(_userName.Trim(), _password));
+
+    private async Task AcceptAsync(AcceptInvitationRequest request, LoginRequest? signIn)
+    {
+        if (_busy)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        var result = await Accounts.AcceptInvitationAsync(request, CancellationToken.None);
+        if (!result.IsSuccess)
+        {
+            _error = result.Error;
+            _busy = false;
+            return;
+        }
+
+        var signedIn = signIn is null || (await Accounts.LoginAsync(signIn, CancellationToken.None)).IsSuccess;
+        _password = string.Empty;
+        await Session.LoadAsync();
+        if (signedIn)
+        {
+            await Session.SelectHouseholdAsync(result.Value!.HouseholdId);
+        }
+
+        _busy = false;
+        Navigation.NavigateTo(signedIn ? "/" : "/login", replace: true);
+    }
+
+    private void OnSessionChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Session.Changed -= OnSessionChanged;
+}

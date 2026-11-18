@@ -1,0 +1,47 @@
+@inject IStringLocalizer<AccountsText> T
+
+@* A text field with a native suggestion list: keyboard and screen readers work as in any browser input,
+   and the server stays the judge of the value (invalid_time_zone shows at the field). *@
+<MudTextField T="string" Value="Value" ValueChanged="ValueChanged" Label="@T["FieldTimeZone"]" Variant="Variant.Outlined"
+              Required="true" RequiredError="@T["FieldError.required"]" Immediate="true" Error="@(ErrorText is not null)" ErrorText="@ErrorText"
+              HelperText="@T["TimeZoneHint"]"
+              UserAttributes="@(new Dictionary<string, object?> { ["list"] = _listId, ["autocomplete"] = "off", ["spellcheck"] = "false" })" />
+<datalist id="@_listId">
+    @foreach (var id in _zones)
+    {
+        <option value="@id"></option>
+    }
+</datalist>
+
+@code {
+    public const string FallbackTimeZone = "Europe/Berlin";
+
+    private readonly string _listId = $"fa-zones-{Guid.NewGuid():N}";
+    private IReadOnlyList<string> _zones = [];
+
+    [Parameter]
+    public string Value { get; set; } = string.Empty;
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter]
+    public string? ErrorText { get; set; }
+
+    // The browser's own zone when it is an IANA id; the WebAssembly runtime often reports plain UTC,
+    // which says nothing about where the household lives, so then the common default applies.
+    private string SuggestedZone()
+    {
+        var local = TimeZoneInfo.Local;
+        return local.HasIanaId && local.Id is not ("UTC" or "Etc/UTC" or "Etc/GMT") ? local.Id : FallbackTimeZone;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _zones = [.. TimeZoneInfo.GetSystemTimeZones().Where(z => z.HasIanaId).Select(z => z.Id).Order(StringComparer.Ordinal)];
+        if (string.IsNullOrEmpty(Value))
+        {
+            await ValueChanged.InvokeAsync(SuggestedZone());
+        }
+    }
+}

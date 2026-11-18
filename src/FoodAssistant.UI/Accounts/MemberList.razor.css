@@ -1,0 +1,67 @@
+.fa-household-section {
+    margin-top: var(--fa-space-8);
+}
+
+.fa-member-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Rows are at least 64 px high (design-system.md, "Maße"); actions wrap on narrow screens. */
+.fa-member {
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--fa-space-3);
+    min-height: var(--fa-row-height);
+    padding: var(--fa-space-2) 0;
+    border-bottom: 1px solid var(--fa-line);
+}
+
+.fa-member-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.fa-member-name {
+    font-size: 1.125rem;
+    line-height: 1.625rem;
+}
+
+.fa-member-role {
+    color: var(--fa-ink-muted);
+    font-size: 0.875rem;
+}
+
+.fa-member-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--fa-space-2);
+}
+
+.fa-member-confirm {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--fa-space-3);
+    flex-basis: 100%;
+    padding: var(--fa-space-3);
+    background: var(--fa-surface-sunken);
+    border-radius: var(--fa-radius-md);
+}
+
+/* Native select: keyboard and screen reader behaviour come from the browser. */
+.fa-select {
+    box-sizing: border-box;
+    min-height: var(--fa-target);
+    padding: 0 var(--fa-space-3);
+    color: var(--fa-ink);
+    font: inherit;
+    background: var(--fa-surface-sunken);
+    border: 1px solid var(--fa-line-strong);
+    border-radius: var(--fa-radius-sm);
+}

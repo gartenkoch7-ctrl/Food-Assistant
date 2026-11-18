@@ -18,6 +18,9 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.20.1" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.20.1" />
 
+    <!-- QR code of an invitation link, drawn as SVG in the browser (MIT; M1 K, later labels M1 J) -->
+    <PackageVersion Include="QRCoder" Version="1.6.0" />
+
     <!-- Abstractions used by Application/Client -->
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.14" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.14" />
