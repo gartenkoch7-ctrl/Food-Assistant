@@ -7,6 +7,9 @@ wird hier eingetragen.
 | Daten | Ort | Aufbewahrung |
 |---|---|---|
 | Konten, Mitgliedschaften, Geräte | PostgreSQL (Server) | bis Konto gelöscht (ADR-0002) |
+| Einladungen (Rolle, Zeitpunkte, nur SHA-256-Hash des Tokens) | PostgreSQL (Server) | bis Haushalt gelöscht; Aufräumen abgelaufener Einladungen folgt (ADR-0002) |
+| Anmeldedaten der App (OpenIddict-Tokens/Autorisierungen) | PostgreSQL (Server) | bis Ablauf bzw. Widerruf |
+| Schlüsselring (Data Protection) und Token-Schlüssel (mit dem Schlüsselring verschlüsselt; wer das Volume lesen kann, kann beide lesen) | Volume `FoodAssistant__DataProtectionPath` | dauerhaft; Verlust beendet Sitzungen |
 | Vorrat, Einkaufslisten, Rezepte | PostgreSQL (Server) | bis Haushalt gelöscht + 30 Tage |
 | Offline-Cache | SQLite auf dem Handy | bis Abmeldung/Haushaltswechsel |
 | Aktivitätsverlauf | PostgreSQL | 90 Tage |

@@ -1,15 +1,16 @@
 using System.Net;
-using Microsoft.AspNetCore.Mvc.Testing;
+using FoodAssistant.Server.Tests.Auth;
 
 namespace FoodAssistant.Server.Tests;
 
-public sealed class HealthEndpointTests(WebApplicationFactory<Program> factory)
-    : IClassFixture<WebApplicationFactory<Program>>
+/// <summary>The server needs its database to start (migrations run at startup), hence the container.</summary>
+public sealed class HealthEndpointTests(PostgresContainerFixture postgres)
 {
     [Fact]
     public async Task Health_ReturnsOk()
     {
-        using var client = factory.CreateClient();
+        await using var app = new ServerTestApp(postgres.NewDatabaseConnectionString());
+        using var client = app.CreateClient();
 
         using var response = await client.GetAsync(new Uri("/health", UriKind.Relative), TestContext.Current.CancellationToken);
 
