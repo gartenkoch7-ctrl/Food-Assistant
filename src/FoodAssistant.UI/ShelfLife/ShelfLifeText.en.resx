@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="RulesTitle" xml:space="preserve"><value>Shelf-life rules</value></data>
+  <data name="IntroSources" xml:space="preserve"><value>The default values come from checked public sources. The AI never suggests shelf lives.</value></data>
+  <data name="IntroNoRule" xml:space="preserve"><value>Without a rule, no date is calculated.</value></data>
+  <data name="IntroUseBy" xml:space="preserve"><value>A date calculated from a rule counts as a use-by date.</value></data>
+  <data name="StorageChilled" xml:space="preserve"><value>Chilled</value></data>
+  <data name="StorageFrozen" xml:space="preserve"><value>Frozen</value></data>
+  <data name="StorageAmbient" xml:space="preserve"><value>Room temperature</value></data>
+  <data name="ValueOpening" xml:space="preserve"><value>After opening</value></data>
+  <data name="ValueFrozen" xml:space="preserve"><value>In the freezer</value></data>
+  <data name="ValueThawing" xml:space="preserve"><value>After thawing</value></data>
+  <data name="ValueLeftover" xml:space="preserve"><value>As leftover</value></data>
+  <data name="DaysOne" xml:space="preserve"><value>1 day</value></data>
+  <data name="DaysMany" xml:space="preserve"><value>{0} days</value></data>
+  <data name="NoValue" xml:space="preserve"><value>no value</value></data>
+  <data name="OriginDefault" xml:space="preserve"><value>Default</value></data>
+  <data name="OriginOwn" xml:space="preserve"><value>Own</value></data>
+  <data name="OriginCategory" xml:space="preserve"><value>Category</value></data>
+  <data name="SourceOfRow" xml:space="preserve"><value>Source: {0}</value></data>
+  <data name="Edit" xml:space="preserve"><value>Edit</value></data>
+  <data name="EditLabel" xml:space="preserve"><value>Edit: {0}, {1}</value></data>
+  <data name="Reset" xml:space="preserve"><value>Reset to default</value></data>
+  <data name="ResetLabel" xml:space="preserve"><value>Reset to default: {0}, {1}</value></data>
+  <data name="ResetDone" xml:space="preserve"><value>Reset: {0}, {1}</value></data>
+  <data name="SavedDone" xml:space="preserve"><value>Saved: {0}, {1}</value></data>
+  <data name="SourcesHeading" xml:space="preserve"><value>Sources</value></data>
+  <data name="SourceRetrieved" xml:space="preserve"><value>retrieved on {0}</value></data>
+  <data name="SourcesEmpty" xml:space="preserve"><value>No default values are available yet. Until then, only your own values apply.</value></data>
+  <data name="DialogTitle" xml:space="preserve"><value>{0}, {1}</value></data>
+  <data name="DialogHint" xml:space="preserve"><value>Empty fields take the value from above. If all fields are empty, the default applies again.</value></data>
+  <data name="FieldInherited" xml:space="preserve"><value>Without own value: {0}</value></data>
+  <data name="DaysUnit" xml:space="preserve"><value>days</value></data>
+  <data name="FieldOutOfRange" xml:space="preserve"><value>Please enter a whole number from 0 to 3650.</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="ProductTitle" xml:space="preserve"><value>Shelf life: {0}</value></data>
+  <data name="ProductTitleFallback" xml:space="preserve"><value>Shelf life of the product</value></data>
+  <data name="ProductIntro" xml:space="preserve"><value>Category: {0}. Values without an own entry come from the category.</value></data>
+  <data name="BackToRules" xml:space="preserve"><value>To the shelf-life rules</value></data>
+  <data name="Error.shelf_life.validation_failed" xml:space="preserve"><value>Please check the marked values.</value></data>
+  <data name="Error.shelf_life.unknown_category" xml:space="preserve"><value>This category does not exist.</value></data>
+  <data name="Error.shelf_life.unknown_storage_type" xml:space="preserve"><value>This storage type does not exist.</value></data>
+  <data name="Error.catalog.product_not_found" xml:space="preserve"><value>The product was not found.</value></data>
+</root>

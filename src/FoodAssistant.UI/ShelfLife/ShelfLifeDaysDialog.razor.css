@@ -1,0 +1,5 @@
+.fa-shelf-life-field-error {
+    margin: 0.25rem 0 0.75rem;
+    font-size: 0.75rem;
+    color: var(--mud-palette-error);
+}

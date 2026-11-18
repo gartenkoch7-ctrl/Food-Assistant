@@ -1,0 +1,126 @@
+@page "/products/{ProductId:guid}/shelf-life"
+@implements IDisposable
+@using FoodAssistant.Client.Catalog
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.ShelfLife
+@using FoodAssistant.Contracts.ShelfLife
+@inject IShelfLifeClient Client
+@inject ICatalogClient Catalog
+@inject SessionState Session
+@inject IDialogService Dialogs
+@inject ILiveAnnouncer Announcer
+@inject IStringLocalizer<ShelfLifeText> T
+@inject IStringLocalizer<CategoryText> Categories
+
+<PageTitle>@Heading – @AppInfo.Name</PageTitle>
+
+<h1>@Heading</h1>
+<p>@T["IntroSources"]</p>
+<p>@T["IntroNoRule"] @T["IntroUseBy"]</p>
+
+<ApiErrorAlert Error="_error" FeatureText="T" />
+
+@if (_product is null)
+{
+    @if (_error is null)
+    {
+        <LoadingState />
+    }
+}
+else
+{
+    <p>@ShelfLifeFormat.Format(T, "ProductIntro", Categories[_product.CategoryKey].Value)</p>
+    <section class="fa-shelf-life-product" aria-labelledby="shelf-life-product-rows">
+        <h2 id="shelf-life-product-rows" class="fa-visually-hidden">@Heading</h2>
+        @foreach (var row in _product.Rows)
+        {
+            <ShelfLifeRowView Row="row" ContextName="@ContextName" IdPrefix="shelf-life-product"
+                              InheritedOriginKey="OriginCategory" SourceTitle="@SourceTitle(row.SourceKey)"
+                              CanEdit="Session.CanEdit" OnEdit="() => EditAsync(row)" OnReset="() => ResetAsync(row)" />
+        }
+    </section>
+}
+
+<p class="fa-shelf-life-back"><MudLink Href="/settings/shelf-life">@T["BackToRules"]</MudLink></p>
+
+@code {
+    private readonly CancellationTokenSource _cts = new();
+    private ProductShelfLifeDto? _product;
+    private IReadOnlyList<ShelfLifeSourceDto> _sources = [];
+    private string? _productName;
+    private ApiError? _error;
+
+    [Parameter]
+    public Guid ProductId { get; set; }
+
+    private Guid HouseholdId => Session.ActiveHouseholdId ?? Guid.Empty;
+
+    private string Heading => _productName is null
+        ? T["ProductTitleFallback"]
+        : ShelfLifeFormat.Format(T, "ProductTitle", _productName);
+
+    private string ContextName => _productName ?? T["ProductTitleFallback"];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _error = null;
+        _product = null;
+        var rules = await Client.GetProductAsync(HouseholdId, ProductId, _cts.Token);
+        if (!rules.IsSuccess)
+        {
+            _error = rules.Error;
+            return;
+        }
+
+        // Name and sources only label the page; the rules stay usable without them.
+        var product = await Catalog.GetProductAsync(HouseholdId, ProductId, _cts.Token);
+        _productName = product.Value?.Name;
+        _sources = (await Client.ListSourcesAsync(HouseholdId, _cts.Token)).Value ?? [];
+        _product = rules.Value;
+    }
+
+    private string? SourceTitle(string? key) => key is null ? null : _sources.FirstOrDefault(s => s.Key == key)?.Title;
+
+    private async Task EditAsync(ShelfLifeRuleRowDto row)
+    {
+        var title = ShelfLifeFormat.Format(T, "DialogTitle", ContextName, ShelfLifeFormat.StorageName(T, row.StorageType));
+        var parameters = new DialogParameters<ShelfLifeDaysDialog>
+        {
+            { d => d.Title, title },
+            { d => d.Own, row.Override },
+            { d => d.Inherited, row.Default },
+            { d => d.Save, days => Client.SetProductOverrideAsync(HouseholdId, ProductId, row.StorageType, days, _cts.Token) },
+        };
+        var dialog = await Dialogs.ShowAsync<ShelfLifeDaysDialog>(title, parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: ShelfLifeRuleRowDto updated })
+        {
+            Replace(row, updated);
+            Announcer.Announce(ShelfLifeFormat.Format(T, "SavedDone", ContextName, ShelfLifeFormat.StorageName(T, row.StorageType)));
+        }
+    }
+
+    private async Task ResetAsync(ShelfLifeRuleRowDto row)
+    {
+        _error = null;
+        var result = await Client.ResetProductOverrideAsync(HouseholdId, ProductId, row.StorageType, _cts.Token);
+        if (!result.IsSuccess)
+        {
+            _error = result.Error;
+            return;
+        }
+
+        // Without own values the category's values apply unchanged.
+        Replace(row, row with { Override = null, Effective = row.Default });
+        Announcer.Announce(ShelfLifeFormat.Format(T, "ResetDone", ContextName, ShelfLifeFormat.StorageName(T, row.StorageType)));
+    }
+
+    private void Replace(ShelfLifeRuleRowDto old, ShelfLifeRuleRowDto updated) =>
+        _product = _product! with { Rows = [.. _product.Rows.Select(r => ReferenceEquals(r, old) ? updated : r)] };
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+}

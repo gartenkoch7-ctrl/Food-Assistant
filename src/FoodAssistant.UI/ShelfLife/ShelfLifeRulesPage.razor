@@ -1,0 +1,165 @@
+@page "/settings/shelf-life"
+@implements IDisposable
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.ShelfLife
+@using FoodAssistant.Contracts.ShelfLife
+@inject IShelfLifeClient Client
+@inject SessionState Session
+@inject IDialogService Dialogs
+@inject ILiveAnnouncer Announcer
+@inject IStringLocalizer<ShelfLifeText> T
+@inject IStringLocalizer<CategoryText> Categories
+
+<PageTitle>@T["RulesTitle"] – @AppInfo.Name</PageTitle>
+
+<h1>@T["RulesTitle"]</h1>
+<p>@T["IntroSources"]</p>
+<p>@T["IntroNoRule"] @T["IntroUseBy"]</p>
+
+<ApiErrorAlert Error="_error" FeatureText="T" />
+
+@if (_rows is null)
+{
+    @if (_error is null)
+    {
+        <LoadingState />
+    }
+}
+else
+{
+    @foreach (var group in _rows.GroupBy(r => r.CategoryKey))
+    {
+        var key = group.Key;
+        var name = Categories[key].Value;
+        var expanded = _expanded.Contains(key);
+        <section class="fa-shelf-life-category" aria-labelledby="@($"shelf-life-{key}")">
+            <h2 id="@($"shelf-life-{key}")" class="fa-shelf-life-category-heading">
+                <button type="button" class="fa-shelf-life-toggle" aria-expanded="@(expanded ? "true" : "false")"
+                        aria-controls="@($"shelf-life-{key}-rows")" @onclick="() => Toggle(key)">
+                    <MudIcon Icon="@CategoryIcons.For(key)" aria-hidden="true" />
+                    <span>@name</span>
+                    @if (group.Any(r => r.Override is not null))
+                    {
+                        <span class="fa-shelf-life-origin">@T["OriginOwn"]</span>
+                    }
+                    <MudIcon Icon="@(expanded ? Icons.Material.Rounded.ExpandLess : Icons.Material.Rounded.ExpandMore)" aria-hidden="true" />
+                </button>
+            </h2>
+            @if (expanded)
+            {
+                <div id="@($"shelf-life-{key}-rows")">
+                    @foreach (var row in group)
+                    {
+                        <ShelfLifeRowView Row="row" ContextName="@name" IdPrefix="@($"shelf-life-{key}")"
+                                          SourceTitle="@SourceTitle(row.SourceKey)" CanEdit="Session.CanEdit"
+                                          OnEdit="() => EditAsync(row, name)" OnReset="() => ResetAsync(row, name)" />
+                    }
+                </div>
+            }
+        </section>
+    }
+
+    <section class="fa-shelf-life-sources" aria-labelledby="shelf-life-sources">
+        <h2 id="shelf-life-sources">@T["SourcesHeading"]</h2>
+        @if (_sources.Count == 0)
+        {
+            <p>@T["SourcesEmpty"]</p>
+        }
+        else
+        {
+            <ul>
+                @foreach (var source in _sources)
+                {
+                    <li>
+                        <MudLink Href="@source.Url" Target="_blank" rel="noopener noreferrer">@source.Title</MudLink>,
+                        @ShelfLifeFormat.Format(T, "SourceRetrieved", source.Retrieved.ToString("d", System.Globalization.CultureInfo.CurrentCulture))
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+}
+
+@code {
+    private readonly CancellationTokenSource _cts = new();
+    private readonly HashSet<string> _expanded = new(StringComparer.Ordinal);
+    private List<ShelfLifeRuleRowDto>? _rows;
+    private IReadOnlyList<ShelfLifeSourceDto> _sources = [];
+    private ApiError? _error;
+
+    private Guid HouseholdId => Session.ActiveHouseholdId ?? Guid.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var rules = await Client.ListRulesAsync(HouseholdId, _cts.Token);
+        if (!rules.IsSuccess)
+        {
+            _error = rules.Error;
+            return;
+        }
+
+        // Sources are only the footnote; the rules stay usable without them.
+        var sources = await Client.ListSourcesAsync(HouseholdId, _cts.Token);
+        _sources = sources.Value ?? [];
+        _rows = [.. rules.Value!];
+    }
+
+    private string? SourceTitle(string? key) => key is null ? null : _sources.FirstOrDefault(s => s.Key == key)?.Title;
+
+    private void Toggle(string key)
+    {
+        if (!_expanded.Remove(key))
+        {
+            _expanded.Add(key);
+        }
+    }
+
+    private async Task EditAsync(ShelfLifeRuleRowDto row, string name)
+    {
+        var storage = ShelfLifeFormat.StorageName(T, row.StorageType);
+        var parameters = new DialogParameters<ShelfLifeDaysDialog>
+        {
+            { d => d.Title, ShelfLifeFormat.Format(T, "DialogTitle", name, storage) },
+            { d => d.Own, row.Override },
+            { d => d.Inherited, row.Default },
+            { d => d.Save, days => Client.SetCategoryOverrideAsync(HouseholdId, row.CategoryKey, row.StorageType, days, _cts.Token) },
+        };
+        var dialog = await Dialogs.ShowAsync<ShelfLifeDaysDialog>(ShelfLifeFormat.Format(T, "DialogTitle", name, storage), parameters);
+        var result = await dialog.Result;
+        if (result is { Canceled: false, Data: ShelfLifeRuleRowDto updated })
+        {
+            Replace(row, updated);
+            Announcer.Announce(ShelfLifeFormat.Format(T, "SavedDone", name, storage));
+        }
+    }
+
+    private async Task ResetAsync(ShelfLifeRuleRowDto row, string name)
+    {
+        _error = null;
+        var result = await Client.ResetCategoryOverrideAsync(HouseholdId, row.CategoryKey, row.StorageType, _cts.Token);
+        if (!result.IsSuccess)
+        {
+            _error = result.Error;
+            return;
+        }
+
+        // Without own values the default applies unchanged.
+        Replace(row, row with { Override = null, Effective = row.Default });
+        Announcer.Announce(ShelfLifeFormat.Format(T, "ResetDone", name, ShelfLifeFormat.StorageName(T, row.StorageType)));
+    }
+
+    private void Replace(ShelfLifeRuleRowDto old, ShelfLifeRuleRowDto updated)
+    {
+        var index = _rows!.IndexOf(old);
+        if (index >= 0)
+        {
+            _rows[index] = updated;
+        }
+    }
+
+    public void Dispose()
+    {
+        _cts.Cancel();
+        _cts.Dispose();
+    }
+}

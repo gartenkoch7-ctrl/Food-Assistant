@@ -1,0 +1,124 @@
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Contracts.ShelfLife
+@inject IStringLocalizer<ShelfLifeText> T
+
+<MudDialog>
+    <TitleContent>@Title</TitleContent>
+    <DialogContent>
+        <p id="shelf-life-dialog-hint">@T["DialogHint"]</p>
+        <ApiErrorAlert Error="_error" FeatureText="T" />
+        @for (var i = 0; i < Fields.Length; i++)
+        {
+            var index = i;
+            <MudNumericField T="int?"
+                             Class="fa-shelf-life-field"
+                             Label="@T[Fields[index].LabelKey]"
+                             Value="_values[index]"
+                             ValueChanged="value => SetValue(index, value)"
+                             Min="0"
+                             Max="ShelfLifeDaysDialogLimits.MaxDays"
+                             Adornment="Adornment.End"
+                             AdornmentText="@T["DaysUnit"]"
+                             HelperText="@InheritedText(index)"
+                             Error="_fieldErrors[index]"
+                             ErrorId="@ErrorId(index)"
+                             Clearable="true"
+                             Immediate="true" />
+            @* Own element instead of ErrorText: MudBlazor 9 does not render ErrorText for an Error set from outside. *@
+            @if (_fieldErrors[index])
+            {
+                <p id="@ErrorId(index)" class="fa-shelf-life-field-error">@T["FieldOutOfRange"]</p>
+            }
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">@T["Cancel"]</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_saving" OnClick="SaveAsync">@T["Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private static readonly (string LabelKey, string Field)[] Fields =
+    [
+        ("ValueOpening", "daysAfterOpening"),
+        ("ValueFrozen", "daysFrozen"),
+        ("ValueThawing", "daysAfterThawing"),
+        ("ValueLeftover", "daysAsLeftover"),
+    ];
+
+    private readonly int?[] _values = new int?[4];
+    private readonly bool[] _fieldErrors = new bool[4];
+    private ApiError? _error;
+    private bool _saving;
+
+    [CascadingParameter]
+    private IMudDialogInstance Dialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>The own values at this level, or <see langword="null"/> without override.</summary>
+    [Parameter]
+    public ShelfLifeDaysDto? Own { get; set; }
+
+    /// <summary>Values that apply without own values (shown as help per field).</summary>
+    [Parameter, EditorRequired]
+    public ShelfLifeDaysDto Inherited { get; set; } = default!;
+
+    /// <summary>Saves the values; the dialog closes with the returned row on success.</summary>
+    [Parameter, EditorRequired]
+    public Func<ShelfLifeDaysDto, Task<ApiResult<ShelfLifeRuleRowDto>>> Save { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        if (Own is { } own)
+        {
+            for (var i = 0; i < Fields.Length; i++)
+            {
+                _values[i] = ShelfLifeFormat.Values[i].Get(own);
+            }
+        }
+    }
+
+    private static string ErrorId(int index) => $"shelf-life-field-error-{index}";
+
+    private string InheritedText(int index) =>
+        ShelfLifeFormat.Format(T, "FieldInherited", ShelfLifeFormat.Days(T, ShelfLifeFormat.Values[index].Get(Inherited)));
+
+    private void SetValue(int index, int? value)
+    {
+        _values[index] = value;
+        _fieldErrors[index] = !ShelfLifeDaysDialogLimits.IsValid(value);
+    }
+
+    private void Cancel() => Dialog.Cancel();
+
+    private async Task SaveAsync()
+    {
+        for (var i = 0; i < Fields.Length; i++)
+        {
+            _fieldErrors[i] = !ShelfLifeDaysDialogLimits.IsValid(_values[i]);
+        }
+
+        if (_fieldErrors.Any(e => e))
+        {
+            return;
+        }
+
+        _saving = true;
+        _error = null;
+        var result = await Save(new ShelfLifeDaysDto(_values[0], _values[1], _values[2], _values[3]));
+        _saving = false;
+        if (result.IsSuccess)
+        {
+            Dialog.Close(DialogResult.Ok(result.Value));
+            return;
+        }
+
+        _error = result.Error;
+        for (var i = 0; i < Fields.Length; i++)
+        {
+            _fieldErrors[i] = result.Error!.FieldErrors.ContainsKey(Fields[i].Field);
+        }
+    }
+}
