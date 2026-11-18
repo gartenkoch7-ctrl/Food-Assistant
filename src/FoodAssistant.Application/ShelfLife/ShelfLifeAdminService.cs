@@ -119,7 +119,8 @@ public sealed class ShelfLifeAdminService(
     private ShelfLifeRuleRowDto CategoryRow(string categoryKey, StorageType type, ShelfLifeRule? own)
     {
         var shipped = defaults.Find(categoryKey, type);
-        return ShelfLifeMapping.ToRow(categoryKey, type, shipped?.Rule ?? ShelfLifeRule.Empty, own, shipped?.SourceKey);
+        return ShelfLifeMapping.ToRow(
+            categoryKey, type, shipped?.Rule ?? ShelfLifeRule.Empty, own, ShelfLifeMapping.SourcesOf(shipped, null));
     }
 
     private static OperationResult<ShelfLifeRuleRowDto>? RouteNotFound(string categoryKey, string storageType, out StorageType type)

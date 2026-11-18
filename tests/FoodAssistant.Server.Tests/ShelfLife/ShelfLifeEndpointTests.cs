@@ -18,9 +18,10 @@ namespace FoodAssistant.Server.Tests.ShelfLife;
 public sealed class ShelfLifeEndpointTests(PostgresContainerFixture postgres)
 {
     private static readonly ShelfLifeDaysDto None = new(null, null, null, null);
+    private static readonly ShelfLifeSourceKeysDto NoSources = new(null, null, null, null);
 
     [Fact]
-    public async Task Rules_ListEveryCategoryAndStorageType_WithEmptyShippedTable()
+    public async Task Rules_ListEveryCategoryAndStorageType_WithShippedDefaultsAndSources()
     {
         await using var app = new ServerTestApp(postgres.NewDatabaseConnectionString());
         var (admin, setup) = await Scenario.SetupAsync(app);
@@ -30,8 +31,13 @@ public sealed class ShelfLifeEndpointTests(PostgresContainerFixture postgres)
         var sources = await admin.GetJsonAsync<List<ShelfLifeSourceDto>>(Base(setup.HouseholdId) + "/shelf-life/sources");
 
         Assert.Equal(ProductCategories.All.Count * 3, rules.Count);
-        Assert.All(rules, r => Assert.Equal((None, null, None, null), (r.Default, r.Override, r.Effective, r.SourceKey)));
-        Assert.Empty(sources);
+        var milk = Assert.Single(rules, r => r.CategoryKey == ProductCategories.Dairy && r.StorageType == StorageTypeDto.Chilled);
+        Assert.Equal((new ShelfLifeDaysDto(3, null, null, null), null), (milk.Default, milk.Override));
+        Assert.Equal(new ShelfLifeSourceKeysDto("bzfe_milch", null, null, null), milk.DefaultSources);
+        var spices = Assert.Single(rules, r => r.CategoryKey == ProductCategories.Spices && r.StorageType == StorageTypeDto.Ambient);
+        Assert.Equal((None, None, NoSources), (spices.Default, spices.Effective, spices.DefaultSources));
+        Assert.Equal(9, sources.Count);
+        Assert.Contains(sources, s => s.Key == "bzfe_milch" && s.Url.StartsWith("https://www.bzfe.de/", StringComparison.Ordinal));
         Assert.Equal(ShelfLifeRule.Empty, await ResolveAsync(app, setup.HouseholdId, Guid.CreateVersion7()));
     }
 
@@ -44,12 +50,13 @@ public sealed class ShelfLifeEndpointTests(PostgresContainerFixture postgres)
         var milk = await HouseholdDataSeed.ProductAsync(app.Services, setup.HouseholdId);
         var url = Base(setup.HouseholdId) + "/shelf-life/overrides/categories/dairy/chilled";
 
-        using (var put = await admin.PutAsync(url, new ShelfLifeDaysDto(3, null, 1, 2)))
+        using (var put = await admin.PutAsync(url, new ShelfLifeDaysDto(null, null, 1, 2)))
         {
             var row = await TestClient.ReadAsync<ShelfLifeRuleRowDto>(put);
             Assert.Equal((ProductCategories.Dairy, StorageTypeDto.Chilled), (row.CategoryKey, row.StorageType));
-            Assert.Equal(new ShelfLifeDaysDto(3, null, 1, 2), row.Override);
+            Assert.Equal(new ShelfLifeDaysDto(null, null, 1, 2), row.Override);
             Assert.Equal(new ShelfLifeDaysDto(3, null, 1, 2), row.Effective);
+            Assert.Equal("bzfe_milch", row.DefaultSources.DaysAfterOpening);
         }
 
         var rules = await admin.GetJsonAsync<List<ShelfLifeRuleRowDto>>(Base(setup.HouseholdId) + "/shelf-life/rules");
@@ -63,7 +70,7 @@ public sealed class ShelfLifeEndpointTests(PostgresContainerFixture postgres)
 
         rules = await admin.GetJsonAsync<List<ShelfLifeRuleRowDto>>(Base(setup.HouseholdId) + "/shelf-life/rules");
         Assert.All(rules, r => Assert.Null(r.Override));
-        Assert.Equal(ShelfLifeRule.Empty, await ResolveAsync(app, setup.HouseholdId, milk.Id));
+        Assert.Equal(new ShelfLifeRule { DaysAfterOpening = 3 }, await ResolveAsync(app, setup.HouseholdId, milk.Id));
     }
 
     [Fact]
@@ -93,7 +100,7 @@ public sealed class ShelfLifeEndpointTests(PostgresContainerFixture postgres)
         using var _ = admin;
         var milk = await HouseholdDataSeed.ProductAsync(app.Services, setup.HouseholdId);
         var product = $"{Base(setup.HouseholdId)}/products/{milk.Id}/shelf-life";
-        using (await admin.PutAsync(Base(setup.HouseholdId) + "/shelf-life/overrides/categories/dairy/chilled", new ShelfLifeDaysDto(3, null, null, 2)))
+        using (await admin.PutAsync(Base(setup.HouseholdId) + "/shelf-life/overrides/categories/dairy/chilled", new ShelfLifeDaysDto(null, null, null, 2)))
         {
         }
 
@@ -102,6 +109,9 @@ public sealed class ShelfLifeEndpointTests(PostgresContainerFixture postgres)
             var row = await TestClient.ReadAsync<ShelfLifeRuleRowDto>(put);
             Assert.Equal(new ShelfLifeDaysDto(3, null, null, 2), row.Default);
             Assert.Equal(new ShelfLifeDaysDto(5, null, null, 2), row.Effective);
+
+            // Only the shipped value cites a source; the leftover value is the household's category override.
+            Assert.Equal(new ShelfLifeSourceKeysDto("bzfe_milch", null, null, null), row.DefaultSources);
         }
 
         var dto = await admin.GetJsonAsync<ProductShelfLifeDto>(product);

@@ -47,6 +47,36 @@ public static class ShelfLifeFormat
     public static string? OriginKey(int? own, int? inherited, string inheritedKey) =>
         own is not null ? "OriginOwn" : inherited is not null ? inheritedKey : null;
 
+    /// <summary>
+    /// Titles of the sources a row cites, in value order and each once; keys missing from
+    /// <paramref name="sources"/> (e.g. not loaded yet) are skipped.
+    /// </summary>
+    public static IReadOnlyList<string> SourceTitles(ShelfLifeSourceKeysDto keys, IReadOnlyList<ShelfLifeSourceDto> sources)
+    {
+        ArgumentNullException.ThrowIfNull(keys);
+        ArgumentNullException.ThrowIfNull(sources);
+        return
+        [
+            .. new[] { keys.DaysAfterOpening, keys.DaysFrozen, keys.DaysAfterThawing, keys.DaysAsLeftover }
+                .OfType<string>()
+                .Distinct(StringComparer.Ordinal)
+                .Select(key => sources.FirstOrDefault(s => s.Key == key)?.Title)
+                .OfType<string>(),
+        ];
+    }
+
+    /// <summary>"Quelle: A" or "Quellen: A; B", or <see langword="null"/> without titles.</summary>
+    public static string? SourceLine(IStringLocalizer<ShelfLifeText> text, IReadOnlyList<string> titles)
+    {
+        ArgumentNullException.ThrowIfNull(titles);
+        return titles.Count switch
+        {
+            0 => null,
+            1 => Format(text, "SourceOfRow", titles[0]),
+            _ => Format(text, "SourcesOfRow", string.Join("; ", titles)),
+        };
+    }
+
     /// <summary>Formats a localized pattern with the current culture.</summary>
     public static string Format(IStringLocalizer<ShelfLifeText> text, string key, params object?[] args)
     {

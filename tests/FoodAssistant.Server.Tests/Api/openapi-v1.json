@@ -1315,7 +1315,7 @@
           "default",
           "override",
           "effective",
-          "sourceKey"
+          "defaultSources"
         ],
         "type": "object",
         "properties": {
@@ -1341,11 +1341,8 @@
           "effective": {
             "$ref": "#/components/schemas/ShelfLifeDaysDto"
           },
-          "sourceKey": {
-            "type": [
-              "null",
-              "string"
-            ]
+          "defaultSources": {
+            "$ref": "#/components/schemas/ShelfLifeSourceKeysDto"
           }
         }
       },
@@ -1370,6 +1367,41 @@
           "retrieved": {
             "type": "string",
             "format": "date"
+          }
+        }
+      },
+      "ShelfLifeSourceKeysDto": {
+        "required": [
+          "daysAfterOpening",
+          "daysFrozen",
+          "daysAfterThawing",
+          "daysAsLeftover"
+        ],
+        "type": "object",
+        "properties": {
+          "daysAfterOpening": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "daysFrozen": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "daysAfterThawing": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "daysAsLeftover": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },

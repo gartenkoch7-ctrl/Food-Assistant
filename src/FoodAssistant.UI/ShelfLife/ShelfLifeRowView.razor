@@ -21,9 +21,9 @@
             </div>
         }
     </dl>
-    @if (SourceTitle is not null)
+    @if (ShelfLifeFormat.SourceLine(T, SourceTitles) is { } sourceLine)
     {
-        <p class="fa-shelf-life-source">@ShelfLifeFormat.Format(T, "SourceOfRow", SourceTitle)</p>
+        <p class="fa-shelf-life-source">@sourceLine</p>
     }
     @if (CanEdit)
     {
@@ -57,9 +57,9 @@
     [Parameter]
     public string InheritedOriginKey { get; set; } = "OriginDefault";
 
-    /// <summary>Title of the default's source, or <see langword="null"/> without default.</summary>
+    /// <summary>Titles of the sources the row's default values cite (see <see cref="ShelfLifeFormat.SourceTitles"/>).</summary>
     [Parameter]
-    public string? SourceTitle { get; set; }
+    public IReadOnlyList<string> SourceTitles { get; set; } = [];
 
     [Parameter]
     public bool CanEdit { get; set; }
