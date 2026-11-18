@@ -1,13 +1,16 @@
+using FoodAssistant.Application.Inventory;
+using FoodAssistant.Application.Restock;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FoodAssistant.Application.Composition;
 
-/// <summary>Extension point for track G (docs/plan/m01-mvp.md). Empty until the feature is implemented.</summary>
+/// <summary>Minimum stock and recurring shopping entries (M1 track G).</summary>
 public static class RestockRegistration
 {
     public static IServiceCollection AddRestock(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        services.AddScoped<IStockChangedHandler, MinimumStockHandler>();
         return services;
     }
 }

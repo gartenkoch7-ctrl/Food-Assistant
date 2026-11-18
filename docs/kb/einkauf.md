@@ -79,6 +79,17 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
   markiert „automatisch“.
 - Wird der Eintrag entfernt, kommt er erst beim **nächsten** Unterschreiten wieder.
 - Steht das Produkt schon auf einer Liste, wird nichts doppelt angelegt.
+- **Regel** (`RestockDecision`, nach jeder Bestandsänderung und jeder Mindestbestand-Änderung über
+  `IStockChangedHandler`): `Product.MinimumStockTriggered` ist der Merker „schon auf der Liste“.
+  Unter Minimum und Merker aus: kein offener Eintrag → `AddToList` (Eintrag, Merker an); schon ein offener
+  Eintrag (auch manuell) → nur `Arm` (Merker an, nichts doppelt). Merker an → nichts. Bestand ≥ Minimum oder
+  Minimum entfernt, Merker an → `Disarm`. Ein gelöschter Eintrag setzt den Merker nicht zurück: erst
+  ausreichender Bestand (z. B. nach „Einkauf abschließen“) macht wieder scharf.
+- **Menge:** `Minimum − Bestand` in der Einheit des Mindestbestands; `piece`/`package`/`can` auf ganze Zahlen
+  aufgerundet, sonst auf drei Nachkommastellen aufgerundet. Chargen in nicht umrechenbarer Einheit zählen nicht mit.
+- Der Merker wird vor dem Anlegen gesetzt („Claim“): von zwei gleichzeitigen Prüfungen legt nur eine den Eintrag
+  an; scheitert das Anlegen, wird er zurückgenommen. Das Setzen ändert die Version (`xmin`) des Produkts;
+  Anlegen und Ändern eines Produkts liefern deshalb die Version **nach** den Handlern zurück.
 
 ## Wiederkehrende Artikel
 - Regel: täglich, wöchentlich (Wochentag), monatlich (Tag); Ziel-Liste; Menge.
