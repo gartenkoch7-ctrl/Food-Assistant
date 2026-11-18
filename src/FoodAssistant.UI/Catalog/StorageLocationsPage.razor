@@ -1,0 +1,166 @@
+@page "/settings/locations"
+@implements IDisposable
+@using System.Globalization
+@using FoodAssistant.Client.Catalog
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Sync
+@using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Inventory
+@using FoodAssistant.Contracts.Sync
+@inject ICatalogClient Catalog
+@inject SessionState Session
+@inject IDialogService Dialogs
+@inject ILiveUpdates Live
+@inject IStringLocalizer<CatalogText> T
+@inject IStringLocalizer<CommonText> Common
+
+<PageTitle>@T["LocationsTitle"] – @AppInfo.Name</PageTitle>
+
+<h1>@T["LocationsTitle"]</h1>
+
+<ApiErrorAlert Error="_error" FeatureText="T" />
+
+@if (_loading)
+{
+    <LoadingState />
+}
+else if (_locations.Count == 0)
+{
+    <EmptyState Icon="@Icons.Material.Rounded.Kitchen" Heading="@T["LocationsEmptyHeading"]" Text="@T["LocationsEmptyText"]">
+        @if (Session.CanEdit)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy" OnClick="CreateDefaultsAsync">@T["LocationsDefaults"]</MudButton>
+            <MudButton Variant="Variant.Outlined" Disabled="_busy" OnClick="() => OpenAsync(null)">@T["LocationsCreate"]</MudButton>
+        }
+    </EmptyState>
+}
+else
+{
+    <ul class="fa-list" aria-label="@T["LocationsListLabel"]">
+        @foreach (var location in _locations)
+        {
+            <ListRow Icon="@IconOf(location.Type)" Name="@location.Name" Secondary="@Common["StorageType." + location.Type]">
+                <End>
+                    @if (Session.CanEdit)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                       aria-label="@string.Format(CultureInfo.CurrentCulture, T["LocationEdit"].Value, location.Name)"
+                                       OnClick="() => OpenAsync(location)" />
+                        <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                       aria-label="@string.Format(CultureInfo.CurrentCulture, T["LocationDelete"].Value, location.Name)"
+                                       OnClick="() => DeleteAsync(location)" />
+                    }
+                </End>
+            </ListRow>
+        }
+    </ul>
+    @if (Session.CanEdit)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add"
+                   OnClick="() => OpenAsync(null)">@T["LocationsCreate"]</MudButton>
+    }
+}
+
+@code {
+    private IReadOnlyList<StorageLocationDto> _locations = [];
+    private ApiError? _error;
+    private bool _loading = true;
+    private bool _busy;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Live.Changed += OnLiveChangedAsync;
+        await ReloadAsync();
+    }
+
+    // Symbol and text both name the type, so the type never depends on colour alone.
+    private static string IconOf(StorageTypeDto type) => type switch
+    {
+        StorageTypeDto.Frozen => Icons.Material.Rounded.AcUnit,
+        StorageTypeDto.Ambient => Icons.Material.Rounded.Inventory2,
+        _ => Icons.Material.Rounded.Kitchen,
+    };
+
+    private async Task ReloadAsync()
+    {
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        var result = await Catalog.ListStorageLocationsAsync(household, CancellationToken.None);
+        _error = result.Error;
+        _locations = result.Value ?? _locations;
+        _loading = false;
+    }
+
+    private async Task OpenAsync(StorageLocationDto? location)
+    {
+        var parameters = new DialogParameters<StorageLocationDialog> { { d => d.Location, location } };
+        var title = location is null ? T["LocationDialogNew"].Value : T["LocationDialogEdit"].Value;
+        var dialog = await Dialogs.ShowAsync<StorageLocationDialog>(title, parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false })
+        {
+            await ReloadAsync();
+        }
+    }
+
+    private async Task DeleteAsync(StorageLocationDto location)
+    {
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            T["LocationDeleteTitle"],
+            string.Format(CultureInfo.CurrentCulture, T["LocationDeleteText"].Value, location.Name),
+            yesText: Common["Delete"],
+            cancelText: Common["Cancel"]);
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        var result = await Catalog.DeleteStorageLocationAsync(household, location.Id, $"\"{location.Version}\"", CancellationToken.None);
+        _error = result.Error;
+        await ReloadAsync();
+    }
+
+    private async Task CreateDefaultsAsync()
+    {
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        var defaults = new (string Name, StorageTypeDto Type)[]
+        {
+            (T["DefaultFridge"], StorageTypeDto.Chilled),
+            (T["DefaultFreezer"], StorageTypeDto.Frozen),
+            (T["DefaultPantry"], StorageTypeDto.Ambient),
+        };
+        for (var i = 0; i < defaults.Length && _error is null; i++)
+        {
+            var result = await Catalog.CreateStorageLocationAsync(
+                household, new StorageLocationRequest(null, defaults[i].Name, defaults[i].Type, i), CancellationToken.None);
+            _error = result.Error;
+        }
+
+        await ReloadAsync();
+        _busy = false;
+    }
+
+    private Task OnLiveChangedAsync(HouseholdChangesMessage message) =>
+        message.HouseholdId == Session.ActiveHouseholdId && message.Changes.Any(c => c.EntityType == SyncEntityTypes.StorageLocation)
+            ? InvokeAsync(async () =>
+            {
+                await ReloadAsync();
+                StateHasChanged();
+            })
+            : Task.CompletedTask;
+
+    public void Dispose() => Live.Changed -= OnLiveChangedAsync;
+}

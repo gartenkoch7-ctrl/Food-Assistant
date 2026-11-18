@@ -1,0 +1,53 @@
+@using FoodAssistant.Client.Catalog
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Contracts.Catalog
+@inject ICatalogClient Catalog
+@inject SessionState Session
+@inject IStringLocalizer<CategoryText> Names
+
+@* The category list is fixed (F1); the server only adds the defaults of each category. *@
+<MudSelect T="string" Label="@Label" Required="Required" Variant="Variant.Outlined"
+           Value="Value" ValueChanged="ValueChanged"
+           Error="@(ErrorText is not null)" ErrorText="@ErrorText">
+    @foreach (var category in _categories)
+    {
+        <MudSelectItem T="string" Value="@category.Key">
+            <MudIcon Icon="@CategoryIcons.For(category.Key)" Class="fa-category-icon" aria-hidden="true" />
+            @Names[category.Key]
+        </MudSelectItem>
+    }
+</MudSelect>
+<ApiErrorAlert Error="_loadError" />
+
+@code {
+    private IReadOnlyList<CategoryDto> _categories = [];
+    private ApiError? _loadError;
+
+    [Parameter]
+    public string? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<string> ValueChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool Required { get; set; }
+
+    /// <summary>Field error shown at the field, already translated.</summary>
+    [Parameter]
+    public string? ErrorText { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        var result = await Catalog.ListCategoriesAsync(household, CancellationToken.None);
+        _loadError = result.Error;
+        _categories = result.Value ?? [];
+    }
+}
