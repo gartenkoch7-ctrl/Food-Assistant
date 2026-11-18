@@ -22,7 +22,7 @@ namespace FoodAssistant.Domain.Inventory;
 /// </remarks>
 public sealed class StockBatch
 {
-    // For persistence (EF Core materialisation) only.
+    // For Restore and the factory methods only; persistence goes through StockBatchSnapshot.
     private StockBatch()
     {
     }
@@ -34,18 +34,11 @@ public sealed class StockBatch
     /// <see cref="BatchState.Sealed"/> with their package date; <see cref="Freeze"/> is for freezing at home.</param>
     /// <param name="packageExpiresOn">Printed date, or null if there is none.</param>
     /// <param name="packageExpiryKind">Kind of the printed date; <see cref="ExpiryKind.None"/> exactly when there is no date.</param>
-    public StockBatch(
-        Guid id,
-        Quantity quantity,
-        StorageType storageType,
-        DateOnly? packageExpiresOn,
-        ExpiryKind packageExpiryKind)
+    public StockBatch(Guid id, Quantity quantity, StorageType storageType, DateOnly? packageExpiresOn, ExpiryKind packageExpiryKind)
     {
         if (packageExpiresOn.HasValue == (packageExpiryKind == ExpiryKind.None))
         {
-            throw new ArgumentException(
-                "An expiry kind is required exactly when a package date is given.",
-                nameof(packageExpiryKind));
+            throw new ArgumentException("An expiry kind is required exactly when a package date is given.", nameof(packageExpiryKind));
         }
 
         Initialize(id, quantity, storageType, BatchState.Sealed);
@@ -114,6 +107,29 @@ public sealed class StockBatch
         return batch;
     }
 
+    /// <summary>Rebuilds a batch from persisted state; counterpart of <see cref="StockBatchSnapshot.From"/>.</summary>
+    /// <exception cref="ArgumentException">The snapshot is inconsistent (<see cref="StockBatchSnapshot.Validate"/>).</exception>
+    public static StockBatch Restore(StockBatchSnapshot snapshot)
+    {
+        ArgumentNullException.ThrowIfNull(snapshot);
+        snapshot.Validate();
+        return new StockBatch
+        {
+            Id = snapshot.Id,
+            Quantity = snapshot.Quantity,
+            StorageType = snapshot.StorageType,
+            State = snapshot.State,
+            PackageExpiresOn = snapshot.PackageExpiresOn,
+            PackageExpiryKind = snapshot.PackageExpiryKind,
+            ExpiresOn = snapshot.ExpiresOn,
+            ExpiryKind = snapshot.ExpiryKind,
+            OpenedOn = snapshot.OpenedOn,
+            FrozenOn = snapshot.FrozenOn,
+            ThawedOn = snapshot.ThawedOn,
+            PreparedOn = snapshot.PreparedOn,
+        };
+    }
+
     /// <summary>
     /// Marks a sealed batch as opened: effective date = min(package date, today + "after opening").
     /// Without the rule value the package date stays (no computed date).
@@ -127,18 +143,7 @@ public sealed class StockBatch
 
         State = BatchState.Opened;
         OpenedOn = today;
-        if (rule.DaysAfterOpening is not { } days)
-        {
-            return;
-        }
-
-        var ruleDate = today.AddDays(days);
-        // On a tie the rule wins so the stricter kind applies.
-        if (PackageExpiresOn is not { } packageDate || ruleDate <= packageDate)
-        {
-            ExpiresOn = ruleDate;
-            ExpiryKind = ExpiryKind.UseBy;
-        }
+        (ExpiresOn, ExpiryKind) = ShelfLifeDates.AfterOpening(today, rule.DaysAfterOpening, PackageExpiresOn, PackageExpiryKind);
     }
 
     /// <summary>
@@ -221,12 +226,7 @@ public sealed class StockBatch
         State = state;
     }
 
-    private void SetRuleDate(DateOnly from, int? days)
-    {
-        // A missing rule value yields no computed date: the batch is "without date" (KB).
-        ExpiresOn = days is { } value ? from.AddDays(value) : null;
-        ExpiryKind = ExpiresOn.HasValue ? ExpiryKind.UseBy : ExpiryKind.None;
-    }
+    private void SetRuleDate(DateOnly from, int? days) => (ExpiresOn, ExpiryKind) = ShelfLifeDates.FromRule(from, days);
 
     private void EnsureNotBeforeLastChange(DateOnly today)
     {

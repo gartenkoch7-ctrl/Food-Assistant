@@ -5,12 +5,18 @@ namespace FoodAssistant.Infrastructure.Households;
 /// <summary>A household (tenant). Deleted households are kept 30 days and hidden by a query filter.</summary>
 public sealed class Household
 {
+    /// <summary>Default of <see cref="ExpiryLeadDays"/>, also the column default for existing rows.</summary>
+    public const int DefaultExpiryLeadDays = 2;
+
     public Guid Id { get; init; } = Guid.CreateVersion7();
 
     public required string Name { get; set; }
 
     /// <summary>IANA time zone id; expiry dates are interpreted in it (AGENTS.md 2.4).</summary>
     public required string TimeZoneId { get; set; }
+
+    /// <summary>Days before the expiry date from which a batch counts as "expires soon" (M1, default 2).</summary>
+    public int ExpiryLeadDays { get; set; } = DefaultExpiryLeadDays;
 
     public DateTimeOffset CreatedAt { get; init; }
 

@@ -3,6 +3,10 @@
     <ProjectReference Include="..\FoodAssistant.Application\FoodAssistant.Application.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="FoodAssistant.Infrastructure.Tests" />
+    <InternalsVisibleTo Include="FoodAssistant.Server.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />

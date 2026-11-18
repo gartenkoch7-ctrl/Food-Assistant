@@ -6,7 +6,7 @@ Lehre aus M0: Querschnittsthemen (Fehlerabbildung, Versionen/ETags, Sync, Hausha
 Hintergrunddiensten, Registrierungen) liegen **hier**, nicht in den Spuren.
 
 ## Aufgaben
-- [ ] S0.1 Datenmodell M1a, Domain-Ergänzungen, gemeinsame Contracts, Migration `M1Core`
+- [x] S0.1 Datenmodell M1a, Domain-Ergänzungen, gemeinsame Contracts, Migration `M1Core`
 - [ ] S0.2 Nahtstellen: `OperationResult`, If-Match, Sync-Interceptor, SignalR-Hub, Kalender, Haushalts-Scopes, Verlauf, Bestands-Hook, Regel-Platzhalter
 - [ ] S0.3 Einhängepunkte aller Spuren, Event-ID-Bereiche
 - [ ] S0.4 Client-Basis (HTTP, Antiforgery, traceparent, Idempotenz), `IAccountClient`, `ICatalogClient`, `ILiveUpdates`, Testprojekt
