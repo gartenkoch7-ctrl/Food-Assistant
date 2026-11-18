@@ -10,6 +10,7 @@ public static class InfrastructureRegistration
         ArgumentNullException.ThrowIfNull(builder);
         builder.AddPersistence();
         builder.AddAccountsPersistence();
+        builder.AddHouseholdDataPersistence();
         return builder;
     }
 }

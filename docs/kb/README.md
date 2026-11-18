@@ -13,7 +13,7 @@ als Erstes braucht, und trägt sie hier ein. Grundsatzentscheidungen stehen in [
 | [barrierefreiheit.md](barrierefreiheit.md) | Checkliste pro Feature (WCAG 2.2 AA) | angelegt |
 | [produkt-und-scope.md](produkt-und-scope.md) | Produkt, Scope, MVP | angelegt |
 | architektur.md | Schichten und Projekte im Detail | offen |
-| datenmodell.md | Entitäten, Speicherung, Migrationen | offen |
+| [datenmodell.md](datenmodell.md) | Entitäten, Speicherung, Migrationen, Änderungsprotokoll, Store-Muster | angelegt |
 | [vorrat-und-haltbarkeit.md](vorrat-und-haltbarkeit.md) | Bestand, MHD/Verbrauchsdatum, Erinnerungstexte | angelegt |
 | [einkauf.md](einkauf.md) | Einkaufslisten, Nachkauf-Logik | angelegt |
 | export-schema.md | JSON-Export/-Import eines Haushalts | offen |

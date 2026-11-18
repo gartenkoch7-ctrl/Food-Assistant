@@ -11,6 +11,7 @@ builder.Services.AddApplication();
 builder.AddInfrastructure();
 builder.AddApi();
 builder.AddAuth();
+builder.AddLive();
 builder.AddUi();
 builder.Services.AddRazorComponents().AddInteractiveWebAssemblyComponents();
 builder.Services.AddHealthChecks();
@@ -35,6 +36,7 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapHealthChecks("/health");
 app.MapApiV1();
+app.MapLive();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(FoodAssistant.UI.Shell.Routes).Assembly);

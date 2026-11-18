@@ -59,22 +59,28 @@ public static class ETags
         var header = httpContext.Request.Headers.IfMatch;
         if (header.Count == 0)
         {
-            return required
-                ? ApiProblems.Problem(
-                    StatusCodes.Status428PreconditionRequired,
-                    ErrorCodes.PreconditionRequired,
-                    "Send the ETag of the version you changed in the If-Match header.")
-                : null;
+            return required ? PreconditionRequired() : null;
         }
 
         if (!TryParseIfMatch(header, out var tags))
         {
             // Empty or unquoted (If-Match: 42): a client bug, not a conflict; 412 would make it reload forever.
-            return ApiProblems.BadRequest(detail: "If-Match must contain quoted ETags, e.g. \"42\", or *.");
+            return MalformedIfMatch();
         }
 
         return Matches(tags, currentVersion) ? null : PreconditionFailed(httpContext, currentVersion, current);
     }
+
+    /// <summary>428 <c>common.precondition_required</c>: a change without <c>If-Match</c>.</summary>
+    internal static ProblemHttpResult PreconditionRequired() =>
+        ApiProblems.Problem(
+            StatusCodes.Status428PreconditionRequired,
+            ErrorCodes.PreconditionRequired,
+            "Send the ETag of the version you changed in the If-Match header.");
+
+    /// <summary>400 <c>common.bad_request</c>: <c>If-Match</c> is not a list of quoted ETags.</summary>
+    internal static ProblemHttpResult MalformedIfMatch() =>
+        ApiProblems.BadRequest(detail: "If-Match must contain quoted ETags, e.g. \"42\", or *.");
 
     /// <summary>
     /// 412 <c>common.precondition_failed</c> with the current ETag as header and in the body (and
@@ -101,7 +107,7 @@ public static class ETags
     }
 
     // Strict: one malformed entry ("42, \"3\"") makes the whole header invalid instead of being skipped.
-    private static bool TryParseIfMatch(StringValues header, out IList<EntityTagHeaderValue> tags) =>
+    internal static bool TryParseIfMatch(StringValues header, out IList<EntityTagHeaderValue> tags) =>
         EntityTagHeaderValue.TryParseStrictList(header, out tags!) && tags.Count > 0;
 
     // Weak comparison on purpose (RFC 9110 asks for strong): compressing proxies (nginx gzip) turn

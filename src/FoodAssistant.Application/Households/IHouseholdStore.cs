@@ -9,6 +9,9 @@ public interface IHouseholdStore
     /// <summary>The membership of a person in a (not deleted) household, or <see langword="null"/>.</summary>
     Task<HouseholdMembershipInfo?> FindMembershipAsync(Guid householdId, Guid userId, CancellationToken cancellationToken);
 
+    /// <summary>Ids of all not deleted households, for background services (<see cref="IHouseholdScopeFactory"/>).</summary>
+    Task<IReadOnlyList<Guid>> ListActiveHouseholdIdsAsync(CancellationToken cancellationToken);
+
     /// <summary>All households of a person with their role, ordered by name.</summary>
     Task<IReadOnlyList<MeHouseholdResponse>> GetHouseholdsOfUserAsync(Guid userId, CancellationToken cancellationToken);
 

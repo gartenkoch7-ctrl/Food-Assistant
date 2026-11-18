@@ -8,6 +8,7 @@ echte Implementierung. ADR-0005 „Live-Updates“.
 Branch `feat/m01-e1-live` · ein Paket.
 
 ## Aufgaben
+- [ ] Entfernte Mitglieder sofort aus der Hub-Gruppe nehmen (Review S0.2): Verbindungen pro Person merken, bei `RemoveMemberAsync`/Kontosperre aus `household:{id}` entfernen bzw. Verbindung beenden; Test „entferntes Mitglied bekommt keine Änderungen mehr“.
 - [ ] E1 `SignalRLiveUpdates`, Statusanzeige, Tests
 
 ## Detailplan

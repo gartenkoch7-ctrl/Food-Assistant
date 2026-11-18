@@ -29,6 +29,8 @@ hinzufügt, trägt sie hier ein – in derselben Änderung.
 | Infrastructure (M0 Spur D) | 2000–2199 | M0 |
 | Application (M0 Spur D) | 3000–3099 | M0 |
 | UI (M0 Spur E) | 4000–4099 | M0 |
+| Server – Sync (Live-Updates; M1 S0, E1, E2) | 1300–1324 | M1 S0.2 |
+| Infrastructure – Sync (Änderungsprotokoll; M1 S0, E2) | 2200–2249 | M1 S0.2 |
 
 Innerhalb von 1000–1099: Fehlerbehandlung 1000–1009, Idempotenz 1010–1019, Rate-Limits 1020–1029,
 Rest frei für weitere API-Konventionen.
@@ -60,12 +62,15 @@ Rest frei für weitere API-Konventionen.
 | `HouseholdNotAccessible` / 1112 | Log, Information | Anmeldung | Zugriff auf Haushalt verweigert: kein Mitglied | – |
 | `HouseholdRoleInsufficient` / 1113 | Log, Information | Anmeldung | Zugriff verweigert: Rolle reicht nicht | `HouseholdId`, `Role` |
 | `ServerAdminDenied` / 1114 | Log, Warning | Anmeldung | Server-Admin-Recht fehlt, Zugriff verweigert | `UserId` |
+| `HubJoinDenied` / 1300 | Log, Information | Sync | Beitritt zur Live-Gruppe eines Haushalts abgelehnt: kein Mitglied (unbekannt oder fremd) | – |
+| `HubJoined` / 1301 | Log, Debug | Sync | Verbindung empfängt Live-Updates eines Haushalts | `HouseholdId` |
 | `DatabaseUpToDate` / 2000 | Log, Information | Persistenz | Datenbankschema ist aktuell | – |
 | `MigrationsStarting` / 2001 | Log, Information | Persistenz | Migrationen beginnen | `Count` |
 | `MigrationsApplied` / 2002 | Log, Information | Persistenz | Migrationen angewendet | `Count`, `ElapsedMilliseconds` |
 | `MigrationFailed` / 2003 | Log, Critical | Persistenz | Migration fehlgeschlagen; der Server stoppt | Exception |
 | `AccountCreationRefused` / 2020 | Log, Information | Konten | Konto nicht angelegt; nur Fehlercodes, keine Eingaben | `ErrorCodes` |
 | `InvitationRedemptionConflict` / 2021 | Log, Warning | Konten | Einladung parallel eingelöst; diese Einlösung zurückgerollt | `InvitationId` |
+| `ChangeNotificationFailed` / 2200 | Log, Warning | Sync | Live-Update nach dem Commit nicht gesendet; die Speicherung bleibt gültig, Clients holen über das Änderungsprotokoll nach | `HouseholdId`, Exception |
 | `SetupCompleted` / 3000 | Log, Information | Konten | Ersteinrichtung abgeschlossen | `UserId`, `HouseholdId` |
 | `SetupRejected` / 3001 | Log, Warning | Konten | Ersteinrichtung abgelehnt, sie war bereits abgeschlossen | – |
 | `InvitationAccepted` / 3002 | Log, Information | Konten | Einladung angenommen | `InvitationId`, `HouseholdId`, `UserId`, `Role` |

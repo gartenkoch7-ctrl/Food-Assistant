@@ -68,5 +68,6 @@ internal static class TestEndpoints
             (IResult?)ETags.CheckIfMatch(context, CurrentVersion, required: false) ?? TypedResults.Ok(request));
 
         group.MapGet("/strict", () => TypedResults.Ok()).RequireRateLimiting(RateLimitPolicies.AuthStrict);
+        OperationResultTestEndpoints.Map(group);
     }
 }

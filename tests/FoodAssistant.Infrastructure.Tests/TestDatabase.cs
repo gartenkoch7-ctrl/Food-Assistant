@@ -1,4 +1,5 @@
 using FoodAssistant.Application.Households;
+using FoodAssistant.Application.Sync;
 using FoodAssistant.Infrastructure.Composition;
 using FoodAssistant.Infrastructure.Persistence;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,12 +19,17 @@ public sealed class TestDatabase : IAsyncDisposable
 
     public IServiceProvider Services => _host.Services;
 
-    public static async Task<TestDatabase> CreateAsync(string connectionString, bool migrate = true)
+    /// <summary>Records the live-update announcements of the sync interceptor.</summary>
+    public RecordingChangeNotifier Notifier => Services.GetRequiredService<RecordingChangeNotifier>();
+
+    public static async Task<TestDatabase> CreateAsync(string connectionString, bool migrate = true, TimeProvider? time = null)
     {
         var builder = Host.CreateEmptyApplicationBuilder(new HostApplicationBuilderSettings());
         builder.Configuration[$"ConnectionStrings:{PersistenceRegistration.ConnectionStringName}"] = connectionString;
         builder.Services.AddLogging();
-        builder.Services.AddSingleton(TimeProvider.System);
+        builder.Services.AddSingleton(time ?? TimeProvider.System);
+        builder.Services.AddSingleton<RecordingChangeNotifier>();
+        builder.Services.AddSingleton<IHouseholdChangeNotifier>(sp => sp.GetRequiredService<RecordingChangeNotifier>());
         builder.Services.AddScoped<TestHouseholdContext>();
         builder.Services.AddScoped<IHouseholdContext>(sp => sp.GetRequiredService<TestHouseholdContext>());
         builder.AddInfrastructure();

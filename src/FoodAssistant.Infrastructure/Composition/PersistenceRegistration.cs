@@ -1,4 +1,5 @@
 using FoodAssistant.Infrastructure.Persistence;
+using FoodAssistant.Infrastructure.Sync;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,11 @@ public static class PersistenceRegistration
             }
 
             options.UseNpgsql(connectionString);
+
+            // Change log and live updates of synchronised entities (ADR-0005).
+            options.AddInterceptors(
+                services.GetRequiredService<SyncChangeInterceptor>(),
+                services.GetRequiredService<SyncTransactionInterceptor>());
         });
 
         builder.Services.AddHostedService<DatabaseMigrationService>();

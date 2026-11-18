@@ -18,6 +18,15 @@ internal sealed class HouseholdStore(AppDbContext db, TimeProvider timeProvider)
             .Select(m => new HouseholdMembershipInfo(m.HouseholdId, m.UserId, m.Role))
             .SingleOrDefaultAsync(cancellationToken);
 
+    // Deleted households are hidden by the NotDeleted filter of Households.
+    public async Task<IReadOnlyList<Guid>> ListActiveHouseholdIdsAsync(CancellationToken cancellationToken) =>
+        await db.Households
+            .AsNoTracking()
+            .OrderBy(h => h.Id)
+            .Select(h => h.Id)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
     public async Task<IReadOnlyList<MeHouseholdResponse>> GetHouseholdsOfUserAsync(
         Guid userId,
         CancellationToken cancellationToken) =>
