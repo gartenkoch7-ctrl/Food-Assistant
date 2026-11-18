@@ -2,6 +2,8 @@ using FoodAssistant.Server.Api.Idempotency;
 using FoodAssistant.Server.Api.Info;
 using FoodAssistant.Server.Api.RateLimiting;
 using FoodAssistant.Server.Auth;
+using FoodAssistant.Server.Backup;
+using FoodAssistant.Server.Notifications;
 
 namespace FoodAssistant.Server.Api;
 
@@ -20,6 +22,8 @@ public static class ApiV1Routes
             .WithIdempotency();
         group.MapInfoEndpoints();
         group.MapAccountEndpoints();
+        group.MapNotificationApiEndpoints();
+        group.MapBackupEndpoints();
         return group;
     }
 }

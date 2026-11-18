@@ -11,6 +11,19 @@ public static class InfrastructureRegistration
         builder.AddPersistence();
         builder.AddAccountsPersistence();
         builder.AddHouseholdDataPersistence();
+        builder.AddCatalogPersistence();
+        builder.AddShelfLifePersistence();
+        builder.AddInventoryPersistence();
+        builder.AddFoodFactsPersistence();
+        builder.AddShoppingPersistence();
+        builder.AddCheckoutPersistence();
+        builder.AddRestockPersistence();
+        builder.AddNotificationsPersistence();
+        builder.AddStatisticsPersistence();
+        builder.AddLabelsPersistence();
+        builder.AddImportPersistence();
+        builder.AddBackupPersistence();
+        builder.AddExportPersistence();
         return builder;
     }
 }

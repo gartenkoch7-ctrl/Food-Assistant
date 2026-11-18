@@ -31,6 +31,26 @@ hinzufügt, trägt sie hier ein – in derselben Änderung.
 | UI (M0 Spur E) | 4000–4099 | M0 |
 | Server – Sync (Live-Updates; M1 S0, E1, E2) | 1300–1324 | M1 S0.2 |
 | Infrastructure – Sync (Änderungsprotokoll; M1 S0, E2) | 2200–2249 | M1 S0.2 |
+| Server – Activity (M1 S0, V) | 1325–1349 | M1 S0.3 |
+| Infrastructure – Activity (M1 S0, V) | 2250–2299 | M1 S0.3 |
+| Server – Households (M1 K); UI/Client – Session, Accounts | 1350–1374; 4200–4249 | M1 S0.3 |
+| Application – Sync (M1 S0, E1, E2) / UI – Sync | 3100–3149 / 4100–4149 | M1 S0.3 |
+| Server/Infrastructure/Application/UI/Client – Catalog (M1 A) | 1375–1399 / 2300–2349 / 3200–3249 / 4250–4299 | M1 S0.3 |
+| ShelfLife (M1 B1) | 1400–1424 / 2350–2399 / 3250–3299 / 4300–4349 | M1 S0.3 |
+| Inventory (M1 B2) | 1425–1449 / 2400–2449 / 3300–3349 / 4350–4399 | M1 S0.3 |
+| FoodFacts (M1 C1) | 1450–1474 / 2450–2499 / 3350–3399 | M1 S0.3 |
+| Scan (M1 C2, nur UI/Client) | 4400–4449 | M1 S0.3 |
+| Shopping (M1 D) | 1475–1499 / 2500–2549 / 3400–3449 / 4450–4499 | M1 S0.3 |
+| Stores (M1 D) | 1500–1524 / 2550–2599 / 3450–3499 / 4500–4549 | M1 S0.3 |
+| Checkout (M1 F) | 1525–1549 / 2600–2649 / 3500–3549 / 4550–4599 | M1 S0.3 |
+| Restock (M1 G) | 1550–1574 / 2650–2699 / 3550–3599 / 4600–4649 | M1 S0.3 |
+| Notifications (M1 H) | 1575–1599 / 2700–2749 / 3600–3649 / 4650–4699 | M1 S0.3 |
+| Statistics (M1 I) | 1600–1624 / 2750–2799 / 3650–3699 / 4700–4749 | M1 S0.3 |
+| Labels (M1 J) | 1625–1649 / 2800–2849 / 3700–3749 / 4750–4799 | M1 S0.3 |
+| Import (M1 L) | 1650–1674 / 2850–2899 / 3750–3799 / 4800–4849 | M1 S0.3 |
+| Backup (M1 N) | 1675–1699 / 2900–2949 / 3800–3849 | M1 S0.3 |
+| Export (M1 N) | 1700–1724 / 2950–2999 / 3850–3899 / 4850–4899 | M1 S0.3 |
+| Mobile (M1 M) | 4900–4999 | M1 S0.3 |
 
 Innerhalb von 1000–1099: Fehlerbehandlung 1000–1009, Idempotenz 1010–1019, Rate-Limits 1020–1029,
 Rest frei für weitere API-Konventionen.

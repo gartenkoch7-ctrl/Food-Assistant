@@ -9,6 +9,19 @@ public static class ApplicationRegistration
     {
         ArgumentNullException.ThrowIfNull(services);
         services.AddHouseholdData();
+        services.AddCatalog();
+        services.AddShelfLife();
+        services.AddInventory();
+        services.AddFoodFacts();
+        services.AddShopping();
+        services.AddCheckout();
+        services.AddRestock();
+        services.AddNotifications();
+        services.AddStatistics();
+        services.AddLabels();
+        services.AddImport();
+        services.AddBackup();
+        services.AddExport();
         services.AddAccountsAndHouseholds();
         return services;
     }

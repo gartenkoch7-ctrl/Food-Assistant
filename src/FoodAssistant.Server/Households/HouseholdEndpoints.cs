@@ -1,4 +1,19 @@
 using FoodAssistant.Application.Households;
+using FoodAssistant.Server.Catalog;
+using FoodAssistant.Server.ShelfLife;
+using FoodAssistant.Server.Inventory;
+using FoodAssistant.Server.FoodFacts;
+using FoodAssistant.Server.Shopping;
+using FoodAssistant.Server.Stores;
+using FoodAssistant.Server.Checkout;
+using FoodAssistant.Server.Restock;
+using FoodAssistant.Server.Notifications;
+using FoodAssistant.Server.Statistics;
+using FoodAssistant.Server.Labels;
+using FoodAssistant.Server.Import;
+using FoodAssistant.Server.Export;
+using FoodAssistant.Server.Activities;
+using FoodAssistant.Server.Sync;
 using FoodAssistant.Contracts.Households;
 using FoodAssistant.Server.Auth;
 
@@ -25,6 +40,23 @@ internal static class HouseholdEndpoints
             .RequireAuthorization(AuthPolicies.HouseholdAny);
         household.MapInvitationEndpoints();
         household.MapMemberEndpoints();
+        household.MapCatalogEndpoints();
+        household.MapShelfLifeEndpoints();
+        household.MapInventoryEndpoints();
+        household.MapFoodFactsEndpoints();
+        household.MapShoppingEndpoints();
+        household.MapStoresEndpoints();
+        household.MapCheckoutEndpoints();
+        household.MapRestockEndpoints();
+        household.MapNotificationsEndpoints();
+        household.MapStatisticsEndpoints();
+        household.MapLabelsEndpoints();
+        household.MapImportEndpoints();
+        household.MapExportEndpoints();
+        household.MapActivityEndpoints();
+        household.MapSyncEndpoints();
+        household.MapHouseholdSettingsEndpoints();
+        households.MapHouseholdImportEndpoints();
         return api;
     }
 
