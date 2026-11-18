@@ -352,6 +352,430 @@
           }
         }
       }
+    },
+    "/api/v1/households/{householdId}/inventory": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "locationId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/households/{householdId}/inventory/products/{productId}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/households/{householdId}/inventory/batches/{batchId}": {
+      "get": {
+        "tags": [
+          "Inventory"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "batchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Inventory"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "batchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CorrectBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/households/{householdId}/inventory/batches": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/households/{householdId}/inventory/batches/{batchId}/move": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "batchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/households/{householdId}/inventory/batches/{batchId}/open": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "batchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/households/{householdId}/inventory/batches/{batchId}/consume": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "batchId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsumeBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/households/{householdId}/inventory/leftovers": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLeftoverRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/households/{householdId}/inventory/products/{productId}/consume": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsumeProductRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/households/{householdId}/inventory/activities/{activityId}/undo": {
+      "post": {
+        "tags": [
+          "Inventory"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "activityId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -385,6 +809,55 @@
           }
         }
       },
+      "AddBatchRequest": {
+        "required": [
+          "id",
+          "productId",
+          "storageLocationId",
+          "quantity",
+          "packageExpiresOn",
+          "packageExpiryKind",
+          "origin",
+          "selfFrozen"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "storageLocationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "$ref": "#/components/schemas/QuantityDto"
+          },
+          "packageExpiresOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "packageExpiryKind": {
+            "$ref": "#/components/schemas/ExpiryKindDto"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/BatchOriginDto"
+          },
+          "selfFrozen": {
+            "type": "boolean"
+          }
+        }
+      },
       "AntiforgeryTokenResponse": {
         "required": [
           "requestToken",
@@ -400,6 +873,15 @@
           }
         }
       },
+      "BatchOriginDto": {
+        "enum": [
+          "manual",
+          "scanned",
+          "purchase",
+          "import",
+          "leftover"
+        ]
+      },
       "ChangeMemberRoleRequest": {
         "required": [
           "role"
@@ -408,6 +890,112 @@
         "properties": {
           "role": {
             "$ref": "#/components/schemas/HouseholdRole"
+          }
+        }
+      },
+      "ConsumeBatchRequest": {
+        "required": [
+          "kind",
+          "quantity",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/ConsumptionKindDto"
+          },
+          "quantity": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/QuantityDto"
+              }
+            ]
+          },
+          "reason": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ConsumptionReasonDto"
+              }
+            ]
+          }
+        }
+      },
+      "ConsumeProductRequest": {
+        "required": [
+          "kind",
+          "quantity",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "kind": {
+            "$ref": "#/components/schemas/ConsumptionKindDto"
+          },
+          "quantity": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/QuantityDto"
+              }
+            ]
+          },
+          "reason": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ConsumptionReasonDto"
+              }
+            ]
+          }
+        }
+      },
+      "ConsumptionKindDto": {
+        "enum": [
+          "used_up",
+          "partial",
+          "discarded"
+        ]
+      },
+      "ConsumptionReasonDto": {
+        "enum": [
+          "expired",
+          "spoiled",
+          "disliked_taste",
+          "too_much_cooked",
+          "other",
+          null
+        ]
+      },
+      "CorrectBatchRequest": {
+        "required": [
+          "quantity",
+          "packageExpiresOn",
+          "packageExpiryKind"
+        ],
+        "type": "object",
+        "properties": {
+          "quantity": {
+            "$ref": "#/components/schemas/QuantityDto"
+          },
+          "packageExpiresOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "packageExpiryKind": {
+            "$ref": "#/components/schemas/ExpiryKindDto"
           }
         }
       },
@@ -437,6 +1025,42 @@
           }
         }
       },
+      "CreateLeftoverRequest": {
+        "required": [
+          "id",
+          "productId",
+          "storageLocationId",
+          "quantity"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "productId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "storageLocationId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "quantity": {
+            "$ref": "#/components/schemas/QuantityDto"
+          }
+        }
+      },
+      "ExpiryKindDto": {
+        "enum": [
+          "none",
+          "best_before",
+          "use_by"
+        ]
+      },
       "HouseholdRole": {
         "enum": [
           "restricted",
@@ -455,6 +1079,38 @@
             "type": "string"
           },
           "password": {
+            "type": "string"
+          }
+        }
+      },
+      "MoveBatchRequest": {
+        "required": [
+          "storageLocationId"
+        ],
+        "type": "object",
+        "properties": {
+          "storageLocationId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "QuantityDto": {
+        "required": [
+          "value",
+          "unit"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "unit": {
             "type": "string"
           }
         }
@@ -543,6 +1199,9 @@
     },
     {
       "name": "Members"
+    },
+    {
+      "name": "Inventory"
     }
   ]
 }
