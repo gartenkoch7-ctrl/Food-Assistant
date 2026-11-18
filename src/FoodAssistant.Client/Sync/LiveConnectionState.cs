@@ -7,4 +7,7 @@ public enum LiveConnectionState
     Connecting,
     Connected,
     Reconnecting,
+
+    /// <summary>No live connection is configured on this host (server prerendering); nothing to show.</summary>
+    Off,
 }

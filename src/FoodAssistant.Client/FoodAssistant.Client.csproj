@@ -4,5 +4,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Http" />
+    <!-- Official SignalR client (MIT), runs in WebAssembly: live updates of the household (M1 E1). -->
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
   </ItemGroup>
 </Project>

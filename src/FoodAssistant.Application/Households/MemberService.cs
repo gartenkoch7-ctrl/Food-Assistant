@@ -1,4 +1,5 @@
 using FoodAssistant.Application.Diagnostics;
+using FoodAssistant.Application.Sync;
 using FoodAssistant.Contracts.Households;
 using Microsoft.Extensions.Logging;
 
@@ -8,6 +9,7 @@ namespace FoodAssistant.Application.Households;
 public sealed class MemberService(
     IHouseholdStore store,
     IHouseholdContext householdContext,
+    IMembershipRevocationNotifier revocations,
     ILogger<MemberService> logger)
 {
     public Task<IReadOnlyList<HouseholdMemberResponse>> ListAsync(Guid householdId, CancellationToken cancellationToken)
@@ -56,6 +58,9 @@ public sealed class MemberService(
         if (outcome == MembershipChangeOutcome.Succeeded)
         {
             HouseholdsLog.MemberRemoved(logger, householdId, userId);
+
+            // Committed already: the live connections of the removed person must not keep listening.
+            await revocations.MemberRemovedAsync(householdId, userId, CancellationToken.None).ConfigureAwait(false);
         }
         else if (outcome == MembershipChangeOutcome.LastOwner)
         {

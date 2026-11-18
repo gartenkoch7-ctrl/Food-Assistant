@@ -1,0 +1,12 @@
+.fa-live-status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--fa-space-2);
+    margin-inline-start: auto;
+    padding: var(--fa-space-1) var(--fa-space-3);
+    color: var(--fa-ink);
+    background: var(--fa-status-soon-bg);
+    border: 1px solid var(--fa-status-soon);
+    border-radius: var(--fa-radius-pill);
+    font: 500 0.875rem/1.25rem var(--fa-font-text);
+}

@@ -11,31 +11,71 @@ namespace FoodAssistant.Server.Sync;
 /// receives <c>Changed</c> messages (ids and sequences only) after every commit.
 /// </summary>
 /// <remarks>
-/// Membership is checked when joining. A member removed later keeps receiving ids until the
-/// connection ends; the data itself stays protected by the API.
+/// Membership is checked when joining. Removing a member takes their connections out of the group
+/// at once (<see cref="SignalRMembershipRevocationNotifier"/>), so a removed member hears nothing more.
 /// </remarks>
 [Authorize]
-internal sealed class HouseholdHub(IHouseholdStore households, ILogger<HouseholdHub> logger) : Hub
+internal sealed class HouseholdHub(
+    IHouseholdStore households,
+    HouseholdConnectionRegistry registry,
+    ILogger<HouseholdHub> logger) : Hub
 {
     public async Task Join(Guid householdId)
     {
         var userId = Context.User!.GetRequiredUserId();
+
+        // Registered before the check, so a removal that happens meanwhile finds the connection.
+        registry.Add(Context.ConnectionId, userId, householdId);
+        var group = GroupName(householdId);
+        try
+        {
+            await EnsureMemberAsync(householdId, userId).ConfigureAwait(false);
+            await Groups.AddToGroupAsync(Context.ConnectionId, group, Context.ConnectionAborted).ConfigureAwait(false);
+
+            // A removal between the check and the group call missed this connection: look again.
+            if (await households.FindMembershipAsync(householdId, userId, Context.ConnectionAborted).ConfigureAwait(false) is null)
+            {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, group, Context.ConnectionAborted).ConfigureAwait(false);
+                throw NotFound();
+            }
+        }
+        catch
+        {
+            registry.Remove(Context.ConnectionId, householdId);
+            throw;
+        }
+
+        SyncLog.HubJoined(logger, householdId);
+    }
+
+    public Task Leave(Guid householdId)
+    {
+        registry.Remove(Context.ConnectionId, householdId);
+        return Groups.RemoveFromGroupAsync(Context.ConnectionId, GroupName(householdId), Context.ConnectionAborted);
+    }
+
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        registry.RemoveConnection(Context.ConnectionId);
+        return base.OnDisconnectedAsync(exception);
+    }
+
+    internal static string GroupName(Guid householdId) => $"household:{householdId:N}";
+
+    private async Task EnsureMemberAsync(Guid householdId, Guid userId)
+    {
         var membership = await households.FindMembershipAsync(householdId, userId, Context.ConnectionAborted)
             .ConfigureAwait(false);
         if (membership is null)
         {
-            // Same answer for unknown and foreign households (ADR-0002: no hint that it exists).
-            SyncLog.HubJoinDenied(logger);
-            throw new HubException(HouseholdErrorCodes.NotFound);
+            throw NotFound();
         }
-
-        await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(householdId), Context.ConnectionAborted)
-            .ConfigureAwait(false);
-        SyncLog.HubJoined(logger, householdId);
     }
 
-    public Task Leave(Guid householdId) =>
-        Groups.RemoveFromGroupAsync(Context.ConnectionId, GroupName(householdId), Context.ConnectionAborted);
-
-    internal static string GroupName(Guid householdId) => $"household:{householdId:N}";
+    // Same answer for unknown and foreign households (ADR-0002: no hint that it exists).
+    private HubException NotFound()
+    {
+        SyncLog.HubJoinDenied(logger);
+        return new HubException(HouseholdErrorCodes.NotFound);
+    }
 }

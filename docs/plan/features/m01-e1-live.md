@@ -8,9 +8,9 @@ echte Implementierung. ADR-0005 „Live-Updates“.
 Branch `feat/m01-e1-live` · ein Paket.
 
 ## Aufgaben
-- [ ] `ILiveUpdates.StartAsync`-Vertrag einhalten (Review S0, siehe XML-Doku): schnell zurückkehren, nie werfen, nicht auf den Handshake oder auf `Changed`/`Resynced`-Handler warten – `SessionState` ruft es unter seiner Übergangssperre auf (sonst blockiert Abmelden bzw. Deadlock). Test: Start bei nicht erreichbarem Hub blockiert `SignOutAsync` nicht.
-- [ ] Entfernte Mitglieder sofort aus der Hub-Gruppe nehmen (Review S0.2): Verbindungen pro Person merken, bei `RemoveMemberAsync`/Kontosperre aus `household:{id}` entfernen bzw. Verbindung beenden; Test „entferntes Mitglied bekommt keine Änderungen mehr“.
-- [ ] E1 `SignalRLiveUpdates`, Statusanzeige, Tests
+- [x] `ILiveUpdates.StartAsync`-Vertrag einhalten (Review S0, siehe XML-Doku): schnell zurückkehren, nie werfen, nicht auf den Handshake oder auf `Changed`/`Resynced`-Handler warten – `SessionState` ruft es unter seiner Übergangssperre auf (sonst blockiert Abmelden bzw. Deadlock). Test: Start bei nicht erreichbarem Hub blockiert `SignOutAsync` nicht.
+- [x] Entfernte Mitglieder sofort aus der Hub-Gruppe nehmen (Review S0.2): Verbindungen pro Person merken, bei `RemoveMemberAsync`/Kontosperre aus `household:{id}` entfernen bzw. Verbindung beenden; Test „entferntes Mitglied bekommt keine Änderungen mehr“. Umgesetzt über `IMembershipRevocationNotifier` (Application, Hook in `MemberService.RemoveAsync`) + `HouseholdConnectionRegistry`; eine Kontosperre gibt es noch nicht (nur befristete Login-Sperre), dort entfällt der Hook.
+- [x] E1 `SignalRLiveUpdates`, Statusanzeige, Tests
 
 ## Detailplan
 
