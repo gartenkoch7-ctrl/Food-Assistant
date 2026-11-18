@@ -53,6 +53,26 @@ public sealed class RecurringRuleDialogTests : RestockTestContext
     }
 
     [Fact]
+    public async Task RuleEditedByAnotherPerson_IsNotOverwritten()
+    {
+        var list = AddList();
+        var rule = AddRule(list.Id, "Milch");
+        Restock.Rules[0] = rule with { Version = 9, Text = "Hafermilch" };
+        await ShowAsync<RecurringRuleDialog>(p =>
+        {
+            p.Add(d => d.Rule, rule);
+            p.Add(d => d.Lists, [list]);
+        });
+        Dialogs.WaitForAssertion(() => Assert.Contains("Regel bearbeiten", Dialogs.Markup, StringComparison.Ordinal));
+        Dialogs.Field("Artikel").Change("Soja");
+
+        ButtonByText(Dialogs, "Speichern").Click();
+
+        Dialogs.WaitForAssertion(() => Assert.NotEmpty(Dialogs.FindAll("[role=alert]")));
+        Assert.Equal(("Hafermilch", 9L), (Restock.Rules[0].Text, Restock.Rules[0].Version));
+    }
+
+    [Fact]
     public async Task EmptyText_ShowsTheFieldError_AndSendsNothing()
     {
         var list = AddList();

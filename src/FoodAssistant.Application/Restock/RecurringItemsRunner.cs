@@ -38,8 +38,9 @@ public sealed class RecurringItemsRunner(
                 }
                 else
                 {
-                    created = await AddAsync(householdId, rule, cancellationToken).ConfigureAwait(false);
-                    added++;
+                    var (id, isNew) = await AddAsync(householdId, rule, cancellationToken).ConfigureAwait(false);
+                    created = id;
+                    added += isNew ? 1 : 0;
                 }
             }
 #pragma warning disable CA1031 // One broken rule must not starve the others; it moves on like any other.
@@ -50,9 +51,18 @@ public sealed class RecurringItemsRunner(
             }
 
             // Skipped, added or failed, the due date moves on; otherwise the rule would fire again every run.
-            var next = RecurrenceSchedule.NextDue(rule.Frequency, rule.DayOfWeek, rule.DayOfMonth, today);
-            await rules.MarkRunAsync(rule.Id, rule.Version, next, created, time.GetUtcNow(), cancellationToken)
-                .ConfigureAwait(false);
+            try
+            {
+                var next = RecurrenceSchedule.NextDue(rule.Frequency, rule.DayOfWeek, rule.DayOfMonth, today);
+                await rules.MarkRunAsync(rule.Id, rule.Version, next, created, time.GetUtcNow(), cancellationToken)
+                    .ConfigureAwait(false);
+            }
+#pragma warning disable CA1031 // The next run repeats it; the entry id per due date keeps that from duplicating.
+            catch (Exception exception) when (exception is not OperationCanceledException)
+#pragma warning restore CA1031
+            {
+                RestockLog.RecurringRuleFailed(logger, rule.Id, exception);
+            }
         }
 
         activity?.SetTag("foodassistant.items", added);
@@ -79,7 +89,7 @@ public sealed class RecurringItemsRunner(
         itemId is { } id
         && await itemStore.GetItemAsync(id, includeDeleted: false, cancellationToken).ConfigureAwait(false) is { Checked: false };
 
-    private async Task<Guid> AddAsync(Guid householdId, DueRecurringRule rule, CancellationToken cancellationToken)
+    private async Task<(Guid Id, bool IsNew)> AddAsync(Guid householdId, DueRecurringRule rule, CancellationToken cancellationToken)
     {
         // The product may have been archived since: the entry then falls back to the rule's text.
         var product = rule.ProductId is { } productId
@@ -94,9 +104,15 @@ public sealed class RecurringItemsRunner(
             product is { } p ? p.SectionKey ?? StoreSections.ForCategory(p.CategoryKey) : StoreSections.Other,
             ShoppingItemOrigin.Recurring,
             CreatedByUserId: null);
+        // A repeat after a crash finds its entry; that is not a new entry for logs and metrics.
+        var existed = await itemStore.GetItemAsync(item.Id, includeDeleted: true, cancellationToken).ConfigureAwait(false) is not null;
         var added = await items.AddInternalAsync(householdId, rule.ListId, item, cancellationToken).ConfigureAwait(false);
-        RestockLog.RecurringItemAdded(logger, rule.Id, rule.ListId);
-        RestockMetrics.RecurringItemAdded();
-        return added.Id;
+        if (!existed)
+        {
+            RestockLog.RecurringItemAdded(logger, rule.Id, rule.ListId);
+            RestockMetrics.RecurringItemAdded();
+        }
+
+        return (added.Id, !existed);
     }
 }

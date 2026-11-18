@@ -172,7 +172,9 @@
                 return;
             }
 
-            if (current is not null)
+            // Retry only if the job merely moved the due date; someone else's edit must not be overwritten (If-Match).
+            if (current is not null && Rule is not null
+                && current with { NextDueOn = Rule.NextDueOn, Version = Rule.Version } == Rule)
             {
                 _version = current.Version;
                 _error = null;
