@@ -106,6 +106,7 @@ Rest frei für weitere API-Konventionen.
 | `MemberRoleChanged` / 3023 | Log, Information | Haushalte | Rolle eines Mitglieds geändert | `HouseholdId`, `UserId`, `Role` |
 | `MemberRemoved` / 3024 | Log, Information | Haushalte | Mitglied aus Haushalt entfernt | `HouseholdId`, `UserId` |
 | `LastOwnerProtected` / 3025 | Log, Warning | Haushalte | Änderung abgelehnt: letzter Besitzer würde fehlen | `HouseholdId` |
+| `SettingsChanged` / 3026 | Log, Information | Haushalte | Haushaltseinstellungen geändert | `HouseholdId` |
 | `BrowserCallUnavailable` / 4000 | Log, Debug | UI | Browser-Aufruf nicht verfügbar; nur Operationsname | `Operation`, Exception |
 | `NetworkError` / 4010 | Log, Debug | Client | API-Aufruf ohne Antwort fehlgeschlagen (auch Zeitüberschreitung des HttpClient); nur HTTP-Methode, nie Pfad/Query | `Method`, Exception |
 | `InvalidResponse` / 4011 | Log, Warning | Client | Erfolgsantwort der API mit unlesbarem JSON-Körper (z. B. HTML eines Proxys); nur HTTP-Methode, ohne Exception (Meldung kann Teile des Körpers zitieren) | `Method` |
@@ -126,6 +127,7 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.households.create_invitation` | Haushalte | Einladung erstellen | – |
 | `foodassistant.households.remove_member` | Haushalte | Mitglied entfernen | `foodassistant.outcome` |
 | `foodassistant.households.revoke_invitation` | Haushalte | Einladung widerrufen | `foodassistant.outcome` |
+| `foodassistant.households.update_settings` | Haushalte | Haushaltseinstellungen ändern | `foodassistant.outcome` |
 | `foodassistant.persistence.migrate` | Persistenz | Datenbank-Migration | `foodassistant.migrations.pending` |
 | HTTP-Anfragen | – | Kommen aus der ASP.NET-Core-Instrumentierung, nicht aus eigenen Abläufen | – |
 
