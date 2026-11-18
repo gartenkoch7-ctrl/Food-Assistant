@@ -18,7 +18,7 @@ public sealed class CheckoutPageChangesTests : CheckoutTestContext
         await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
 
         Assert.Empty(CheckoutClient.Completions);
-        Assert.Contains("Lagerorte haben sich inzwischen geändert", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Ein Lagerort wurde inzwischen geändert oder gelöscht", cut.Markup, StringComparison.Ordinal);
         Assert.DoesNotContain("25.11.2026", Row(cut, "Spinat").TextContent, StringComparison.Ordinal);
 
         await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
@@ -51,7 +51,7 @@ public sealed class CheckoutPageChangesTests : CheckoutTestContext
         Catalog.Locations.Remove(Freezer);
 
         await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
-        Assert.Contains("Lagerorte haben sich inzwischen geändert", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("Ein Lagerort wurde inzwischen geändert oder gelöscht", cut.Markup, StringComparison.Ordinal);
         Assert.DoesNotContain("16.02.2027", Row(cut, "Erbsen").TextContent, StringComparison.Ordinal);
         await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
 
@@ -73,6 +73,7 @@ public sealed class CheckoutPageChangesTests : CheckoutTestContext
         await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
         Assert.Contains(Row(cut, "Butter").QuerySelectorAll("label"), l => l.TextContent.Contains("Produkt für „Butter“", StringComparison.Ordinal));
         Assert.Contains("Produkt: Gibt es nicht mehr.", Row(cut, "Butter").TextContent, StringComparison.Ordinal);
+        Assert.Empty(Row(cut, "Butter").QuerySelectorAll("[aria-invalid='true']"));
 
         var input = cut.Find("li.fa-checkout-row input");
         input.Focus();

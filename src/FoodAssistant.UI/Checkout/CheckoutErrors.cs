@@ -6,11 +6,11 @@ using Microsoft.Extensions.Localization;
 
 namespace FoodAssistant.UI.Checkout;
 
-/// <summary>Problems of single checkout lines, as text under the line (by position in the request).</summary>
+/// <summary>Problems of single checkout lines with the field they concern (by position in the request).</summary>
 public static partial class CheckoutErrors
 {
     /// <summary>What the page can see before sending: free text without product, no location.</summary>
-    public static Dictionary<int, string> Missing(
+    public static Dictionary<int, CheckoutLineError> Missing(
         IReadOnlyList<CheckoutLine> lines,
         IStringLocalizer<CheckoutText> text,
         IStringLocalizer<InventoryText> inventory)
@@ -18,7 +18,7 @@ public static partial class CheckoutErrors
         ArgumentNullException.ThrowIfNull(lines);
         ArgumentNullException.ThrowIfNull(text);
         ArgumentNullException.ThrowIfNull(inventory);
-        var errors = new Dictionary<int, string>();
+        var errors = new Dictionary<int, CheckoutLineError>();
         for (var index = 0; index < lines.Count; index++)
         {
             var line = lines[index];
@@ -29,11 +29,11 @@ public static partial class CheckoutErrors
 
             if (line.ProductId is null)
             {
-                errors[index] = text["AssignRequired"];
+                errors[index] = new CheckoutLineError(CheckoutLineError.ProductField, text["AssignRequired"]);
             }
             else if (line.LocationId is null)
             {
-                errors[index] = Describe("storageLocationId", "required", text, inventory);
+                errors[index] = Describe(CheckoutLineError.LocationField, "required", text, inventory);
             }
         }
 
@@ -41,13 +41,13 @@ public static partial class CheckoutErrors
     }
 
     /// <summary>The first field error the server reported per line (<c>lines[2].quantity.value</c> → line 2).</summary>
-    public static Dictionary<int, string> FromServer(
+    public static Dictionary<int, CheckoutLineError> FromServer(
         ApiError? error,
         int lineCount,
         IStringLocalizer<CheckoutText> text,
         IStringLocalizer<InventoryText> inventory)
     {
-        var errors = new Dictionary<int, string>();
+        var errors = new Dictionary<int, CheckoutLineError>();
         foreach (var (key, codes) in error?.FieldErrors ?? new Dictionary<string, string[]>())
         {
             var match = LineField().Match(key);
@@ -77,7 +77,7 @@ public static partial class CheckoutErrors
             .Where(index => index < lineCount)
             .Distinct()];
 
-    private static string Describe(
+    private static CheckoutLineError Describe(
         string field,
         string code,
         IStringLocalizer<CheckoutText> text,
@@ -91,7 +91,7 @@ public static partial class CheckoutErrors
             _ => text["FieldProduct"].Value,
         };
         var message = text["FieldError." + code];
-        return $"{label}: {(message.ResourceNotFound ? text["FieldError.invalid"].Value : message.Value)}";
+        return new CheckoutLineError(field, $"{label}: {(message.ResourceNotFound ? text["FieldError.invalid"].Value : message.Value)}");
     }
 
     [GeneratedRegex(@"^lines\[(?<index>\d+)\]\.(?<field>[A-Za-z]+)")]

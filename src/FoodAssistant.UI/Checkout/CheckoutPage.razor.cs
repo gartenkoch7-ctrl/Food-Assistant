@@ -19,7 +19,7 @@ public sealed partial class CheckoutPage
     private List<CheckoutLine> _lines = [];
     private IReadOnlyList<StorageLocationDto> _locations = [];
     private Dictionary<string, StorageTypeDto> _categoryTypes = [];
-    private Dictionary<int, string> _rowErrors = [];
+    private Dictionary<int, CheckoutLineError> _rowErrors = [];
     private ApiError? _error;
     private Guid _loadedFor;
     private bool _loading = true;

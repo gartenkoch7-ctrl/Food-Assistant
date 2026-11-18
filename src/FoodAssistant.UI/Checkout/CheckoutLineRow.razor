@@ -16,6 +16,11 @@
         <div class="fa-checkout-actions">
             <MudButton Variant="Variant.Text" aria-label="@Format("UnskipLabel")" OnClick="() => SetSkipAsync(false)">@T["Unskip"]</MudButton>
         </div>
+        @if (Error is not null)
+        {
+            @* A skipped line has no field; the text stands alone. *@
+            <MudText Typo="Typo.caption" Color="Color.Error">@Error.Text</MudText>
+        }
     }
     else
     {
@@ -27,6 +32,11 @@
         {
             <p class="fa-checkout-secondary">@Format("AssignedFrom", Line.Text)</p>
         }
+        @* Errors show at the field they concern (WCAG 3.3.1); no role="alert": the page announces one summary. *@
+        @if (Error is { IsProduct: true } productError)
+        {
+            <MudText Typo="Typo.caption" Color="Color.Error" id="@ErrorId">@productError.Text</MudText>
+        }
         <p class="fa-checkout-secondary">@InventoryFields.Quantity(Line.Quantity, Common, CultureInfo.CurrentCulture) · @DateText</p>
         @* Frozen at home (no date, or "selbst eingefroren"): the server dates it by the rule, a package date rests. *@
         @if (IsFreezer && (Line.Date is null || Line.SelfFrozen))
@@ -34,9 +44,10 @@
             <p class="fa-checkout-secondary">@Inventory["FrozenAtHomeHint"]</p>
         }
         @* The label names the line: every row has a location field, and a list of "Lagerort" fields is ambiguous. *@
-        @* The line's error is the field's error text: shown under it and linked (ErrorId → aria-describedby). *@
+        @* A location error is the field's error text: shown under it and linked (ErrorId → aria-describedby). *@
         <MudSelect T="Guid?" Label="@Format("LocationLabel")" Value="Line.LocationId" ValueChanged="MoveAsync"
-                   Error="@(Error is not null)" ErrorText="@Error" ErrorId="@ErrorId"
+                   Error="@(Error?.IsLocation == true)" ErrorText="@(Error?.IsLocation == true ? Error.Text : null)"
+                   ErrorId="@(Error?.IsLocation == true ? ErrorId : null)"
                    Variant="Variant.Outlined" Dense="true" Required="true">
             @foreach (var location in Locations)
             {
@@ -44,19 +55,19 @@
             }
         </MudSelect>
         <div class="fa-checkout-actions">
-            <MudButton Variant="Variant.Outlined" aria-label="@Format("EditLabel")" OnClick="() => Edit.InvokeAsync(Line)">@T["Edit"]</MudButton>
+            @* Amount and date errors belong to the editor: the button that opens it describes them. *@
+            <MudButton Variant="Variant.Outlined" aria-label="@Format("EditLabel")" aria-describedby="@(IsEditorError ? ErrorId : null)"
+                       OnClick="() => Edit.InvokeAsync(Line)">@T["Edit"]</MudButton>
             @if (Line.Reassignable && Line.ProductId is not null)
             {
                 <MudButton Variant="Variant.Text" aria-label="@Format("AssignOtherLabel", Line.Text)" OnClick="UnassignAsync">@T["AssignOther"]</MudButton>
             }
             <MudButton Variant="Variant.Text" aria-label="@Format("SkipLabel")" OnClick="() => SetSkipAsync(true)">@T["Skip"]</MudButton>
         </div>
-    }
-    @* The error of a booked line shows at its location field (above); no role="alert": the page announces
-       one summary instead of every line at once. A skipped line has no field, so the text stands alone. *@
-    @if (Error is not null && Line.Skip)
-    {
-        <MudText Typo="Typo.caption" Color="Color.Error">@Error</MudText>
+        @if (IsEditorError)
+        {
+            <MudText Typo="Typo.caption" Color="Color.Error" id="@ErrorId">@Error!.Text</MudText>
+        }
     }
 </li>
 
@@ -71,9 +82,12 @@
     [Parameter]
     public IReadOnlyDictionary<string, StorageTypeDto> CategoryTypes { get; set; } = new Dictionary<string, StorageTypeDto>();
 
-    /// <summary>Problem of this line (missing product, field error of the server), shown under it.</summary>
+    /// <summary>Problem of this line (missing product, field error of the server), shown at its field.</summary>
     [Parameter]
-    public string? Error { get; set; }
+    public CheckoutLineError? Error { get; set; }
+
+    // Amount, date or anything else that is edited in the dialog.
+    private bool IsEditorError => Error is { IsLocation: false, IsProduct: false };
 
     /// <summary>Raised after the line changed in place (location, product, skip).</summary>
     [Parameter]

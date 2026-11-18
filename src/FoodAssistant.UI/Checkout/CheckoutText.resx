@@ -42,6 +42,7 @@
   <data name="FieldError.must_be_positive" xml:space="preserve"><value>Die Menge muss größer als 0 sein.</value></data>
   <data name="FieldError.must_be_none" xml:space="preserve"><value>Ohne Datum gibt es keine Art.</value></data>
   <data name="FieldError.invalid_unit" xml:space="preserve"><value>Unbekannte Einheit.</value></data>
+  <data name="LocationsMoved" xml:space="preserve"><value>Ein Lagerort wurde inzwischen geändert oder gelöscht; die betroffenen Zeilen wurden angepasst. Bitte prüfe sie und buche erneut.</value></data>
   <data name="DateResting" xml:space="preserve"><value>Packungsdatum ruht</value></data>
   <data name="Error.common.conflict" xml:space="preserve"><value>Lagerorte haben sich inzwischen geändert – neu geladen. Bitte prüfe die Zeilen und buche erneut.</value></data>
   <data name="Error.common.idempotency_request_in_progress" xml:space="preserve"><value>Die Buchung läuft noch. Bitte gleich noch einmal senden.</value></data>
