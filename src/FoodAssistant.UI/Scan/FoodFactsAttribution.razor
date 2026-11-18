@@ -1,0 +1,22 @@
+@inject IStringLocalizer<ScanText> T
+
+@* Shown on top of the product dialog of a scan. With data: source and licence (ODbL) as Open Food Facts requires. *@
+@if (Found)
+{
+    <p class="ma-0 fa-attribution">
+        @T["AttributionPrefix"]
+        <a href="https://world.openfoodfacts.org" target="_blank" rel="noopener noreferrer"
+           aria-label="Open Food Facts @T["OpensInNewTab"]">Open Food Facts</a>
+        (ODbL). @T["AttributionCheck"]
+    </p>
+}
+else
+{
+    <p class="ma-0 fa-attribution">@T["NoSuggestion"]</p>
+}
+
+@code {
+    /// <summary>Whether data from Open Food Facts was taken over.</summary>
+    [Parameter]
+    public bool Found { get; set; }
+}

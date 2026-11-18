@@ -9,7 +9,8 @@ Etiketten-QR (`/inventory/batches/{id}`) wird erkannt. KB: [externe-daten](../..
 Branch `feat/m01-c2-scan` · Welle 2 · ein Paket.
 
 ## Aufgaben
-- [ ] C2 Scanner-Schnittstelle, Browser-Scanner, Scan-Seite, Abläufe, Tests
+- [x] C2 Scanner-Schnittstelle, Browser-Scanner (`BarcodeDetector`), Scan-Seite, Abläufe, Tests
+- [ ] C2 ZXing-Fallback vendoren (`UI/wwwroot/lib/zxing/`, Browser ohne `BarcodeDetector`); Download braucht Freigabe des Nutzers
 
 ## Detailplan
 

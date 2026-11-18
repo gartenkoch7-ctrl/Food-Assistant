@@ -46,5 +46,17 @@
 - **Tests** rufen nie die echte API auf (Fake-Handler). Ein Live-Test läuft nur explizit und
   mit `FOODASSISTANT_LIVE_TESTS=1`.
 
+## Barcode-Scan im Browser (M1 C2)
+- **Decoder:** die `BarcodeDetector`-API des Browsers (Formate `ean_13`, `ean_8`, `upc_a`,
+  `upc_e`, `qr_code`), Code in `UI/wwwroot/scan.js`. Keine Bibliothek eingebunden, daher keine
+  zusätzliche Lizenz. Browser ohne `BarcodeDetector` (u. a. Firefox, Safari-Desktop) zeigen den
+  Hinweis „Kamera nicht verfügbar“ und die manuelle Eingabe. Ein lokaler Fallback (ZXing:
+  `@zxing/browser` MIT, `@zxing/library` Apache-2.0, unter `UI/wwwroot/lib/zxing/`) ist der
+  vorgesehene Ausbau, sobald die Dateien vendored werden (Download nach Freigabe des Nutzers).
+- Kamera nur nach Knopfdruck; sie stoppt beim Verlassen der Seite. Das Kamerabild verlässt das
+  Gerät nie, an den Server geht nur der erkannte Barcode (Abfrage Open Food Facts, siehe oben).
+- Die OFF-Vorbelegung zeigt die Quellenangabe „Open Food Facts (ODbL)“ mit Link
+  (`FoodFactsAttribution`). Produktbilder von OFF werden nicht geladen (Entscheidung F7).
+
 ## Weitere Quellen
 Noch keine. Neue Quelle: Lizenz prüfen, hier eintragen, [datenschutz.md](datenschutz.md) ergänzen.

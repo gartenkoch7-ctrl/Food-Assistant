@@ -1,4 +1,6 @@
+using FoodAssistant.Client.Scan;
 using FoodAssistant.UI.Accounts;
+using FoodAssistant.UI.Scan;
 using FoodAssistant.UI.Common;
 using FoodAssistant.UI.Session;
 using FoodAssistant.UI.Shell;
@@ -35,6 +37,8 @@ public static class UiServiceCollectionExtensions
         services.TryAddScoped<InvitationDraft>();
         services.TryAddScoped<IClipboard, BrowserClipboard>();
         services.TryAddScoped<IUndoNotifier, UndoNotifier>();
+        services.TryAddScoped<IBarcodeScanner, BrowserBarcodeScanner>();
+        services.TryAddScoped<ScanFlow>();
         return services;
     }
 }
