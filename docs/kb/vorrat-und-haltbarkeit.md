@@ -43,6 +43,10 @@ Haushalt ─┬─ Produkt (Katalog des Haushalts)
   Standard oder eigen ist.
 - Die **KI schlägt nie** Haltbarkeiten vor (AGENTS.md §2.3); sie darf Regeln nur zitieren.
 - Fehlt eine Regel, gibt es kein berechnetes Datum – die Charge ist „ohne Datum“.
+- Ein **aus einer Regel berechnetes Datum gilt als Verbrauchsdatum** (rot, Warnung, kein Hinweis
+  „oft noch gut“) – auch wenn die Packung nur ein MHD trägt. Entschieden 2026-11-18.
+- **Kein Wiedereinfrieren** nach dem Auftauen: aufgetaut bleibt nur verbrauchen, entsorgen oder als
+  Rest erfassen. Entschieden 2026-11-18.
 
 ## Status und Formulierungen
 
