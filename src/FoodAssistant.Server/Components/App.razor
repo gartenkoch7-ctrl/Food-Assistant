@@ -34,5 +34,8 @@
     private HttpContext HttpContext { get; set; } = default!;
 
     // The error page lives on the server only; the WebAssembly router would not know it and show "not found".
-    private IComponentRenderMode? PageRenderMode => HttpContext.AcceptsInteractiveRouting() ? InteractiveWebAssembly : null;
+    // No prerendering: the server would have to forward the sign-in cookie to itself for every data page (plan M1).
+    private static readonly IComponentRenderMode WebAssemblyNoPrerender = new InteractiveWebAssemblyRenderMode(prerender: false);
+
+    private IComponentRenderMode? PageRenderMode => HttpContext.AcceptsInteractiveRouting() ? WebAssemblyNoPrerender : null;
 }

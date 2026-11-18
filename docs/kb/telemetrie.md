@@ -77,6 +77,7 @@ Rest frei für weitere API-Konventionen.
 | `MemberRemoved` / 3024 | Log, Information | Haushalte | Mitglied aus Haushalt entfernt | `HouseholdId`, `UserId` |
 | `LastOwnerProtected` / 3025 | Log, Warning | Haushalte | Änderung abgelehnt: letzter Besitzer würde fehlen | `HouseholdId` |
 | `BrowserCallUnavailable` / 4000 | Log, Debug | UI | Browser-Aufruf nicht verfügbar; nur Operationsname | `Operation`, Exception |
+| `NetworkError` / 4010 | Log, Debug | Client | API-Aufruf ohne Antwort fehlgeschlagen; nur HTTP-Methode, nie Pfad/Query | `Method`, Exception |
 
 ## Abläufe (Activities)
 

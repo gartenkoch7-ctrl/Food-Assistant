@@ -31,4 +31,16 @@
   <data name="LanguageApply" xml:space="preserve"><value>Sprache übernehmen</value></data>
   <data name="LanguageGerman" xml:space="preserve"><value>Deutsch</value></data>
   <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="MoreHouseholdHeading" xml:space="preserve"><value>Haushalt</value></data>
+  <data name="MoreLinkHousehold" xml:space="preserve"><value>Haushalt &amp; Mitglieder</value></data>
+  <data name="MoreLinkLocations" xml:space="preserve"><value>Lagerorte</value></data>
+  <data name="MoreLinkStores" xml:space="preserve"><value>Läden</value></data>
+  <data name="MoreLinkShelfLife" xml:space="preserve"><value>Haltbarkeitsregeln</value></data>
+  <data name="MoreStockHeading" xml:space="preserve"><value>Vorrat &amp; Einkauf</value></data>
+  <data name="MoreLinkProducts" xml:space="preserve"><value>Produkte</value></data>
+  <data name="MoreLinkRecurring" xml:space="preserve"><value>Wiederkehrende Artikel</value></data>
+  <data name="MoreAccountHeading" xml:space="preserve"><value>Konto</value></data>
+  <data name="MoreSignedInAs" xml:space="preserve"><value>Angemeldet als {0}</value></data>
+  <data name="MoreSwitchHousehold" xml:space="preserve"><value>Haushalt wechseln</value></data>
+  <data name="MoreSignOut" xml:space="preserve"><value>Abmelden</value></data>
 </root>

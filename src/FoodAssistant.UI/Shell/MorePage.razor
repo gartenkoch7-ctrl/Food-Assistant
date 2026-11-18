@@ -1,5 +1,7 @@
 @page "/more"
 @implements IDisposable
+@using System.Globalization
+@inject SessionState Session
 @inject ThemeState Theme
 @inject ICultureService Cultures
 @inject NavigationManager Navigation
@@ -8,6 +10,24 @@
 <PageTitle>@T["MoreTitle"] – @AppInfo.Name</PageTitle>
 
 <h1>@T["MoreTitle"]</h1>
+
+<section class="fa-more-section" aria-labelledby="more-household">
+    <h2 id="more-household">@T["MoreHouseholdHeading"]</h2>
+    <ul class="fa-more-links">
+        <li><MudLink Href="/settings/household">@T["MoreLinkHousehold"]</MudLink></li>
+        <li><MudLink Href="/settings/locations">@T["MoreLinkLocations"]</MudLink></li>
+        <li><MudLink Href="/settings/stores">@T["MoreLinkStores"]</MudLink></li>
+        <li><MudLink Href="/settings/shelf-life">@T["MoreLinkShelfLife"]</MudLink></li>
+    </ul>
+</section>
+
+<section class="fa-more-section" aria-labelledby="more-stock">
+    <h2 id="more-stock">@T["MoreStockHeading"]</h2>
+    <ul class="fa-more-links">
+        <li><MudLink Href="/products">@T["MoreLinkProducts"]</MudLink></li>
+        <li><MudLink Href="/shopping/recurring">@T["MoreLinkRecurring"]</MudLink></li>
+    </ul>
+</section>
 
 <section class="fa-more-section" aria-labelledby="more-appearance">
     <h2 id="more-appearance">@T["MoreAppearanceHeading"]</h2>
@@ -29,6 +49,19 @@
     <MudButton Class="fa-apply-language" Variant="Variant.Filled" Color="Color.Primary"
                Disabled="@(_pendingLanguage == Cultures.Current)" OnClick="ApplyLanguageAsync">@T["LanguageApply"]</MudButton>
 </section>
+
+@if (Session.Me is not null)
+{
+    <section class="fa-more-section" aria-labelledby="more-account">
+        <h2 id="more-account">@T["MoreAccountHeading"]</h2>
+        <p>@string.Format(CultureInfo.CurrentCulture, T["MoreSignedInAs"].Value, Session.Me.DisplayName)</p>
+        <ul class="fa-more-links">
+            <li><MudLink Href="/settings/household">@T["MoreSwitchHousehold"]</MudLink></li>
+        </ul>
+        <MudButton Class="fa-sign-out" Variant="Variant.Outlined" Color="Color.Primary"
+                   OnClick="() => Session.SignOutAsync()">@T["MoreSignOut"]</MudButton>
+    </section>
+}
 
 @code {
     private IReadOnlyList<ChoiceOption<ThemeMode>> _themeOptions = [];

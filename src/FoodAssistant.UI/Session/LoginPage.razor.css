@@ -1,0 +1,7 @@
+.fa-login-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fa-space-4);
+    max-width: 24rem;
+    margin-top: var(--fa-space-4);
+}

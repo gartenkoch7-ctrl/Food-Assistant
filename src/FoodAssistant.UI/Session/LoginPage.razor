@@ -1,0 +1,65 @@
+@page "/login"
+@using FoodAssistant.Client.Accounts
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Contracts.Accounts
+@inject IAccountClient Accounts
+@inject SessionState Session
+@inject NavigationManager Navigation
+@inject IStringLocalizer<SessionText> T
+
+<PageTitle>@T["LoginTitle"] – @AppInfo.Name</PageTitle>
+
+<h1>@T["LoginTitle"]</h1>
+
+@* A real form: Enter submits, and password managers recognise the fields through the autocomplete hints. *@
+<form class="fa-login-form" @onsubmit="SubmitAsync" @onsubmit:preventDefault="true">
+    <ApiErrorAlert Error="_error" FeatureText="T" />
+    <MudTextField T="string" @bind-Value="_userName" Label="@T["LoginUserName"]" Variant="Variant.Outlined"
+                  Required="true" Immediate="true" UserAttributes="@(new Dictionary<string, object?> { ["autocomplete"] = "username" })" />
+    <MudTextField T="string" @bind-Value="_password" Label="@T["LoginPassword"]" Variant="Variant.Outlined"
+                  InputType="InputType.Password" Required="true" Immediate="true"
+                  UserAttributes="@(new Dictionary<string, object?> { ["autocomplete"] = "current-password" })" />
+    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Disabled="_busy">
+        @(_busy ? T["LoginBusy"] : T["LoginSubmit"])
+    </MudButton>
+</form>
+
+@code {
+    private string _userName = string.Empty;
+    private string _password = string.Empty;
+    private bool _busy;
+    private ApiError? _error;
+
+    /// <summary>Where to go after signing in; only local paths are followed (no open redirect).</summary>
+    [SupplyParameterFromQuery(Name = "returnUrl")]
+    public string? ReturnUrl { get; set; }
+
+    private async Task SubmitAsync()
+    {
+        if (_busy)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        var result = await Accounts.LoginAsync(new LoginRequest(_userName.Trim(), _password), CancellationToken.None);
+        if (!result.IsSuccess)
+        {
+            _error = result.Error;
+            _password = string.Empty;
+            _busy = false;
+            return;
+        }
+
+        await Session.LoadAsync();
+        _busy = false;
+        Navigation.NavigateTo(LocalTarget(ReturnUrl), replace: true);
+    }
+
+    private static string LocalTarget(string? returnUrl) =>
+        returnUrl is { Length: > 0 } && returnUrl[0] == '/' && !returnUrl.StartsWith("//", StringComparison.Ordinal)
+            && !returnUrl.StartsWith("/\\", StringComparison.Ordinal)
+            ? returnUrl
+            : "/";
+}

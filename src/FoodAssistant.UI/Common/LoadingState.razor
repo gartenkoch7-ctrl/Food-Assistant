@@ -1,0 +1,12 @@
+@inject IStringLocalizer<CommonText> T
+
+<div class="fa-loading-state" role="status" aria-busy="true">
+    <MudProgressCircular Indeterminate="true" Size="Size.Medium" aria-hidden="true" />
+    <span>@(Text ?? T["Loading"])</span>
+</div>
+
+@code {
+    /// <summary>Overrides the standard "Loading" text.</summary>
+    [Parameter]
+    public string? Text { get; set; }
+}

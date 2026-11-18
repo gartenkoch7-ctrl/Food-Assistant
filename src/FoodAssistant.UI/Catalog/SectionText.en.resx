@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="produce" xml:space="preserve"><value>Fruit &amp; vegetables</value></data>
+  <data name="bakery" xml:space="preserve"><value>Bread &amp; bakery</value></data>
+  <data name="dairy_chilled" xml:space="preserve"><value>Chilled</value></data>
+  <data name="meat_fish" xml:space="preserve"><value>Meat, sausage &amp; fish</value></data>
+  <data name="frozen" xml:space="preserve"><value>Frozen</value></data>
+  <data name="pantry" xml:space="preserve"><value>Staples &amp; canned food</value></data>
+  <data name="spices_baking" xml:space="preserve"><value>Spices &amp; baking</value></data>
+  <data name="sweets_snacks" xml:space="preserve"><value>Sweets &amp; snacks</value></data>
+  <data name="beverages" xml:space="preserve"><value>Beverages</value></data>
+  <data name="household" xml:space="preserve"><value>Household &amp; drugstore</value></data>
+  <data name="other" xml:space="preserve"><value>Other</value></data>
+</root>

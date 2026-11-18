@@ -108,6 +108,41 @@ public sealed class MorePageTests : UiTestContext
     }
 
     [Fact]
+    public void Page_LinksToTheHouseholdAndStockPages()
+    {
+        var cut = Render<MorePage>();
+
+        // "Haushalt wechseln" in the account section points to the household page as well.
+        var links = cut.FindAll("ul.fa-more-links a").Select(a => (Href: a.GetAttribute("href"), Text: a.TextContent.Trim())).ToList();
+        Assert.Equal(
+            [
+                ("/settings/household", "Haushalt & Mitglieder"),
+                ("/settings/locations", "Lagerorte"),
+                ("/settings/stores", "Läden"),
+                ("/settings/shelf-life", "Haltbarkeitsregeln"),
+                ("/products", "Produkte"),
+                ("/shopping/recurring", "Wiederkehrende Artikel"),
+                ("/settings/household", "Haushalt wechseln"),
+            ],
+            links);
+        var headings = cut.FindAll("h2").Select(h => h.TextContent).ToList();
+        Assert.Equal(["Haushalt", "Vorrat & Einkauf", "Darstellung", "Sprache", "Konto"], headings);
+    }
+
+    [Fact]
+    public void AccountSection_ShowsTheUser_AndSignsOut()
+    {
+        var cut = Render<MorePage>();
+
+        Assert.Contains("Angemeldet als Anna", cut.Find("#more-account + p").TextContent);
+        Assert.Contains("Haushalt wechseln", cut.Markup, StringComparison.Ordinal);
+        cut.Find("button.fa-sign-out").Click();
+
+        cut.WaitForAssertion(() => Assert.Contains("logout", Accounts.Calls));
+        Assert.Equal(FoodAssistant.UI.Session.SessionStatus.SignedOut, Session.Status);
+    }
+
+    [Fact]
     public async Task LateStoredTheme_UpdatesTheSelection()
     {
         Browser.Storage[BrowserThemePreferenceStore.StorageKey] = "high-contrast";

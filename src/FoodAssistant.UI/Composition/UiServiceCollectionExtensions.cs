@@ -1,4 +1,5 @@
 using FoodAssistant.UI.Common;
+using FoodAssistant.UI.Session;
 using FoodAssistant.UI.Shell;
 using FoodAssistant.UI.Theme;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +28,9 @@ public static class UiServiceCollectionExtensions
         services.TryAddScoped<ThemeState>();
         services.TryAddScoped<ICultureService, CultureService>();
         services.TryAddSingleton<IAppFeatures, DefaultAppFeatures>();
+        services.TryAddScoped<SessionState>();
+        services.TryAddScoped<ILiveAnnouncer, LiveAnnouncer>();
+        services.TryAddScoped<IUndoNotifier, UndoNotifier>();
         return services;
     }
 }

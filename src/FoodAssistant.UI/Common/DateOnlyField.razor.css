@@ -1,0 +1,9 @@
+.fa-date-field {
+    display: flex;
+    align-items: center;
+    gap: var(--fa-space-2);
+}
+
+.fa-date-field ::deep .mud-input-control {
+    flex: 1 1 auto;
+}

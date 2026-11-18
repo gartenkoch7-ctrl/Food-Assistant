@@ -2,6 +2,17 @@
     margin-top: var(--fa-space-8);
 }
 
+.fa-more-links {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Taller rows keep touch targets well above 24 px (WCAG 2.5.8). */
+.fa-more-links li {
+    padding: var(--fa-space-2) 0;
+}
+
 .fa-more-section h2 {
     margin-bottom: var(--fa-space-3);
 }

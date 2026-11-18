@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Unit.g" xml:space="preserve"><value>g</value></data>
+  <data name="Unit.kg" xml:space="preserve"><value>kg</value></data>
+  <data name="Unit.ml" xml:space="preserve"><value>ml</value></data>
+  <data name="Unit.l" xml:space="preserve"><value>l</value></data>
+  <data name="Unit.piece" xml:space="preserve"><value>piece</value></data>
+  <data name="Unit.tbsp" xml:space="preserve"><value>tbsp</value></data>
+  <data name="Unit.tsp" xml:space="preserve"><value>tsp</value></data>
+  <data name="Unit.pinch" xml:space="preserve"><value>pinch</value></data>
+  <data name="Unit.bunch" xml:space="preserve"><value>bunch</value></data>
+  <data name="Unit.package" xml:space="preserve"><value>package</value></data>
+  <data name="Unit.can" xml:space="preserve"><value>can</value></data>
+  <data name="UnitLabel" xml:space="preserve"><value>Unit</value></data>
+  <data name="StorageType.Chilled" xml:space="preserve"><value>Fridge</value></data>
+  <data name="StorageType.Frozen" xml:space="preserve"><value>Freezer</value></data>
+  <data name="StorageType.Ambient" xml:space="preserve"><value>Pantry</value></data>
+  <data name="Error.Generic" xml:space="preserve"><value>That did not work. Please try again.</value></data>
+  <data name="Error.Offline" xml:space="preserve"><value>You are offline. This action needs a connection to the server.</value></data>
+  <data name="Error.Network" xml:space="preserve"><value>The server cannot be reached. Check your connection and try again.</value></data>
+  <data name="Error.Conflict" xml:space="preserve"><value>Changed in the meantime – reloaded. Please check your input and save again.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Loading …</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Undo" xml:space="preserve"><value>Undo</value></data>
+  <data name="DateClear" xml:space="preserve"><value>Clear date</value></data>
+</root>

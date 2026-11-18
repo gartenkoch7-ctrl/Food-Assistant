@@ -1,5 +1,6 @@
 using Bunit;
 using FoodAssistant.UI.Inventory;
+using FoodAssistant.UI.Scan;
 using FoodAssistant.UI.Shell;
 using FoodAssistant.UI.Shopping;
 using FoodAssistant.UI.Tests.Support;
