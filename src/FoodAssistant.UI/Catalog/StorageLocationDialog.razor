@@ -1,0 +1,118 @@
+@using FoodAssistant.Client.Catalog
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Inventory
+@inject ICatalogClient Catalog
+@inject SessionState Session
+@inject IStringLocalizer<CatalogText> T
+@inject IStringLocalizer<CommonText> Common
+
+@* Closes with DialogResult.Ok(StorageLocationDto) after saving. *@
+<MudDialog>
+    <TitleContent>@(Location is null ? T["LocationDialogNew"] : T["LocationDialogEdit"])</TitleContent>
+    <DialogContent>
+        <ApiErrorAlert Error="_error" FeatureText="T" />
+        @if (_reloaded)
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" role="status">@T["LocationReloaded"]</MudAlert>
+        }
+
+        <div class="fa-dialog-fields">
+            <MudTextField T="string" @bind-Value="_name" Label="@T["FieldLocationName"]" Required="true" RequiredError="@T["FieldError.required"]"MaxLength="80"
+                          Variant="Variant.Outlined" Error="@_nameInvalid" ErrorText="@T["FieldError.required"]" />
+            <OptionGroup TValue="StorageTypeDto" Legend="@T["FieldLocationType"]" Options="_typeOptions"
+                         Value="_type" ValueChanged="SelectType" />
+            <p class="fa-location-hint">@T["LocationTypeHint"]</p>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="_saving" OnClick="() => MudDialog.Cancel()">@Common["Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_saving" OnClick="SaveAsync">@Common["Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private IReadOnlyList<ChoiceOption<StorageTypeDto>> _typeOptions = [];
+    private ApiError? _error;
+    private string _name = string.Empty;
+    private StorageTypeDto _type = StorageTypeDto.Chilled;
+    private long _version;
+    private bool _nameInvalid;
+    private bool _reloaded;
+    private bool _saving;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>The location to edit; <see langword="null"/> creates a new one.</summary>
+    [Parameter]
+    public StorageLocationDto? Location { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _typeOptions =
+        [
+            new(StorageTypeDto.Chilled, Common["StorageType.Chilled"]),
+            new(StorageTypeDto.Frozen, Common["StorageType.Frozen"]),
+            new(StorageTypeDto.Ambient, Common["StorageType.Ambient"]),
+        ];
+        if (Location is not null)
+        {
+            Fill(Location);
+        }
+    }
+
+    private void Fill(StorageLocationDto location)
+    {
+        _version = location.Version;
+        _name = location.Name;
+        _type = location.Type;
+    }
+
+    private void SelectType(StorageTypeDto type) => _type = type;
+
+    private async Task SaveAsync()
+    {
+        _nameInvalid = string.IsNullOrWhiteSpace(_name);
+        if (_nameInvalid || Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        _saving = true;
+        _error = null;
+        _reloaded = false;
+        var request = new StorageLocationRequest(null, _name.Trim(), _type, null);
+        var result = Location is null
+            ? await Catalog.CreateStorageLocationAsync(household, request, CancellationToken.None)
+            : await Catalog.UpdateStorageLocationAsync(household, Location.Id, request, $"\"{_version}\"", CancellationToken.None);
+        _saving = false;
+
+        if (result.IsSuccess)
+        {
+            MudDialog.Close(DialogResult.Ok(result.Value!));
+            return;
+        }
+
+        if (result.Error!.Status == 412 && Location is not null && await ReloadAsync(household, Location.Id))
+        {
+            return;
+        }
+
+        _error = result.Error;
+    }
+
+    // Someone else changed the location: show what is stored now and let the user decide again.
+    private async Task<bool> ReloadAsync(Guid household, Guid id)
+    {
+        var list = await Catalog.ListStorageLocationsAsync(household, CancellationToken.None);
+        if (list.Value?.FirstOrDefault(l => l.Id == id) is not { } current)
+        {
+            return false;
+        }
+
+        Fill(current);
+        _reloaded = true;
+        return true;
+    }
+}

@@ -106,6 +106,11 @@ Rest frei für weitere API-Konventionen.
 | `MemberRoleChanged` / 3023 | Log, Information | Haushalte | Rolle eines Mitglieds geändert | `HouseholdId`, `UserId`, `Role` |
 | `MemberRemoved` / 3024 | Log, Information | Haushalte | Mitglied aus Haushalt entfernt | `HouseholdId`, `UserId` |
 | `LastOwnerProtected` / 3025 | Log, Warning | Haushalte | Änderung abgelehnt: letzter Besitzer würde fehlen | `HouseholdId` |
+| `ProductCreated` / 3200 | Log, Information | Katalog | Produkt angelegt | `ProductId`, `HouseholdId` |
+| `ProductArchived` / 3201 | Log, Information | Katalog | Produkt archiviert | `ProductId`, `HouseholdId` |
+| `StorageLocationCreated` / 3202 | Log, Information | Katalog | Lagerort angelegt | `LocationId`, `HouseholdId` |
+| `StorageLocationDeleted` / 3203 | Log, Information | Katalog | Lagerort gelöscht | `LocationId`, `HouseholdId` |
+| `StockHandlerFailed` / 3204 | Log, Warning | Katalog | Ein Bestands-Handler ist nach einer Mindestbestand-Änderung gescheitert; die Änderung bleibt gültig | `ProductId`, Exception |
 | `BatchAdded` / 3300 | Log, Information | Vorrat | Charge eingebucht (auch Rest) | `BatchId`, `ProductId`, `Origin` |
 | `BatchStateChanged` / 3301 | Log, Information | Vorrat | Charge korrigiert, verschoben, eingefroren, aufgetaut oder geöffnet | `BatchId`, `Change` (Aktivitätsart) |
 | `BatchConsumed` / 3302 | Log, Information | Vorrat | Charge (teilweise) verbraucht oder entsorgt; je Charge ein Eintrag | `BatchId`, `Kind` |
@@ -127,6 +132,12 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.accounts.logout` | Anmeldung | Web-Abmeldung | – |
 | `foodassistant.accounts.setup` | Konten | Ersteinrichtung | `foodassistant.outcome` |
 | `foodassistant.accounts.token` | Anmeldung | Token-Ausstellung | `foodassistant.grant_type` |
+| `foodassistant.catalog.archive_product` | Katalog | Produkt archivieren | `foodassistant.outcome` |
+| `foodassistant.catalog.create_location` | Katalog | Lagerort anlegen | `foodassistant.outcome` |
+| `foodassistant.catalog.create_product` | Katalog | Produkt anlegen | `foodassistant.outcome` |
+| `foodassistant.catalog.delete_location` | Katalog | Lagerort löschen | `foodassistant.outcome` |
+| `foodassistant.catalog.update_location` | Katalog | Lagerort ändern | `foodassistant.outcome` |
+| `foodassistant.catalog.update_product` | Katalog | Produkt ändern | `foodassistant.outcome` |
 | `foodassistant.households.change_member_role` | Haushalte | Mitgliedsrolle ändern | `foodassistant.outcome` |
 | `foodassistant.households.create` | Haushalte | Haushalt anlegen | `foodassistant.household_id` |
 | `foodassistant.households.create_invitation` | Haushalte | Einladung erstellen | – |
@@ -149,5 +160,6 @@ Rest frei für weitere API-Konventionen.
 |---|---|---|---|---|
 | `foodassistant.api.idempotency.requests` | Counter `{request}` | API – Idempotenz | Schreibende Anfragen mit `Idempotency-Key` nach Ergebnis | `outcome`: `stored`, `replayed`, `key_reused`, `in_progress`, `invalid_key`, `abandoned` (5xx, Exception oder vor dem Handler abgewiesen, z. B. Antiforgery; Wiederholung läuft erneut), `stored_without_body` (Antwort > 1 MiB: nur Status und Header gespeichert), `store_failed`, `write_failed` (Handler fertig, Ergebnis nicht schreibbar; Schlüssel bleibt bis Lease-Ende reserviert) |
 | `foodassistant.api.rate_limit.rejections` | Counter `{request}` | API – Rate-Limits | Mit 429 abgewiesene Anfragen | `policy`: `auth-strict`, `api`, `openid` (`/connect/*`, `/.well-known/*`, vor der Authentifizierung pro Netz), `global` (API-Anfragen ohne passenden Endpunkt) |
+| `foodassistant.catalog.products.created` | Counter `{product}` | Katalog | Angelegte Produkte | `source`: `manual`, `food_facts` |
 | `foodassistant.inventory.batches.added` | Counter `{batch}` | Vorrat | Eingebuchte Chargen (auch Reste) | `origin`: `Manual`, `Scanned`, `Purchase`, `Import`, `Leftover` |
 | `foodassistant.inventory.consumptions` | Counter `{event}` | Vorrat | Verbrauchsereignisse (je Charge) | `kind`: `UsedUp`, `Partial`, `Discarded`; `reason`: Grund oder `none` |

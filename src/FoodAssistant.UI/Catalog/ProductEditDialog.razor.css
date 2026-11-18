@@ -1,0 +1,63 @@
+.fa-dialog-fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fa-space-3);
+    margin-top: var(--fa-space-2);
+}
+
+.fa-barcodes {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.fa-barcodes legend {
+    margin-bottom: var(--fa-space-2);
+}
+
+.fa-barcode-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fa-space-2);
+    list-style: none;
+    margin: 0 0 var(--fa-space-3);
+    padding: 0;
+}
+
+/* Code and remove button share one outlined pill; the button keeps a 24 px target (WCAG 2.5.8). */
+.fa-barcode-list li {
+    align-items: center;
+    border: 1px solid var(--mud-palette-lines-inputs);
+    border-radius: 999px;
+    display: inline-flex;
+    gap: var(--fa-space-1);
+    padding: 0 var(--fa-space-1) 0 var(--fa-space-3);
+}
+
+.fa-barcode-add {
+    align-items: flex-start;
+    display: flex;
+    gap: var(--fa-space-3);
+}
+
+.fa-barcode-add ::deep .mud-input-control {
+    flex: 1 1 auto;
+}
+
+.fa-barcode-add ::deep .mud-button-root {
+    margin-top: var(--fa-space-2);
+}
+
+.fa-barcodes-none,
+.fa-field-error {
+    margin: 0 0 var(--fa-space-2);
+}
+
+.fa-field-error {
+    color: var(--mud-palette-error);
+}
+
+.fa-category-icon {
+    margin-right: var(--fa-space-2);
+    vertical-align: middle;
+}

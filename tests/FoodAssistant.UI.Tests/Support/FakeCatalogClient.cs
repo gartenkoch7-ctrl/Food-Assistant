@@ -43,13 +43,22 @@ public sealed class FakeCatalogClient : ICatalogClient
 
     private static ProductSummaryDto Summary(ProductDto p) => new(p.Id, p.Name, p.Brand, p.CategoryKey, p.DefaultUnit);
 
+    /// <summary>When set, searches return pages of this size; the cursor is the index of the first item of the next page.</summary>
+    public int? PageSize { get; set; }
+
     public Task<ApiResult<CursorPage<ProductSummaryDto>>> SearchProductsAsync(
         Guid householdId, string? query, string? cursor, int? limit, CancellationToken cancellationToken) =>
-        Task.FromResult(Respond("search:" + query, () => ApiResult<CursorPage<ProductSummaryDto>>.Success(new(
-            [.. Products
+        Task.FromResult(Respond("search:" + query, () =>
+        {
+            var found = Products
                 .Where(p => string.IsNullOrWhiteSpace(query) || p.Name.Contains(query, StringComparison.OrdinalIgnoreCase))
-                .Select(Summary)],
-            null))));
+                .Select(Summary)
+                .ToList();
+            var skip = cursor is null ? 0 : int.Parse(cursor, System.Globalization.CultureInfo.InvariantCulture);
+            var take = PageSize ?? found.Count;
+            var next = skip + take < found.Count ? (skip + take).ToString(System.Globalization.CultureInfo.InvariantCulture) : null;
+            return ApiResult<CursorPage<ProductSummaryDto>>.Success(new([.. found.Skip(skip).Take(take)], next));
+        }));
 
     public Task<ApiResult<ProductDto>> GetProductAsync(Guid householdId, Guid productId, CancellationToken cancellationToken) =>
         Task.FromResult(Respond("get:" + productId, () => Products.FirstOrDefault(p => p.Id == productId) is { } found

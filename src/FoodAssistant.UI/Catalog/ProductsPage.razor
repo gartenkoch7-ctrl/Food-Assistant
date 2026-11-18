@@ -1,0 +1,183 @@
+@page "/products"
+@implements IDisposable
+@using System.Globalization
+@using FoodAssistant.Client.Catalog
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Sync
+@using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Common
+@using FoodAssistant.Contracts.Sync
+@inject ICatalogClient Catalog
+@inject SessionState Session
+@inject IDialogService Dialogs
+@inject ILiveUpdates Live
+@inject IStringLocalizer<CatalogText> T
+@inject IStringLocalizer<CategoryText> Categories
+@inject IStringLocalizer<CommonText> Common
+
+<PageTitle>@T["ProductsTitle"] – @AppInfo.Name</PageTitle>
+
+<h1>@T["ProductsTitle"]</h1>
+
+<div class="fa-products-toolbar">
+    <MudTextField T="string" Value="_query" ValueChanged="OnQueryChanged" Label="@T["ProductsSearch"]"
+                  Variant="Variant.Outlined" Immediate="true" DebounceInterval="300" Clearable="true"
+                  Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search" />
+    @if (Session.CanEdit)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add"
+                   OnClick="() => OpenAsync(null)">@T["ProductsCreate"]</MudButton>
+    }
+</div>
+
+<ApiErrorAlert Error="_error" FeatureText="T" />
+
+@if (_loading && _items.Count == 0)
+{
+    <LoadingState />
+}
+else if (_items.Count == 0 && _error is null)
+{
+    @if (string.IsNullOrWhiteSpace(_query))
+    {
+        <EmptyState Icon="@Icons.Material.Rounded.Kitchen" Heading="@T["ProductsEmptyHeading"]" Text="@T["ProductsEmptyText"]">
+            @if (Session.CanEdit)
+            {
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => OpenAsync(null)">@T["ProductsCreate"]</MudButton>
+            }
+        </EmptyState>
+    }
+    else
+    {
+        <EmptyState Icon="@Icons.Material.Rounded.SearchOff" Heading="@T["ProductsNoResultsHeading"]" Text="@T["ProductsNoResultsText"]" />
+    }
+}
+else
+{
+    <ul class="fa-list" aria-label="@T["ProductsListLabel"]">
+        @foreach (var product in _items)
+        {
+            <ListRow Icon="@CategoryIcons.For(product.CategoryKey)" Name="@product.Name" Secondary="@SecondaryOf(product)">
+                <End>
+                    @if (Session.CanEdit)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                       aria-label="@string.Format(CultureInfo.CurrentCulture, T["ProductEdit"].Value, product.Name)"
+                                       OnClick="() => OpenAsync(product.Id)" />
+                    }
+                </End>
+            </ListRow>
+        }
+    </ul>
+    @if (_next is not null)
+    {
+        <MudButton Variant="Variant.Outlined" Disabled="_loading" OnClick="LoadMoreAsync">@T["ProductsLoadMore"]</MudButton>
+    }
+}
+
+@code {
+    private readonly List<ProductSummaryDto> _items = [];
+    private string _query = string.Empty;
+    private string? _next;
+    private bool _loading = true;
+    private int _generation;
+    private ApiError? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Live.Changed += OnLiveChangedAsync;
+        await ReloadAsync();
+    }
+
+    private string SecondaryOf(ProductSummaryDto product)
+    {
+        var category = Categories[product.CategoryKey].Value;
+        return string.IsNullOrWhiteSpace(product.Brand) ? category : $"{product.Brand} · {category}";
+    }
+
+    private async Task OnQueryChanged(string query)
+    {
+        _query = query ?? string.Empty;
+        await ReloadAsync();
+    }
+
+    // First page again (search changed, product saved, live change from another member).
+    private async Task ReloadAsync()
+    {
+        _loading = true;
+        var generation = ++_generation;
+        var page = await LoadAsync(cursor: null);
+        if (generation != _generation)
+        {
+            return; // A newer search or reload started meanwhile; its answer wins.
+        }
+
+        _items.Clear();
+        _items.AddRange(page?.Items ?? []);
+        _next = page?.NextCursor;
+        _loading = false;
+    }
+
+    private async Task LoadMoreAsync()
+    {
+        _loading = true;
+        var generation = _generation;
+        var page = await LoadAsync(_next);
+        if (generation != _generation)
+        {
+            return; // The list was reloaded meanwhile; this page belongs to the old one.
+        }
+
+        _items.AddRange(page?.Items ?? []);
+        _next = page?.NextCursor;
+        _loading = false;
+    }
+
+    private async Task<CursorPage<ProductSummaryDto>?> LoadAsync(string? cursor)
+    {
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            return null;
+        }
+
+        var result = await Catalog.SearchProductsAsync(household, _query, cursor, null, CancellationToken.None);
+        _error = result.Error;
+        return result.Value;
+    }
+
+    private async Task OpenAsync(Guid? productId)
+    {
+        ProductDto? product = null;
+        if (productId is { } id && Session.ActiveHouseholdId is { } household)
+        {
+            var loaded = await Catalog.GetProductAsync(household, id, CancellationToken.None);
+            if (!loaded.IsSuccess)
+            {
+                _error = loaded.Error;
+                return;
+            }
+
+            product = loaded.Value;
+        }
+
+        var parameters = new DialogParameters<ProductEditDialog> { { d => d.Product, product } };
+        var title = product is null ? T["ProductDialogNew"].Value : T["ProductDialogEdit"].Value;
+        var dialog = await Dialogs.ShowAsync<ProductEditDialog>(title, parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        if (result is { Canceled: false })
+        {
+            await ReloadAsync();
+        }
+    }
+
+    private Task OnLiveChangedAsync(HouseholdChangesMessage message) =>
+        message.HouseholdId == Session.ActiveHouseholdId && message.Changes.Any(c => c.EntityType == SyncEntityTypes.Product)
+            ? InvokeAsync(async () =>
+            {
+                await ReloadAsync();
+                StateHasChanged();
+            })
+            : Task.CompletedTask;
+
+    public void Dispose() => Live.Changed -= OnLiveChangedAsync;
+}

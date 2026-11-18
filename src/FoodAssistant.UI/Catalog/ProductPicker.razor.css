@@ -1,0 +1,16 @@
+.fa-picker-create {
+    align-items: center;
+    display: inline-flex;
+    font-weight: 600;
+    gap: var(--fa-space-2);
+}
+
+.fa-picker-item {
+    display: inline-flex;
+    flex-direction: column;
+}
+
+.fa-picker-brand {
+    color: var(--fa-ink-muted);
+    font-size: 0.875rem;
+}
