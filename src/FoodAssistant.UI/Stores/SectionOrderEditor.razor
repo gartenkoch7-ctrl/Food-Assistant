@@ -1,0 +1,222 @@
+@implements IDisposable
+@using System.Globalization
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Stores
+@using FoodAssistant.Client.Sync
+@using FoodAssistant.Contracts.Stores
+@using FoodAssistant.Contracts.Sync
+@inject IStoreClient Stores
+@inject SessionState Session
+@inject ILiveAnnouncer Announcer
+@inject ILiveUpdates Live
+@inject IStringLocalizer<StoresText> T
+@inject IStringLocalizer<SectionText> Sections
+
+@* The order of the store's sections. Buttons move a section up or down (no drag-only interaction, WCAG 2.5.7);
+   saving sends the whole shown order as the manual one. *@
+<section id="fa-store-order" class="fa-section-order" aria-labelledby="@_headingId">
+    <h2 id="@_headingId">@string.Format(CultureInfo.CurrentCulture, T["OrderHeading"].Value, StoreName)</h2>
+    <ApiErrorAlert Error="_error" FeatureText="T" />
+
+    @if (_loading)
+    {
+        <LoadingState />
+    }
+    else
+    {
+        <p class="fa-order-kind"><strong>@(_hasManual ? T["OrderManual"] : T["OrderLearned"])</strong></p>
+        <p class="fa-order-hint">@(_hasManual ? T["OrderHintManual"] : T["OrderHintLearned"])</p>
+
+        <ol class="fa-order-list" aria-label="@T["OrderListLabel"]">
+            @for (var i = 0; i < _sections.Count; i++)
+            {
+                var index = i;
+                var name = Sections[_sections[index]].Value;
+                <li @key="_sections[index]" class="fa-order-row">
+                    <span class="fa-order-name">@name</span>
+                    @if (CanEdit)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Rounded.ArrowUpward" aria-disabled="@(index == 0 ? "true" : null)"
+                                       aria-label="@string.Format(CultureInfo.CurrentCulture, T["OrderUp"].Value, name)"
+                                       OnClick="() => Move(index, -1)" />
+                        <MudIconButton Icon="@Icons.Material.Rounded.ArrowDownward" aria-disabled="@(index == _sections.Count - 1 ? "true" : null)"
+                                       aria-label="@string.Format(CultureInfo.CurrentCulture, T["OrderDown"].Value, name)"
+                                       OnClick="() => Move(index, 1)" />
+                    }
+                </li>
+            }
+        </ol>
+
+        @if (CanEdit)
+        {
+            <div class="fa-order-actions">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" aria-disabled="@(_dirty ? null : "true")" OnClick="SaveAsync">@T["OrderSave"]</MudButton>
+                <MudButton Variant="Variant.Outlined" aria-disabled="@(_hasManual ? null : "true")" OnClick="ResetAsync">@T["OrderReset"]</MudButton>
+            </div>
+        }
+    }
+</section>
+
+@code {
+    private readonly string _headingId = $"fa-order-{Guid.NewGuid():N}";
+    private List<string> _sections = [];
+    private ApiError? _error;
+    private bool _hasManual;
+    private bool _dirty;
+    private bool _loading = true;
+    private bool _busy;
+    private Guid _loadedFor;
+    private int _generation;
+
+    /// <summary>The store whose order is shown; changing it loads the other store's order.</summary>
+    [Parameter, EditorRequired]
+    public Guid StoreId { get; set; }
+
+    [Parameter]
+    public string StoreName { get; set; } = string.Empty;
+
+    private bool CanEdit => Session.CanEdit;
+
+    protected override void OnInitialized()
+    {
+        Live.Changed += OnLiveChangedAsync;
+        Live.Resynced += OnResyncedAsync;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadedFor != StoreId)
+        {
+            _loadedFor = StoreId;
+            await LoadAsync();
+        }
+    }
+
+    // The learned order moves with every check-off, so someone else's shopping changes what is shown here. Unsaved
+    // moves of this person are never overwritten.
+    private Task OnLiveChangedAsync(HouseholdChangesMessage message) =>
+        message.HouseholdId == Session.ActiveHouseholdId && message.Changes.Any(c => c.EntityType == SyncEntityTypes.Store)
+            ? RefreshAsync()
+            : Task.CompletedTask;
+
+    private Task OnResyncedAsync() => RefreshAsync();
+
+    private Task RefreshAsync() => _dirty || _busy
+        ? Task.CompletedTask
+        : InvokeAsync(async () =>
+        {
+            await LoadAsync(showLoading: false);
+            StateHasChanged();
+        });
+
+    public void Dispose()
+    {
+        _generation++;
+        Live.Changed -= OnLiveChangedAsync;
+        Live.Resynced -= OnResyncedAsync;
+    }
+
+    private async Task LoadAsync(bool showLoading = true)
+    {
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            _loading = false;
+            return;
+        }
+
+        _loading = showLoading;
+        var generation = ++_generation;
+        var result = await Stores.GetSectionOrderAsync(household, StoreId, CancellationToken.None);
+        if (generation != _generation)
+        {
+            return; // a newer load, save or reset (or another store) took over
+        }
+
+        _error = result.Error;
+
+        // A move made while the answer was on its way stays; the next change reloads.
+        if (!_dirty)
+        {
+            Apply(result.Value);
+        }
+
+        _loading = false;
+    }
+
+    private void Apply(SectionOrderDto? order)
+    {
+        if (order is null)
+        {
+            return;
+        }
+
+        _sections = [.. order.Sections];
+        _hasManual = order.HasManualOrder;
+        _dirty = false;
+    }
+
+    private void Move(int index, int direction)
+    {
+        var target = index + direction;
+        if (_busy || target < 0 || target >= _sections.Count)
+        {
+            return;
+        }
+
+        (_sections[index], _sections[target]) = (_sections[target], _sections[index]);
+        _dirty = true;
+        Announcer.Announce(string.Format(CultureInfo.CurrentCulture, T["OrderMoved"].Value, Sections[_sections[target]].Value, target + 1, _sections.Count));
+    }
+
+    // The buttons are not disabled (a disabled button loses the keyboard focus); they say "unavailable" through
+    // aria-disabled and the guards live here.
+    private async Task SaveAsync()
+    {
+        if (_busy || !_dirty || Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        var generation = ++_generation;
+        var result = await Stores.SetSectionOrderAsync(household, StoreId, new SetSectionOrderRequest([.. _sections]), CancellationToken.None);
+        _busy = false;
+        if (generation != _generation)
+        {
+            return;
+        }
+
+        _error = result.Error;
+        if (result.IsSuccess)
+        {
+            Apply(result.Value);
+            Announcer.Announce(T["OrderSaved"]);
+        }
+    }
+
+    private async Task ResetAsync()
+    {
+        if (_busy || !_hasManual || Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        var generation = ++_generation;
+        var result = await Stores.ResetSectionOrderAsync(household, StoreId, CancellationToken.None);
+        _busy = false;
+        if (generation != _generation)
+        {
+            return;
+        }
+
+        _error = result.Error;
+        if (result.IsSuccess)
+        {
+            Apply(result.Value);
+            Announcer.Announce(T["OrderResetDone"]);
+        }
+    }
+}

@@ -1,0 +1,183 @@
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Shopping
+@using FoodAssistant.Client.Stores
+@using FoodAssistant.Contracts.Shopping
+@using FoodAssistant.Contracts.Stores
+@inject IShoppingClient Shopping
+@inject IStoreClient Stores
+@inject SessionState Session
+@inject IStringLocalizer<ShoppingText> T
+@inject IStringLocalizer<CommonText> Common
+
+@* Creates or edits a list. Closes with DialogResult.Ok(ShoppingListDto) after saving. *@
+<MudDialog>
+    <TitleContent>@(List is null ? T["ListDialogNew"] : T["ListDialogEdit"])</TitleContent>
+    <DialogContent>
+        <ApiErrorAlert Error="_error" FeatureText="T" />
+        @if (_reloaded)
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" role="status">@T["ListReloaded"]</MudAlert>
+        }
+
+        <div class="fa-dialog-fields">
+            <MudTextField T="string" @bind-Value="_name" Label="@T["FieldListName"]" MaxLength="80" Variant="Variant.Outlined"
+                          Required="@(!NameMayBeEmpty)" RequiredError="@T["FieldError.required"]" Error="_nameInvalid" ErrorText="@T["FieldError.required"]" />
+            <MudSelect T="string" @bind-Value="_store" Label="@T["FieldStore"]" Variant="Variant.Outlined"
+                       Error="_storeGone" ErrorText="@T["StoreGone"]">
+                <MudSelectItem T="string" Value="@string.Empty">@T["NoStore"]</MudSelectItem>
+                @foreach (var store in _stores)
+                {
+                    <MudSelectItem T="string" Value="@store.Id.ToString("D")">@store.Name</MudSelectItem>
+                }
+            </MudSelect>
+            @* The default list cannot be turned off; another list has to take over. *@
+            <MudSwitch T="bool" @bind-Value="_default" Disabled="@(_existing is { IsDefault: true })" Label="@T["FieldDefault"]" Color="Color.Primary"
+                       aria-describedby="fa-list-default-hint" />
+            <p id="fa-list-default-hint" class="fa-list-hint">@T["FieldDefaultHint"]</p>
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="_saving" OnClick="() => MudDialog.Cancel()">@Common["Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_saving" OnClick="SaveAsync">@Common["Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private IReadOnlyList<StoreDto> _stores = [];
+    private ApiError? _error;
+    private string _name = string.Empty;
+    private string _store = string.Empty;
+    private bool _default;
+    // The list being edited; for a new list it is set once the server created it, so a second save updates that list.
+    private ShoppingListDto? _existing;
+    private Guid? _createId; // kept for retries: a repeated create after a lost response finds the list
+    private bool _nameInvalid;
+    private bool _reloaded;
+    private bool _saving;
+    private bool _storeGone;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>The list to edit; <see langword="null"/> creates a new one.</summary>
+    [Parameter]
+    public ShoppingListDto? List { get; set; }
+
+    // The unnamed default list is shown as "Shopping list", so its name may stay empty.
+    private bool NameMayBeEmpty => _existing is { IsDefault: true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (List is not null)
+        {
+            Fill(List);
+        }
+
+        if (Session.ActiveHouseholdId is { } household)
+        {
+            _stores = (await Stores.ListStoresAsync(household, CancellationToken.None)).Value ?? [];
+        }
+    }
+
+    private void Fill(ShoppingListDto list)
+    {
+        _existing = list;
+        _name = list.Name;
+        _store = list.StoreId?.ToString("D") ?? string.Empty;
+        _default = list.IsDefault;
+    }
+
+    private async Task SaveAsync()
+    {
+        _nameInvalid = !NameMayBeEmpty && string.IsNullOrWhiteSpace(_name);
+        if (_nameInvalid || Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        _saving = true;
+        _error = null;
+        _storeGone = false;
+        _reloaded = false;
+        var storeId = _store.Length == 0 ? (Guid?)null : Guid.Parse(_store);
+        var createdNow = false;
+        if (_existing is null)
+        {
+            var created = await Shopping.CreateListAsync(
+                household, new CreateShoppingListRequest(_createId ??= Guid.CreateVersion7(), _name.Trim(), storeId), CancellationToken.None);
+            var list = created.Value;
+            if (!created.IsSuccess && created.Error!.Status == 409)
+            {
+                // The id is taken: either an earlier attempt of this dialog did create the list (lost response), then that
+                // list is the one; or the id belongs to something else, then the next attempt needs a new one.
+                var lists = await Shopping.ListListsAsync(household, CancellationToken.None);
+                list = lists.Value?.FirstOrDefault(l => l.Id == _createId);
+                _createId = lists.IsSuccess && list is null ? null : _createId; // an unread list proves nothing: keep the id
+            }
+            else if (!created.IsSuccess)
+            {
+                list = null;
+            }
+
+            if (list is null)
+            {
+                _saving = false;
+                await SetErrorAsync(household, created.Error);
+                return;
+            }
+
+            // Kept even when the follow-up below fails: the next save then updates this list instead of creating another.
+            _existing = list;
+            createdNow = true;
+        }
+
+        // The create request has no default flag, so a new default list is created first and then switched with an update.
+        // A recovered list may differ from what is typed now, so it is updated then too.
+        var result = createdNow && !_default && _existing!.Name == _name.Trim() && _existing.StoreId == storeId
+            ? ApiResult<ShoppingListDto>.Success(_existing!)
+            : await Shopping.UpdateListAsync(
+                household, _existing!.Id, new UpdateShoppingListRequest(_name.Trim(), storeId, _default, _existing.SortOrder),
+                $"\"{_existing.Version}\"", CancellationToken.None);
+        _saving = false;
+
+        if (result.IsSuccess)
+        {
+            MudDialog.Close(DialogResult.Ok(result.Value!));
+            return;
+        }
+
+        if (result.Error!.Status == 412 && await ReloadAsync(household, _existing!.Id))
+        {
+            return;
+        }
+
+        await SetErrorAsync(household, result.Error);
+    }
+
+    // The chosen store was deleted meanwhile (field error on storeId): read the stores again and ask for a new choice.
+    private async Task SetErrorAsync(Guid household, ApiError? error)
+    {
+        if (error is not null && error.FieldErrors.ContainsKey("storeId"))
+        {
+            _stores = (await Stores.ListStoresAsync(household, CancellationToken.None)).Value ?? _stores;
+            (_store, _storeGone) = (string.Empty, true);
+            return;
+        }
+
+        _error = error;
+    }
+
+    // Someone else changed the list: show what is stored now and let the person decide again.
+    private async Task<bool> ReloadAsync(Guid household, Guid id)
+    {
+        var lists = await Shopping.ListListsAsync(household, CancellationToken.None);
+        if (lists.Value?.FirstOrDefault(l => l.Id == id) is not { } current)
+        {
+            return false;
+        }
+
+        Fill(current);
+        _reloaded = true;
+        return true;
+    }
+}

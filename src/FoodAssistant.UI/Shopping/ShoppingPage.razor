@@ -1,10 +1,184 @@
 @page "/shopping"
+@implements IDisposable
+@using System.Globalization
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Shopping
+@using FoodAssistant.Client.Stores
+@using FoodAssistant.Client.Sync
+@using FoodAssistant.Contracts.Shopping
+@using FoodAssistant.Contracts.Stores
+@using FoodAssistant.Contracts.Sync
+@inject IShoppingClient Shopping
+@inject IStoreClient Stores
+@inject SessionState Session
+@inject IDialogService Dialogs
+@inject ILiveUpdates Live
+@inject NavigationManager Navigation
 @inject IStringLocalizer<ShoppingText> T
+@inject IStringLocalizer<CommonText> Common
 
 <PageTitle>@T["ShoppingTitle"] – @AppInfo.Name</PageTitle>
 
 <h1>@T["ShoppingTitle"]</h1>
 
-<EmptyState Icon="@Icons.Material.Rounded.ShoppingCart"
-            Heading="@T["ShoppingEmptyHeading"]"
-            Text="@T["ShoppingEmptyText"]" />
+<ApiErrorAlert Error="_error" FeatureText="T" />
+
+@if (_loading || _lists.Count == 1)
+{
+    @* One list opens directly (the redirect replaces this page in the history). *@
+    <LoadingState />
+}
+else if (_lists.Count == 0 && _error is null)
+{
+    <EmptyState Icon="@Icons.Material.Rounded.ShoppingCart" Heading="@T["ShoppingEmptyHeading"]" Text="@T["ShoppingEmptyText"]">
+        @if (Session.CanEdit)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => OpenAsync(null)">@T["ListCreate"]</MudButton>
+        }
+    </EmptyState>
+}
+else
+{
+    <ul class="fa-list" aria-label="@T["ListsLabel"]">
+        @foreach (var list in _lists)
+        {
+            <ListRow @key="list.Id" Icon="@Icons.Material.Rounded.ShoppingCart" Name="@NameOf(list)" Secondary="@SecondaryOf(list)">
+                <End>
+                    <MudButton Variant="Variant.Outlined" Href="@($"/shopping/{list.Id:D}")"
+                               aria-label="@string.Format(CultureInfo.CurrentCulture, T["ListOpen"].Value, NameOf(list))">@T["ListOpenButton"]</MudButton>
+                    @if (Session.CanEdit)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                       aria-label="@string.Format(CultureInfo.CurrentCulture, T["ListEdit"].Value, NameOf(list))"
+                                       OnClick="() => OpenAsync(list)" />
+                        @if (!list.IsDefault)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                           aria-label="@string.Format(CultureInfo.CurrentCulture, T["ListDelete"].Value, NameOf(list))"
+                                           OnClick="() => DeleteAsync(list)" />
+                        }
+                    }
+                </End>
+            </ListRow>
+        }
+    </ul>
+    @if (Session.CanEdit)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add"
+                   OnClick="() => OpenAsync(null)">@T["ListCreate"]</MudButton>
+    }
+}
+
+@code {
+    private static readonly string[] RelevantEntities = [SyncEntityTypes.ShoppingItem, SyncEntityTypes.ShoppingList, SyncEntityTypes.Store];
+
+    private IReadOnlyList<ShoppingListDto> _lists = [];
+    private IReadOnlyList<StoreDto> _stores = [];
+    private ApiError? _error;
+    private bool _loading = true;
+    private int _generation;
+    private bool _disposed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Live.Changed += OnLiveChangedAsync;
+        Live.Resynced += OnResyncedAsync;
+        await ReloadAsync();
+    }
+
+    private string NameOf(ShoppingListDto list) => string.IsNullOrWhiteSpace(list.Name) ? T["DefaultListName"].Value : list.Name;
+
+    private string SecondaryOf(ShoppingListDto list)
+    {
+        var store = _stores.FirstOrDefault(s => s.Id == list.StoreId)?.Name;
+        return string.Join(" · ", new[]
+        {
+            store is null ? string.Empty : string.Format(CultureInfo.CurrentCulture, T["ListStore"].Value, store),
+            string.Format(CultureInfo.CurrentCulture, T["ListOpenCount"].Value, list.OpenItemCount),
+        }.Where(part => part.Length > 0));
+    }
+
+    private async Task ReloadAsync()
+    {
+        // Answers of an older reload that arrive after a newer one started are dropped.
+        var generation = ++_generation;
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            _loading = false;
+            return;
+        }
+
+        var lists = await Shopping.ListListsAsync(household, CancellationToken.None);
+        var stores = await Stores.ListStoresAsync(household, CancellationToken.None);
+        if (generation != _generation)
+        {
+            return;
+        }
+
+        _error = lists.Error;
+        _lists = lists.Value ?? _lists;
+        _stores = stores.Value ?? _stores;
+        _loading = false;
+        if (_lists.Count == 1 && !_disposed)
+        {
+            Navigation.NavigateTo($"/shopping/{_lists[0].Id:D}", replace: true);
+        }
+    }
+
+    private async Task OpenAsync(ShoppingListDto? list)
+    {
+        var parameters = new DialogParameters<ShoppingListDialog> { { d => d.List, list } };
+        var title = list is null ? T["ListDialogNew"].Value : T["ListDialogEdit"].Value;
+        var dialog = await Dialogs.ShowAsync<ShoppingListDialog>(title, parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false })
+        {
+            await ReloadAsync();
+        }
+    }
+
+    private async Task DeleteAsync(ShoppingListDto list)
+    {
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            T["ListDeleteTitle"],
+            string.Format(CultureInfo.CurrentCulture, T["ListDeleteText"].Value, NameOf(list)),
+            yesText: Common["Delete"],
+            cancelText: Common["Cancel"]);
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        var result = await Shopping.DeleteListAsync(household, list.Id, $"\"{list.Version}\"", CancellationToken.None);
+        await ReloadAsync();
+        _error = result.Error ?? _error;
+    }
+
+    private Task OnLiveChangedAsync(HouseholdChangesMessage message) =>
+        message.HouseholdId == Session.ActiveHouseholdId && message.Changes.Any(c => RelevantEntities.Contains(c.EntityType))
+            ? InvokeAsync(async () =>
+            {
+                await ReloadAsync();
+                StateHasChanged();
+            })
+            : Task.CompletedTask;
+
+    // After a reconnect the changes in between are unknown, so everything is fetched again.
+    private Task OnResyncedAsync() => InvokeAsync(async () =>
+    {
+        await ReloadAsync();
+        StateHasChanged();
+    });
+
+    public void Dispose()
+    {
+        _disposed = true;
+        _generation++;
+        Live.Changed -= OnLiveChangedAsync;
+        Live.Resynced -= OnResyncedAsync;
+    }
+}

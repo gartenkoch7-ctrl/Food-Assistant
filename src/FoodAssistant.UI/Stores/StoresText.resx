@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- German is the neutral language of the project; StoresText.en.resx holds the English texts. -->
+  <data name="StoresTitle" xml:space="preserve"><value>Läden</value></data>
+  <data name="StoresEmptyHeading" xml:space="preserve"><value>Noch keine Läden</value></data>
+  <data name="StoresEmptyText" xml:space="preserve"><value>Lege deine Läden an. Eine Einkaufsliste kann einem Laden zugeordnet werden und ist dann in der Reihenfolge seiner Bereiche sortiert.</value></data>
+  <data name="StoresCreate" xml:space="preserve"><value>Laden anlegen</value></data>
+  <data name="StoresListLabel" xml:space="preserve"><value>Läden</value></data>
+  <data name="StoreEdit" xml:space="preserve"><value>{0} bearbeiten</value></data>
+  <data name="StoreDelete" xml:space="preserve"><value>{0} löschen</value></data>
+  <data name="StoreOrder" xml:space="preserve"><value>Reihenfolge von {0}</value></data>
+  <data name="StoreOrderShort" xml:space="preserve"><value>Reihenfolge</value></data>
+  <data name="StoreDeleteTitle" xml:space="preserve"><value>Laden löschen?</value></data>
+  <data name="StoreDeleteText" xml:space="preserve"><value>„{0}“ wird gelöscht. Listen mit diesem Laden bleiben bestehen, werden aber keinem Laden mehr zugeordnet.</value></data>
+  <data name="StoreDialogNew" xml:space="preserve"><value>Neuer Laden</value></data>
+  <data name="StoreDialogEdit" xml:space="preserve"><value>Laden bearbeiten</value></data>
+  <data name="StoreReloaded" xml:space="preserve"><value>Der Laden wurde inzwischen geändert. Angezeigt ist der aktuelle Stand.</value></data>
+  <data name="FieldStoreName" xml:space="preserve"><value>Name</value></data>
+  <data name="FieldError.required" xml:space="preserve"><value>Pflichtfeld</value></data>
+  <data name="OrderHeading" xml:space="preserve"><value>Reihenfolge der Bereiche: {0}</value></data>
+  <data name="OrderListLabel" xml:space="preserve"><value>Bereiche in der Reihenfolge des Ladens</value></data>
+  <data name="OrderLearned" xml:space="preserve"><value>Gelernt</value></data>
+  <data name="OrderManual" xml:space="preserve"><value>Eigene Reihenfolge</value></data>
+  <data name="OrderHintLearned" xml:space="preserve"><value>Aus deinem Abhaken im Laden gelernt. Verschiebe einen Bereich und speichere, um eine eigene Reihenfolge festzulegen.</value></data>
+  <data name="OrderHintManual" xml:space="preserve"><value>Deine eigene Reihenfolge gilt, bis du zur gelernten zurückkehrst.</value></data>
+  <data name="OrderUp" xml:space="preserve"><value>{0} nach oben</value></data>
+  <data name="OrderDown" xml:space="preserve"><value>{0} nach unten</value></data>
+  <data name="OrderMoved" xml:space="preserve"><value>{0}: Position {1} von {2}</value></data>
+  <data name="OrderSave" xml:space="preserve"><value>Reihenfolge speichern</value></data>
+  <data name="OrderReset" xml:space="preserve"><value>Zurück zur gelernten</value></data>
+  <data name="OrderSaved" xml:space="preserve"><value>Reihenfolge gespeichert.</value></data>
+  <data name="OrderResetDone" xml:space="preserve"><value>Gelernte Reihenfolge wiederhergestellt.</value></data>
+  <data name="Error.stores.store_not_found" xml:space="preserve"><value>Diesen Laden gibt es nicht mehr.</value></data>
+  <data name="Error.stores.validation_failed" xml:space="preserve"><value>Bitte prüfe deine Eingabe.</value></data>
+</root>

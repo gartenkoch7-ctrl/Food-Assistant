@@ -1,0 +1,47 @@
+.fa-list {
+    list-style: none;
+    margin: 0 0 var(--fa-space-4);
+    padding: 0;
+}
+
+.fa-list-header {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fa-space-2) var(--fa-space-4);
+    justify-content: space-between;
+    margin-bottom: var(--fa-space-3);
+}
+
+.fa-list-header h1 {
+    margin: 0;
+}
+
+.fa-list-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fa-space-2);
+}
+
+.fa-shopping-heading {
+    margin: var(--fa-space-4) 0 var(--fa-space-2);
+}
+
+/* A disclosure button that looks like the heading it sits in; at least 48 px high. */
+.fa-cart-toggle {
+    align-items: center;
+    background: none;
+    border: 0;
+    color: inherit;
+    cursor: pointer;
+    display: inline-flex;
+    font: inherit;
+    gap: var(--fa-space-2);
+    min-height: var(--fa-target);
+    padding: 0;
+}
+
+.fa-cart-toggle:focus-visible {
+    outline: 3px solid var(--fa-focus);
+    outline-offset: 2px;
+}

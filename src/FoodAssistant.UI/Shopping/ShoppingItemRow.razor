@@ -1,0 +1,110 @@
+@using System.Globalization
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Shopping
+@using FoodAssistant.Contracts.Shopping
+@using FoodAssistant.UI.Inventory
+@inject IShoppingClient Shopping
+@inject SessionState Session
+@inject IStringLocalizer<ShoppingText> T
+@inject IStringLocalizer<CommonText> Common
+
+@* One item. Checking is optimistic: the row flips at once and is put back when the server refuses (ADR-0005: checking works for every role). *@
+<ListRow Icon="@(IsChecked ? Icons.Material.Rounded.TaskAlt : Icons.Material.Rounded.ShoppingBasket)" Name="@Item.Text" Secondary="@Secondary">
+    <End>
+        <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                       aria-label="@string.Format(CultureInfo.CurrentCulture, T["ItemEdit"].Value, Item.Text)"
+                       OnClick="() => Open.InvokeAsync(Item)" />
+        <MudIconButton Icon="@(IsChecked ? Icons.Material.Rounded.CheckBox : Icons.Material.Rounded.CheckBoxOutlineBlank)"
+                       aria-label="@string.Format(CultureInfo.CurrentCulture, T[IsChecked ? "ItemUncheck" : "ItemCheck"].Value, Item.Text)"
+                       OnClick="ToggleAsync" />
+    </End>
+</ListRow>
+
+@code {
+    // The state the person asked for while the server has not answered yet.
+    private bool? _pending;
+    private bool _busy;
+
+    [Parameter, EditorRequired]
+    public ShoppingItemDto Item { get; set; } = default!;
+
+    /// <summary>Raised before the request is sent, so the page knows this is the person's own change.</summary>
+    [Parameter]
+    public EventCallback<ShoppingItemDto> Checking { get; set; }
+
+    /// <summary>Raised with the server's answer after a successful check or uncheck.</summary>
+    [Parameter]
+    public EventCallback<ShoppingItemChangeResult> Changed { get; set; }
+
+    /// <summary>Raised after <see cref="Changed"/> when the server kept its checked state instead of taking the item back.</summary>
+    [Parameter]
+    public EventCallback<ShoppingItemDto> NotApplied { get; set; }
+
+    /// <summary>Raised when the server refused; the row is already back in its old state.</summary>
+    [Parameter]
+    public EventCallback<ApiError> Failed { get; set; }
+
+    /// <summary>Raised when the person wants to edit the item.</summary>
+    [Parameter]
+    public EventCallback<ShoppingItemDto> Open { get; set; }
+
+    private bool IsChecked => _pending ?? Item.Checked;
+
+    // Quantity, note and a plain-text origin label; the origin is never only an icon or colour.
+    private string Secondary => string.Join(" · ", new[]
+    {
+        Item.Quantity is { } quantity ? InventoryFields.Quantity(quantity, Common, CultureInfo.CurrentCulture) : string.Empty,
+        Item.Note ?? string.Empty,
+        Item.Origin is ShoppingItemOriginDto.MinimumStock or ShoppingItemOriginDto.Recurring ? T["OriginAuto"].Value : string.Empty,
+    }.Where(part => part.Length > 0));
+
+    private async Task ToggleAsync()
+    {
+        // The button is not disabled while the request runs (a disabled button loses the keyboard focus, WCAG 2.4.3);
+        // a second activation is ignored instead.
+        if (_busy || Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        _busy = true;
+        var target = !Item.Checked;
+        _pending = target;
+        await Checking.InvokeAsync(Item);
+        var result = await Shopping.ChangeItemAsync(
+            household, Item.Id, new ChangeShoppingItemRequest(Item.Version, target, Item.Quantity, Item.Note, Item.Text, Item.SectionKey), CancellationToken.None);
+        if (result.Error is { ErrorCode: ShoppingErrorCodes.RestrictedChange })
+        {
+            result = await RetryWithFreshStateAsync(household, target);
+        }
+
+        _busy = false;
+        _pending = null;
+        if (result.IsSuccess)
+        {
+            await Changed.InvokeAsync(result.Value!);
+            if (ShoppingOutcomes.ChangeKeptServerState(result.Value!.Outcome, target))
+            {
+                await NotApplied.InvokeAsync(result.Value.Item); // someone checked it meanwhile: "checked wins"
+            }
+        }
+        else
+        {
+            await Failed.InvokeAsync(result.Error!);
+        }
+    }
+
+    // A restricted member may only flip "checked". The server refuses when someone else edited text, quantity or
+    // note since the list was loaded, so the item is read again and the check is repeated on the fresh state.
+    private async Task<ApiResult<ShoppingItemChangeResult>> RetryWithFreshStateAsync(Guid household, bool target)
+    {
+        var items = await Shopping.ListItemsAsync(household, Item.ListId, true, CancellationToken.None);
+        if (items.Value?.FirstOrDefault(i => i.Id == Item.Id) is not { } fresh)
+        {
+            return ApiResult<ShoppingItemChangeResult>.Failure(items.Error ?? new ApiError(404, ShoppingErrorCodes.ItemNotFound, null, new Dictionary<string, string[]>(), null));
+        }
+
+        return await Shopping.ChangeItemAsync(
+            household, fresh.Id, new ChangeShoppingItemRequest(fresh.Version, target, fresh.Quantity, fresh.Note, fresh.Text, fresh.SectionKey), CancellationToken.None);
+    }
+}

@@ -1,0 +1,47 @@
+.fa-section-order {
+    margin-top: var(--fa-space-6);
+}
+
+.fa-order-kind,
+.fa-order-hint {
+    margin: 0 0 var(--fa-space-2);
+}
+
+.fa-order-hint {
+    color: var(--fa-ink-muted);
+}
+
+.fa-order-list {
+    list-style: none;
+    margin: 0 0 var(--fa-space-4);
+    padding: 0;
+}
+
+.fa-order-row {
+    align-items: center;
+    background: var(--fa-surface-raised);
+    border-bottom: 1px solid var(--fa-line);
+    box-sizing: border-box;
+    display: flex;
+    gap: var(--fa-space-2);
+    min-height: var(--fa-target);
+    padding: var(--fa-space-1) var(--fa-space-4);
+}
+
+.fa-order-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+/* Buttons that cannot act (list ends, nothing to save) stay focusable and say so through aria-disabled. */
+.fa-order-row ::deep [aria-disabled="true"],
+.fa-order-actions ::deep [aria-disabled="true"] {
+    opacity: 0.45;
+}
+
+.fa-order-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fa-space-3);
+}

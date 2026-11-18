@@ -1,0 +1,36 @@
+.fa-dialog-fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fa-space-3);
+    margin-top: var(--fa-space-2);
+}
+
+.fa-item-move {
+    align-items: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fa-space-3);
+}
+
+.fa-item-move ::deep .mud-input-control {
+    flex: 1 1 12rem;
+}
+
+.fa-item-move ::deep .mud-button-root {
+    margin-top: var(--fa-space-2);
+}
+
+.fa-item-facts {
+    display: grid;
+    gap: var(--fa-space-1) var(--fa-space-4);
+    grid-template-columns: max-content 1fr;
+    margin: 0;
+}
+
+.fa-item-facts dt {
+    color: var(--fa-ink-muted);
+}
+
+.fa-item-facts dd {
+    margin: 0;
+}

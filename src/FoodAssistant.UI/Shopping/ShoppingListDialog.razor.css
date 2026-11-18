@@ -1,0 +1,11 @@
+.fa-dialog-fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--fa-space-3);
+    margin-top: var(--fa-space-2);
+}
+
+.fa-list-hint {
+    color: var(--fa-ink-muted);
+    margin: 0;
+}

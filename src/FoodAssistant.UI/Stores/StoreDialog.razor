@@ -1,0 +1,154 @@
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Stores
+@using FoodAssistant.Contracts.Stores
+@inject IStoreClient Stores
+@inject SessionState Session
+@inject IStringLocalizer<StoresText> T
+@inject IStringLocalizer<CommonText> Common
+
+@* Creates or renames a store. Closes with DialogResult.Ok(StoreDto) after saving. *@
+<MudDialog>
+    <TitleContent>@(Store is null ? T["StoreDialogNew"] : T["StoreDialogEdit"])</TitleContent>
+    <DialogContent>
+        <ApiErrorAlert Error="_error" FeatureText="T" />
+        @if (_reloaded)
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" role="status">@T["StoreReloaded"]</MudAlert>
+        }
+
+        <div class="fa-dialog-fields">
+            <MudTextField T="string" @bind-Value="_name" Label="@T["FieldStoreName"]" Required="true" RequiredError="@T["FieldError.required"]" MaxLength="80" Variant="Variant.Outlined"
+                          Error="_nameInvalid" ErrorText="@T["FieldError.required"]" />
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="_saving" OnClick="() => MudDialog.Cancel()">@Common["Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_saving" OnClick="SaveAsync">@Common["Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private ApiError? _error;
+    private string _name = string.Empty;
+    private long _version;
+    private string _baseName = string.Empty; // the name as last read from the server
+    private Guid? _createId;
+    private bool _nameInvalid;
+    private bool _reloaded;
+    private bool _saving;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>The store to rename; <see langword="null"/> creates a new one.</summary>
+    [Parameter]
+    public StoreDto? Store { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (Store is not null)
+        {
+            Fill(Store);
+        }
+    }
+
+    private void Fill(StoreDto store)
+    {
+        _version = store.Version;
+        _baseName = store.Name;
+        _name = store.Name;
+    }
+
+    private async Task SaveAsync()
+    {
+        _nameInvalid = string.IsNullOrWhiteSpace(_name);
+        if (_nameInvalid || Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        _saving = true;
+        _error = null;
+        _reloaded = false;
+        // A client id, kept for retries: a repeated create after a lost response then finds the store instead of adding another.
+        _createId ??= Guid.CreateVersion7();
+        var request = new StoreRequest(Store is null ? _createId : null, _name.Trim());
+        var result = Store is null
+            ? await Stores.CreateStoreAsync(household, request, CancellationToken.None)
+            : await Stores.UpdateStoreAsync(household, Store.Id, request, $"\"{_version}\"", CancellationToken.None);
+        _saving = false;
+
+        if (result.IsSuccess)
+        {
+            MudDialog.Close(DialogResult.Ok(result.Value!));
+            return;
+        }
+
+        // 409 on a create: the id is taken. If an earlier attempt of this dialog created the store (lost response), that
+        // store is the result; only when the list was read and the id is not there does the next attempt get a new id.
+        if (result.Error!.Status == 409 && Store is null)
+        {
+            var stores = await Stores.ListStoresAsync(household, CancellationToken.None);
+            if (stores.Value?.FirstOrDefault(s => s.Id == _createId) is { } found)
+            {
+                // The recovered store may carry the name of the earlier attempt; rename it to what is typed now.
+                if (found.Name != _name.Trim())
+                {
+                    var renamed = await Stores.UpdateStoreAsync(
+                        household, found.Id, new StoreRequest(null, _name.Trim()), $"\"{found.Version}\"", CancellationToken.None);
+                    if (!renamed.IsSuccess)
+                    {
+                        _error = renamed.Error;
+                        return;
+                    }
+
+                    found = renamed.Value!;
+                }
+
+                MudDialog.Close(DialogResult.Ok(found));
+                return;
+            }
+
+            _createId = stores.IsSuccess ? null : _createId;
+        }
+
+        if (result.Error!.Status == 412 && Store is not null && await ResolvePreconditionAsync(household, Store.Id))
+        {
+            return;
+        }
+
+        _error = result.Error;
+    }
+
+    // Every check-off in the store changes its version (the learned order lives on the store row), so a rename often meets
+    // a newer version although nobody touched the name. Then the rename is repeated once on the current version and the
+    // typed name stays; only when the name itself was changed meanwhile is the current state shown for a new decision.
+    private async Task<bool> ResolvePreconditionAsync(Guid household, Guid id)
+    {
+        var list = await Stores.ListStoresAsync(household, CancellationToken.None);
+        if (list.Value?.FirstOrDefault(s => s.Id == id) is not { } current)
+        {
+            return false;
+        }
+
+        if (current.Name == _baseName)
+        {
+            var retry = await Stores.UpdateStoreAsync(
+                household, id, new StoreRequest(null, _name.Trim()), $"\"{current.Version}\"", CancellationToken.None);
+            if (retry.IsSuccess)
+            {
+                MudDialog.Close(DialogResult.Ok(retry.Value!));
+            }
+            else
+            {
+                _error = retry.Error;
+            }
+
+            return true;
+        }
+
+        Fill(current);
+        _reloaded = true;
+        return true;
+    }
+}
