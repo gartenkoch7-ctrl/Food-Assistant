@@ -23,6 +23,10 @@ namespace FoodAssistant.UI.Tests.Support;
 /// </summary>
 public abstract class UiTestContext : BunitContext
 {
+    // The 1 s default is too short when the whole solution runs in parallel (debounced searches,
+    // MudBlazor popovers); waits still return as soon as the assertion holds.
+    static UiTestContext() => DefaultWaitTimeout = TimeSpan.FromSeconds(10);
+
     protected UiTestContext(string culture = "de", bool signedIn = true, HouseholdRole role = HouseholdRole.Member)
     {
         UseCulture(culture);
