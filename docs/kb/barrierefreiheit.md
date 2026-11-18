@@ -19,3 +19,8 @@ geprüft; Ergebnis kurz im PR nennen.
 
 ## Bekannte Lücken
 Hier MudBlazor- oder Plattform-Eigenheiten und deren Umgehung eintragen.
+
+- **MudBlazor 9, `Error`/`ErrorText` von außen** (z. B. Feldfehler aus einer 400-Antwort): Das Feld
+  wird rot und `aria-invalid`, der `ErrorText` erscheint aber nicht (beobachtet in bUnit). Umgehung:
+  eigenes Fehlerelement unter dem Feld und `ErrorId` darauf setzen (→ `aria-describedby`), siehe
+  `UI/ShelfLife/ShelfLifeDaysDialog.razor`.

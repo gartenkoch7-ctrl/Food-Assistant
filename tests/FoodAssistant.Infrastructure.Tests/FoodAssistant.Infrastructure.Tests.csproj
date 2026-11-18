@@ -7,6 +7,10 @@
     <ProjectReference Include="..\..\src\FoodAssistant.Infrastructure\FoodAssistant.Infrastructure.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Draft of the default shelf-life table (B1.1), checked here until the user approves it. -->
+    <None Include="..\..\docs\plan\features\m01-b1-standardwerte-entwurf.json" Link="ShelfLife\standardwerte-entwurf.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="xunit.v3" />
     <PackageReference Include="Microsoft.Testing.Extensions.CodeCoverage" />
     <PackageReference Include="Testcontainers.PostgreSql" />

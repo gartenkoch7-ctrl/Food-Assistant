@@ -111,6 +111,8 @@ Rest frei für weitere API-Konventionen.
 | `StorageLocationCreated` / 3202 | Log, Information | Katalog | Lagerort angelegt | `LocationId`, `HouseholdId` |
 | `StorageLocationDeleted` / 3203 | Log, Information | Katalog | Lagerort gelöscht | `LocationId`, `HouseholdId` |
 | `StockHandlerFailed` / 3204 | Log, Warning | Katalog | Ein Bestands-Handler ist nach einer Mindestbestand-Änderung gescheitert; die Änderung bleibt gültig | `ProductId`, Exception |
+| `OverrideChanged` / 3250 | Log, Information | Haltbarkeit | Eigene Haltbarkeitswerte (Kategorie oder Produkt) gespeichert; keine Werte, keine Kategorie | `HouseholdId`, `Scope` (`category`/`product`), `StorageType` |
+| `OverrideReset` / 3251 | Log, Information | Haltbarkeit | Eigene Haltbarkeitswerte auf Standard zurückgesetzt (auch durch Speichern ohne Werte) | `HouseholdId`, `Scope`, `StorageType` |
 | `BrowserCallUnavailable` / 4000 | Log, Debug | UI | Browser-Aufruf nicht verfügbar; nur Operationsname | `Operation`, Exception |
 | `NetworkError` / 4010 | Log, Debug | Client | API-Aufruf ohne Antwort fehlgeschlagen (auch Zeitüberschreitung des HttpClient); nur HTTP-Methode, nie Pfad/Query | `Method`, Exception |
 | `InvalidResponse` / 4011 | Log, Warning | Client | Erfolgsantwort der API mit unlesbarem JSON-Körper (z. B. HTML eines Proxys); nur HTTP-Methode, ohne Exception (Meldung kann Teile des Körpers zitieren) | `Method` |
@@ -138,6 +140,8 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.households.remove_member` | Haushalte | Mitglied entfernen | `foodassistant.outcome` |
 | `foodassistant.households.revoke_invitation` | Haushalte | Einladung widerrufen | `foodassistant.outcome` |
 | `foodassistant.persistence.migrate` | Persistenz | Datenbank-Migration | `foodassistant.migrations.pending` |
+| `foodassistant.shelf_life.reset_override` | Haltbarkeit | Eigene Haltbarkeitswerte zurücksetzen | `foodassistant.scope` (`category`/`product`), `foodassistant.outcome` (`ok`, `not_found`) |
+| `foodassistant.shelf_life.set_override` | Haltbarkeit | Eigene Haltbarkeitswerte speichern | `foodassistant.scope`, `foodassistant.outcome` (`ok`, `invalid`, `not_found`) |
 | HTTP-Anfragen | – | Kommen aus der ASP.NET-Core-Instrumentierung, nicht aus eigenen Abläufen | – |
 
 ## Messwerte
