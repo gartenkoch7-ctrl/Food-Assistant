@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- German is the neutral language of the project; InventoryText.en.resx holds the English texts. -->
+  <data name="InventoryTitle" xml:space="preserve"><value>Vorrat</value></data>
+  <data name="InventoryEmptyHeading" xml:space="preserve"><value>Dein Vorrat ist noch leer</value></data>
+  <data name="InventoryEmptyText" xml:space="preserve"><value>Sobald du Lebensmittel hinzufügst, siehst du hier auf einen Blick, was bald abläuft.</value></data>
+  <data name="InventoryEmptyAction" xml:space="preserve"><value>Artikel scannen</value></data>
+  <data name="ScanTitle" xml:space="preserve"><value>Scannen</value></data>
+  <data name="ScanComingSoonHeading" xml:space="preserve"><value>Der Barcode-Scan kommt in M1</value></data>
+  <data name="ScanComingSoonText" xml:space="preserve"><value>Bald scannst du Barcodes mit der Kamera. Bis dahin kannst du Artikel von Hand eingeben.</value></data>
+  <data name="ScanManualAction" xml:space="preserve"><value>Manuell eingeben</value></data>
+  <data name="ScanManualHint" xml:space="preserve"><value>Die manuelle Eingabe folgt zusammen mit dem Vorrat in M1.</value></data>
+  <data name="StatusExpired" xml:space="preserve"><value>Abgelaufen</value></data>
+  <data name="StatusSoon" xml:space="preserve"><value>Läuft bald ab</value></data>
+  <data name="StatusOk" xml:space="preserve"><value>Haltbar</value></data>
+  <data name="StatusNoDate" xml:space="preserve"><value>Kein Datum</value></data>
+  <data name="StatusDetailPrefix" xml:space="preserve"><value>{0}: </value></data>
+</root>

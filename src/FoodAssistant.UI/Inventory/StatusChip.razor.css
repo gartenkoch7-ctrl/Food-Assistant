@@ -1,0 +1,34 @@
+/* Colours per status: docs/kb/design-system.md. Never the brand colour (ADR-0009). */
+.fa-status-chip {
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--fa-space-1);
+    min-height: 28px;
+    padding: 2px var(--fa-space-3) 2px var(--fa-space-2);
+    border: 1px solid currentColor;
+    border-radius: var(--fa-radius-pill);
+    font: 700 0.9375rem/1.25rem var(--fa-font-text);
+    /* Long details ("seit 3 Tagen abgelaufen") wrap instead of overflowing on narrow screens. */
+    overflow-wrap: anywhere;
+}
+
+.fa-status-expired {
+    background: var(--fa-status-expired-bg);
+    color: var(--fa-status-expired);
+}
+
+.fa-status-soon {
+    background: var(--fa-status-soon-bg);
+    color: var(--fa-status-soon);
+}
+
+.fa-status-ok {
+    background: var(--fa-status-ok-bg);
+    color: var(--fa-status-ok);
+}
+
+.fa-status-none {
+    background: var(--fa-status-none-bg);
+    color: var(--fa-status-none);
+}

@@ -1,0 +1,64 @@
+@implements IDisposable
+@inject ThemeState State
+@inject IBrowserInterop Browser
+
+@* MudBlazor's own system-theme detection is off: the mode comes from ThemeState, and "System" is resolved below. *@
+<MudThemeProvider @ref="_provider" Theme="CurrentTheme" IsDarkMode="IsDark" ObserveSystemDarkModeChange="false" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+@ChildContent
+
+@code {
+    private MudThemeProvider? _provider;
+    private bool _systemIsDark;
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private MudTheme CurrentTheme => State.Mode == ThemeMode.HighContrast ? AppTheme.HighContrast : AppTheme.Default;
+
+    private bool IsDark => State.Mode switch
+    {
+        ThemeMode.Dark => true,
+        ThemeMode.System => _systemIsDark,
+        _ => false,
+    };
+
+    protected override void OnInitialized() => State.Changed += OnModeChanged;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        await State.InitializeAsync();
+        if (_provider is not null)
+        {
+            _systemIsDark = await _provider.GetSystemDarkModeAsync();
+            await _provider.WatchSystemDarkModeAsync(OnSystemPreferenceChangedAsync);
+        }
+
+        await Browser.ApplyThemeAsync(State.Mode.ToToken());
+        StateHasChanged();
+    }
+
+    private Task OnSystemPreferenceChangedAsync(bool isDark) =>
+        InvokeAsync(() =>
+        {
+            _systemIsDark = isDark;
+            StateHasChanged();
+        });
+
+    private void OnModeChanged() =>
+        _ = InvokeAsync(async () =>
+        {
+            await Browser.ApplyThemeAsync(State.Mode.ToToken());
+            StateHasChanged();
+        });
+
+    public void Dispose() => State.Changed -= OnModeChanged;
+}

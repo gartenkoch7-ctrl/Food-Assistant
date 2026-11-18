@@ -37,7 +37,7 @@ app.MapHealthChecks("/health");
 app.MapApiV1();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(FoodAssistant.Web.Client.Routes).Assembly);
+    .AddAdditionalAssemblies(typeof(FoodAssistant.UI.Shell.Routes).Assembly);
 
 await app.RunAsync().ConfigureAwait(false);
 

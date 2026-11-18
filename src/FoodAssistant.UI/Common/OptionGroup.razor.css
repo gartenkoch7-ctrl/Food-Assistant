@@ -1,0 +1,42 @@
+.fa-option-group {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.fa-option-legend {
+    padding: 0;
+    margin-bottom: var(--fa-space-2);
+    font: 700 0.9375rem/1.25rem var(--fa-font-text);
+}
+
+/* Whole row is the target: at least 48 px high. */
+.fa-option {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: var(--fa-space-3);
+    min-height: var(--fa-target);
+    padding: var(--fa-space-2) var(--fa-space-4);
+    background: var(--fa-surface-raised);
+    border: 1px solid var(--fa-line-strong);
+    border-radius: var(--fa-radius-md);
+    cursor: pointer;
+}
+
+.fa-option + .fa-option {
+    margin-top: var(--fa-space-2);
+}
+
+.fa-option--selected {
+    background: var(--fa-brand-tint);
+    border-color: var(--fa-brand);
+}
+
+.fa-option input {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: var(--fa-brand);
+}

@@ -1,0 +1,133 @@
+/*
+ * Design tokens of the Food-Assistant design system (docs/kb/design-system.md, ADR-0009).
+ * The colour values must equal FoodAssistant.UI.Theme.DesignTokens (a test compares them).
+ *
+ * Light is the default. Dark follows the system unless the user picked a theme: the document
+ * element then carries theme-light, theme-dark or theme-high-contrast (set by foodassistant.js).
+ */
+:root,
+:root.theme-light {
+    --fa-surface: #fbf9f7;
+    --fa-surface-raised: #ffffff;
+    --fa-surface-sunken: #f2eeea;
+    --fa-line: #e2dbd4;
+    --fa-line-strong: #8c8178;
+    --fa-ink: #221c18;
+    --fa-ink-muted: #6b615a;
+    --fa-brand: #c0391f;
+    --fa-brand-strong: #a12f18;
+    --fa-brand-tint: #fbe6e0;
+    --fa-on-brand: #ffffff;
+    --fa-focus: #1c5fd1;
+    --fa-status-expired: #8a0f3c;
+    --fa-status-expired-bg: #fbe4ec;
+    --fa-status-soon: #7a4b00;
+    --fa-status-soon-bg: #fff1d6;
+    --fa-status-ok: #1e5e2e;
+    --fa-status-ok-bg: #e3f2e6;
+    --fa-status-none: #6b615a;
+    --fa-status-none-bg: #f2eeea;
+    --fa-danger: #8a0f3c;
+    color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not(.theme-light):not(.theme-high-contrast) {
+        --fa-surface: #171412;
+        --fa-surface-raised: #211d1a;
+        --fa-surface-sunken: #110f0d;
+        --fa-line: #3a332e;
+        --fa-line-strong: #857a71;
+        --fa-ink: #f4efea;
+        --fa-ink-muted: #b3a89f;
+        --fa-brand: #ff7a5c;
+        --fa-brand-strong: #ff9a82;
+        --fa-brand-tint: #5a2416;
+        --fa-on-brand: #1a1513;
+        --fa-focus: #8ab4ff;
+        --fa-status-expired: #ff9fc0;
+        --fa-status-expired-bg: #4a0f25;
+        --fa-status-soon: #ffcb66;
+        --fa-status-soon-bg: #3d2a00;
+        --fa-status-ok: #8edba2;
+        --fa-status-ok-bg: #12331c;
+        --fa-status-none: #b3a89f;
+        --fa-status-none-bg: #2a2521;
+        --fa-danger: #ff9fc0;
+        color-scheme: dark;
+    }
+}
+
+:root.theme-dark {
+    --fa-surface: #171412;
+    --fa-surface-raised: #211d1a;
+    --fa-surface-sunken: #110f0d;
+    --fa-line: #3a332e;
+    --fa-line-strong: #857a71;
+    --fa-ink: #f4efea;
+    --fa-ink-muted: #b3a89f;
+    --fa-brand: #ff7a5c;
+    --fa-brand-strong: #ff9a82;
+    --fa-brand-tint: #5a2416;
+    --fa-on-brand: #1a1513;
+    --fa-focus: #8ab4ff;
+    --fa-status-expired: #ff9fc0;
+    --fa-status-expired-bg: #4a0f25;
+    --fa-status-soon: #ffcb66;
+    --fa-status-soon-bg: #3d2a00;
+    --fa-status-ok: #8edba2;
+    --fa-status-ok-bg: #12331c;
+    --fa-status-none: #b3a89f;
+    --fa-status-none-bg: #2a2521;
+    --fa-danger: #ff9fc0;
+    color-scheme: dark;
+}
+
+:root.theme-high-contrast {
+    --fa-surface: #ffffff;
+    --fa-surface-raised: #ffffff;
+    --fa-surface-sunken: #ffffff;
+    --fa-line: #000000;
+    --fa-line-strong: #000000;
+    --fa-ink: #000000;
+    --fa-ink-muted: #2b2b2b;
+    --fa-brand: #9e2a12;
+    --fa-brand-strong: #7a1f0b;
+    --fa-brand-tint: #ffffff;
+    --fa-on-brand: #ffffff;
+    --fa-focus: #0038a8;
+    --fa-status-expired: #6b0a2e;
+    --fa-status-expired-bg: #ffffff;
+    --fa-status-soon: #5c3800;
+    --fa-status-soon-bg: #ffffff;
+    --fa-status-ok: #0f4420;
+    --fa-status-ok-bg: #ffffff;
+    --fa-status-none: #2b2b2b;
+    --fa-status-none-bg: #ffffff;
+    --fa-danger: #6b0a2e;
+    color-scheme: light;
+}
+
+/* Scales that do not change with the theme. */
+:root {
+    --fa-space-1: 4px;
+    --fa-space-2: 8px;
+    --fa-space-3: 12px;
+    --fa-space-4: 16px;
+    --fa-space-6: 24px;
+    --fa-space-8: 32px;
+
+    --fa-radius-sm: 8px;
+    --fa-radius-md: 12px;
+    --fa-radius-lg: 20px;
+    --fa-radius-pill: 999px;
+
+    --fa-target: 48px;
+    --fa-row-height: 64px;
+    --fa-icon: 24px;
+    --fa-scan-button: 64px;
+
+    /* Font files are not bundled yet; the system fallbacks apply (docs/kb/design-system.md, "Offen"). */
+    --fa-font-text: "Atkinson Hyperlegible Next", "Segoe UI", system-ui, sans-serif;
+    --fa-font-heading: "Figtree", "Segoe UI", system-ui, sans-serif;
+}

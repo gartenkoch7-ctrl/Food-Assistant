@@ -1,0 +1,48 @@
+@using FoodAssistant.Contracts.Inventory
+@inject IStringLocalizer<InventoryText> T
+
+@* Status is never colour alone: colour + filled symbol + text (ADR-0009, WCAG 1.4.1). *@
+<span class="fa-status-chip @CssClass">
+    <MudIcon Icon="@IconName" Size="Size.Small" />
+    <span class="fa-status-chip-text">
+        @if (Text is not null)
+        {
+            @* The status word stays available to screen readers even when the caller shows a detail like "tomorrow". *@
+            <span class="fa-visually-hidden">@T["StatusDetailPrefix", StatusLabel]</span>
+        }
+        @(Text ?? StatusLabel)
+    </span>
+</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public ExpiryStatusDto Status { get; set; }
+
+    /// <summary>Optional visible detail instead of the plain status word, for example "morgen" or "seit 3 Tagen abgelaufen".</summary>
+    [Parameter]
+    public string? Text { get; set; }
+
+    private string CssClass => Status switch
+    {
+        ExpiryStatusDto.Expired => "fa-status-expired",
+        ExpiryStatusDto.Soon => "fa-status-soon",
+        ExpiryStatusDto.Ok => "fa-status-ok",
+        _ => "fa-status-none",
+    };
+
+    private string IconName => Status switch
+    {
+        ExpiryStatusDto.Expired => Icons.Material.Rounded.Error,
+        ExpiryStatusDto.Soon => Icons.Material.Rounded.Schedule,
+        ExpiryStatusDto.Ok => Icons.Material.Rounded.CheckCircle,
+        _ => Icons.Material.Rounded.Help,
+    };
+
+    private string StatusLabel => Status switch
+    {
+        ExpiryStatusDto.Expired => T["StatusExpired"],
+        ExpiryStatusDto.Soon => T["StatusSoon"],
+        ExpiryStatusDto.Ok => T["StatusOk"],
+        _ => T["StatusNoDate"],
+    };
+}

@@ -1,0 +1,10 @@
+@page "/shopping"
+@inject IStringLocalizer<ShoppingText> T
+
+<PageTitle>@T["ShoppingTitle"] – @AppInfo.Name</PageTitle>
+
+<h1>@T["ShoppingTitle"]</h1>
+
+<EmptyState Icon="@Icons.Material.Rounded.ShoppingCart"
+            Heading="@T["ShoppingEmptyHeading"]"
+            Text="@T["ShoppingEmptyText"]" />

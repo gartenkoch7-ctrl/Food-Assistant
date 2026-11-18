@@ -1,0 +1,15 @@
+@page "/scan"
+@inject IStringLocalizer<InventoryText> T
+
+<PageTitle>@T["ScanTitle"] – @AppInfo.Name</PageTitle>
+
+<h1>@T["ScanTitle"]</h1>
+
+@* Scanning always has an alternative (ADR-0008). Until manual entry exists the button is disabled and says so. *@
+<EmptyState Icon="@Icons.Material.Rounded.QrCodeScanner"
+            Heading="@T["ScanComingSoonHeading"]"
+            Text="@T["ScanComingSoonText"]">
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="true"
+               aria-describedby="scan-manual-hint">@T["ScanManualAction"]</MudButton>
+    <p id="scan-manual-hint" class="fa-empty-hint">@T["ScanManualHint"]</p>
+</EmptyState>

@@ -1,0 +1,11 @@
+.fa-more-section {
+    margin-top: var(--fa-space-8);
+}
+
+.fa-more-section h2 {
+    margin-bottom: var(--fa-space-3);
+}
+
+.fa-more-section ::deep .fa-apply-language {
+    margin-top: var(--fa-space-3);
+}

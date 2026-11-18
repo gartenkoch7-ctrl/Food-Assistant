@@ -53,3 +53,11 @@ diese Datei und das MudBlazor-Theme nachgezogen.
 - **BottomNav:** Vorrat (`kitchen`), Einkauf (`shopping_cart`), Scan-Knopf (`barcode_scanner`),
   Kochen (`skillet`), Mehr (`more_horiz`); ab 840 px Seitenleiste.
 - Alles andere: MudBlazor mit Theme (Abbildung siehe Designsystem-README, „Umsetzung in MudBlazor“).
+
+## Offen
+
+- **Schriftdateien fehlen noch.** Atkinson Hyperlegible Next und Figtree sind im Theme (`AppTypography`) und in `design-tokens.css` bereits eingetragen, die Dateien selbst aber noch nicht eingebunden. Bis dahin greifen die Rückfälle `"Segoe UI", system-ui, sans-serif`. Zu tun: `.woff2` (lizenzkonform, SIL OFL) in `src/FoodAssistant.UI/wwwroot/fonts/` ablegen, `@font-face` mit `font-display: swap` in `design-tokens.css` ergänzen und die Lizenzhinweise in `docs/kb/externe-daten.md` vermerken. Nicht von Google-Servern laden (ADR-0009).
+- **Symbole:** Statt Material Symbols Rounded (Schriftart) nutzt die UI die in MudBlazor enthaltenen `Icons.Material.Rounded.*` (SVG, gefüllt, keine Icon-Schrift). Das Navigationssymbol für „Kochen“ ist `SoupKitchen`, das Scan-Symbol `QrCodeScanner`: `skillet` und `barcode_scanner` gibt es im MudBlazor-Satz nicht. Bei Bedarf eigene SVGs ergänzen.
+- **PWA-Symbole:** Das Manifest nennt nur `icon.svg` (Platzhalter ohne Logo). Für die Installierbarkeit auf allen Systemen werden PNGs in 192 und 512 px (auch maskierbar) benötigt; sie entstehen mit dem endgültigen Logo.
+- **Hochkontrast** folgt der Tabelle, hat aber keine Systemerkennung (`forced-colors`); er wird nur auf der Seite „Mehr“ gewählt.
+- **Theme-Flackern:** Beim Vorrendern und bis zum ersten Render im Browser trägt die MudBlazor-Palette immer das helle Theme, die eigenen `--fa-*`-Werte folgen dagegen schon der gespeicherten Wahl. MudBlazor-Komponenten (Knöpfe, Symbole) können deshalb kurz hell auf dunklem Grund erscheinen. Abhilfe später: `--mud-palette-*` in `design-tokens.css` je Theme auf die `--fa-*`-Werte abbilden.

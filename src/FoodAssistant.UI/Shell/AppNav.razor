@@ -1,0 +1,16 @@
+@inject IStringLocalizer<ShellText> T
+@inject IAppFeatures Features
+
+@* One landmark for both layouts: a bottom bar below 840 px, a sidebar from 840 px (AppNav.razor.css). *@
+<nav class="fa-nav" aria-label="@T["NavLabel"]">
+    <ul class="fa-nav-list">
+        <AppNavItem Href="/" Icon="@Icons.Material.Rounded.Kitchen" Text="@T["NavInventory"]" Match="NavLinkMatch.All" />
+        <AppNavItem Href="/shopping" Icon="@Icons.Material.Rounded.ShoppingCart" Text="@T["NavShopping"]" />
+        <AppNavItem Href="/scan" Icon="@Icons.Material.Rounded.QrCodeScanner" Text="@T["NavScan"]" IsPrimaryAction="true" />
+        @if (Features.CookingAvailable)
+        {
+            <AppNavItem Href="/cooking" Icon="@Icons.Material.Rounded.SoupKitchen" Text="@T["NavCooking"]" />
+        }
+        <AppNavItem Href="/more" Icon="@Icons.Material.Rounded.MoreHoriz" Text="@T["NavMore"]" />
+    </ul>
+</nav>

@@ -1,0 +1,26 @@
+﻿@inherits LayoutComponentBase
+@inject IStringLocalizer<ShellText> T
+
+<ThemeHost>
+    <SkipLink TargetId="main-content" />
+    <div class="fa-shell">
+        <div class="fa-chrome">
+            <header class="fa-header">
+                <span class="fa-wordmark">@AppInfo.Name</span>
+            </header>
+            <AppNav />
+        </div>
+        <main id="main-content" class="fa-main" tabindex="-1">
+            @Body
+        </main>
+    </div>
+</ThemeHost>
+
+@* Shown by the Blazor runtime on an unhandled exception. *@
+<div id="blazor-error-ui" role="alert" data-nosnippet>
+    @T["ErrorMessage"]
+    <a href="." class="reload">@T["ErrorReload"]</a>
+    <button type="button" class="dismiss" aria-label="@T["ErrorDismiss"]">
+        <MudIcon Icon="@Icons.Material.Rounded.Close" />
+    </button>
+</div>

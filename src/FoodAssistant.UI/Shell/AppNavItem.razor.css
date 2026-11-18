@@ -1,0 +1,144 @@
+/* Small screens: icon above label in the bottom bar; the scan button is a raised 64 px circle. */
+.fa-nav-entry {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.fa-nav-item {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 64px;
+    padding: var(--fa-space-2) var(--fa-space-1);
+    color: var(--fa-ink-muted);
+    font: 700 0.9375rem/1.25rem var(--fa-font-text);
+    text-decoration: none;
+}
+
+/* Long words must wrap instead of colliding with the neighbouring entry at large text sizes. */
+.fa-nav-label {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    text-align: center;
+}
+
+.fa-nav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 32px;
+    border-radius: var(--fa-radius-pill);
+}
+
+.fa-nav-item--active {
+    color: var(--fa-brand-strong);
+}
+
+.fa-nav-item--active .fa-nav-icon {
+    background: var(--fa-brand-tint);
+}
+
+/* A second cue besides colour: the high-contrast theme has no tint. */
+.fa-nav-item--active .fa-nav-label {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+}
+
+.fa-nav-item--primary .fa-nav-icon {
+    width: var(--fa-scan-button);
+    height: var(--fa-scan-button);
+    margin-top: -24px;
+    border-radius: 50%;
+    background: var(--fa-brand);
+    color: var(--fa-on-brand);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 25%);
+}
+
+.fa-nav-item--primary.fa-nav-item--active .fa-nav-icon {
+    background: var(--fa-brand-strong);
+}
+
+/* The raised button shows the icon only; the label stays for screen readers. */
+.fa-nav-item--primary .fa-nav-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* From 840 px: one row per entry in the sidebar, the scan entry as a filled pill. */
+@media (min-width: 840px) {
+    .fa-nav-entry {
+        flex: 0 0 auto;
+    }
+
+    .fa-nav-item {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: var(--fa-space-3);
+        min-height: var(--fa-target);
+        padding: var(--fa-space-2) var(--fa-space-4);
+        border-radius: var(--fa-radius-pill);
+    }
+
+    .fa-nav-item:hover {
+        background: var(--fa-surface-sunken);
+    }
+
+    .fa-nav-icon,
+    .fa-nav-item--primary .fa-nav-icon {
+        width: var(--fa-icon);
+        height: var(--fa-icon);
+        margin-top: 0;
+        border-radius: 0;
+        background: none;
+        box-shadow: none;
+    }
+
+    .fa-nav-item--active,
+    .fa-nav-item--active:hover {
+        background: var(--fa-brand-tint);
+    }
+
+    .fa-nav-item--active .fa-nav-icon {
+        background: none;
+    }
+
+    .fa-nav-item--primary,
+    .fa-nav-item--primary:hover {
+        background: var(--fa-brand);
+        color: var(--fa-on-brand);
+    }
+
+    .fa-nav-item--primary.fa-nav-item--active,
+    .fa-nav-item--primary.fa-nav-item--active:hover {
+        background: var(--fa-brand-strong);
+        color: var(--fa-on-brand);
+    }
+
+    .fa-nav-item--primary.fa-nav-item--active .fa-nav-icon {
+        background: none;
+    }
+
+    .fa-nav-label {
+        text-align: start;
+    }
+
+    .fa-nav-item--primary .fa-nav-label {
+        position: static;
+        width: auto;
+        height: auto;
+        margin: 0;
+        overflow: visible;
+        clip-path: none;
+        white-space: normal;
+    }
+}
