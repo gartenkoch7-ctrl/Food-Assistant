@@ -102,6 +102,13 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
   einmal mit allen betroffenen Produkten.
 - Eine Wiederholung mit gleichem `Idempotency-Key` bekommt die gespeicherte Antwort; ohne Schlüssel
   findet sie nur noch gelöschte Einträge und meldet sie als `staleItemIds` (keine Doppelbuchung).
+- **Oberfläche** (`/shopping/{id}/complete`, F2): je Eintrag eine Zeile mit Überschrift (Name), Menge,
+  Datum mit Art als Text („aus Regel“ ausgeschrieben), Lagerort-Auswahl und „Ändern“ (Dialog: Menge, Ort,
+  Datum + Art ohne Vorbelegung, im Gefrierort „selbst eingefroren“). Freitext: `ProductPicker` (legt ein
+  neues Produkt über den Katalog an) oder „Überspringen“. Wer einen Regel-Ort verlässt, verliert das
+  Regeldatum. Der Client nimmt denselben `Idempotency-Key` nur für dieselbe Anfrage nach einem Fehler
+  ohne Antwort (Netz/offline); jede andere Anfrage bekommt einen neuen (sonst 422 `common.idempotency_key_reused`).
+  Erfolg: Ansage + Snackbar, zurück zur Liste; mit `staleItemIds` bleibt die Seite, lädt neu und nennt die Anzahl.
 
 ## Mindestbestand
 - Pro Produkt optional; Bestand unter Mindestbestand → Eintrag auf der Standardliste,

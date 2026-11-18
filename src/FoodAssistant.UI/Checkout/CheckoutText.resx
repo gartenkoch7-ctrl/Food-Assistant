@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- German is the neutral language of the project; CheckoutText.en.resx holds the English texts. -->
+  <data name="Title" xml:space="preserve"><value>Einkauf abschließen</value></data>
+  <data name="Intro" xml:space="preserve"><value>Prüfe Menge, Lagerort und Ablaufdatum. Mit „Ändern“ passt du eine Zeile an.</value></data>
+  <data name="EmptyHeading" xml:space="preserve"><value>Nichts im Wagen</value></data>
+  <data name="EmptyText" xml:space="preserve"><value>Hake auf der Liste ab, was du gekauft hast.</value></data>
+  <data name="BackToList" xml:space="preserve"><value>Zurück zur Liste</value></data>
+  <data name="NotAllowed" xml:space="preserve"><value>Nur Mitglieder können einen Einkauf in den Vorrat buchen.</value></data>
+  <data name="Book" xml:space="preserve"><value>In den Vorrat buchen ({0})</value></data>
+  <data name="Edit" xml:space="preserve"><value>Ändern</value></data>
+  <data name="EditLabel" xml:space="preserve"><value>{0} ändern</value></data>
+  <data name="Skip" xml:space="preserve"><value>Überspringen</value></data>
+  <data name="SkipLabel" xml:space="preserve"><value>{0} überspringen</value></data>
+  <data name="Unskip" xml:space="preserve"><value>Doch buchen</value></data>
+  <data name="UnskipLabel" xml:space="preserve"><value>{0} doch buchen</value></data>
+  <data name="Skipped" xml:space="preserve"><value>Wird nicht gebucht, nur von der Liste entfernt.</value></data>
+  <data name="AssignLabel" xml:space="preserve"><value>Produkt für „{0}“</value></data>
+  <data name="AssignedFrom" xml:space="preserve"><value>Eintrag auf der Liste: {0}</value></data>
+  <data name="AssignOther" xml:space="preserve"><value>Anderes Produkt</value></data>
+  <data name="AssignOtherLabel" xml:space="preserve"><value>Anderes Produkt für „{0}“</value></data>
+  <data name="AssignRequired" xml:space="preserve"><value>Bitte ein Produkt zuordnen oder überspringen.</value></data>
+  <data name="FromRule" xml:space="preserve"><value>aus Regel</value></data>
+  <data name="DateLine" xml:space="preserve"><value>{0}: {1}</value></data>
+  <data name="RuleDateInfo" xml:space="preserve"><value>Datum aus Regel „gefroren“: {0} (Verbrauchsdatum). Ein Packungsdatum ersetzt es.</value></data>
+  <data name="EditorTitle" xml:space="preserve"><value>{0} ändern</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Produkt</value></data>
+  <data name="DoneOne" xml:space="preserve"><value>1 Charge in den Vorrat gebucht.</value></data>
+  <data name="DoneMany" xml:space="preserve"><value>{0} Chargen in den Vorrat gebucht.</value></data>
+  <data name="Stale" xml:space="preserve"><value>{0} Einträge wurden inzwischen geändert und nicht gebucht. Bitte prüfe sie noch einmal.</value></data>
+  <data name="CheckLines" xml:space="preserve"><value>Bitte prüfe die markierten Zeilen.</value></data>
+  <data name="FieldError.required" xml:space="preserve"><value>Bitte ausfüllen.</value></data>
+  <data name="FieldError.invalid" xml:space="preserve"><value>Ungültiger Wert.</value></data>
+  <data name="FieldError.not_found" xml:space="preserve"><value>Gibt es nicht mehr.</value></data>
+  <data name="FieldError.must_be_positive" xml:space="preserve"><value>Die Menge muss größer als 0 sein.</value></data>
+  <data name="FieldError.must_be_none" xml:space="preserve"><value>Ohne Datum gibt es keine Art.</value></data>
+  <data name="FieldError.invalid_unit" xml:space="preserve"><value>Unbekannte Einheit.</value></data>
+  <data name="Error.checkout.list_not_found" xml:space="preserve"><value>Diese Liste gibt es nicht mehr.</value></data>
+  <data name="Error.checkout.validation_failed" xml:space="preserve"><value>Bitte prüfe die markierten Zeilen.</value></data>
+  <data name="Error.checkout.nothing_to_complete" xml:space="preserve"><value>Es gibt nichts zu buchen.</value></data>
+</root>

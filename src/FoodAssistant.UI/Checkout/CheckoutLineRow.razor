@@ -1,0 +1,110 @@
+@using System.Globalization
+@using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Inventory
+@using FoodAssistant.UI.Inventory
+@inject IStringLocalizer<CheckoutText> T
+@inject IStringLocalizer<InventoryText> Inventory
+@inject IStringLocalizer<CommonText> Common
+
+@* One bought entry: a heading with its name, the suggested values as text, location choice and actions. *@
+<li class="fa-checkout-row @(Line.Skip ? "fa-checkout-row--skipped" : null)">
+    <h2 class="fa-checkout-name">@Line.Name</h2>
+    @if (Line.Skip)
+    {
+        <p class="fa-checkout-secondary">@T["Skipped"]</p>
+        <div class="fa-checkout-actions">
+            <MudButton Variant="Variant.Text" aria-label="@Format("UnskipLabel")" OnClick="() => SetSkipAsync(false)">@T["Unskip"]</MudButton>
+        </div>
+    }
+    else
+    {
+        @if (Line.ProductId is null)
+        {
+            <ProductPicker Label="@Format("AssignLabel", Line.Text)" ProductSelected="AssignAsync" />
+        }
+        else if (Line.IsFreeText)
+        {
+            <p class="fa-checkout-secondary">@Format("AssignedFrom", Line.Text)</p>
+        }
+        <p class="fa-checkout-secondary">@InventoryFields.Quantity(Line.Quantity, Common, CultureInfo.CurrentCulture) · @DateText</p>
+        @if (IsFreezer && Line.Date is null)
+        {
+            <p class="fa-checkout-secondary">@Inventory["FrozenAtHomeHint"]</p>
+        }
+        <MudSelect T="Guid?" Label="@Inventory["FieldLocation"]" Value="Line.LocationId" ValueChanged="MoveAsync"
+                   Variant="Variant.Outlined" Dense="true" Required="true">
+            @foreach (var location in Locations)
+            {
+                <MudSelectItem T="Guid?" Value="@location.Id">@location.Name</MudSelectItem>
+            }
+        </MudSelect>
+        <div class="fa-checkout-actions">
+            <MudButton Variant="Variant.Outlined" aria-label="@Format("EditLabel")" OnClick="() => Edit.InvokeAsync(Line)">@T["Edit"]</MudButton>
+            @if (Line.IsFreeText && Line.ProductId is not null)
+            {
+                <MudButton Variant="Variant.Text" aria-label="@Format("AssignOtherLabel", Line.Text)" OnClick="UnassignAsync">@T["AssignOther"]</MudButton>
+            }
+            <MudButton Variant="Variant.Text" aria-label="@Format("SkipLabel")" OnClick="() => SetSkipAsync(true)">@T["Skip"]</MudButton>
+        </div>
+    }
+    @if (Error is not null)
+    {
+        <MudText Typo="Typo.caption" Color="Color.Error" role="alert">@Error</MudText>
+    }
+</li>
+
+@code {
+    [Parameter, EditorRequired]
+    public CheckoutLine Line { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<StorageLocationDto> Locations { get; set; } = [];
+
+    /// <summary>Problem of this line (missing product, field error of the server), shown under it.</summary>
+    [Parameter]
+    public string? Error { get; set; }
+
+    /// <summary>Raised after the line changed in place (location, product, skip).</summary>
+    [Parameter]
+    public EventCallback<CheckoutLine> Changed { get; set; }
+
+    /// <summary>Asks the page to open the editor for the line.</summary>
+    [Parameter]
+    public EventCallback<CheckoutLine> Edit { get; set; }
+
+    private bool IsFreezer => Locations.FirstOrDefault(l => l.Id == Line.LocationId)?.Type == StorageTypeDto.Frozen;
+
+    private string DateText => Line.Date is { } date
+        ? string.Format(CultureInfo.CurrentCulture, T["DateLine"].Value, Inventory["Kind." + Line.Kind].Value, date.ToString("d", CultureInfo.CurrentCulture))
+            + (Line.FromRule ? $" · {T["FromRule"].Value}" : string.Empty)
+        : Inventory["ExpiryNoDate"].Value;
+
+    private string Format(string key) => Format(key, Line.Name);
+
+    private string Format(string key, string value) => string.Format(CultureInfo.CurrentCulture, T[key].Value, value);
+
+    private Task MoveAsync(Guid? locationId)
+    {
+        var freezer = Locations.FirstOrDefault(l => l.Id == locationId)?.Type == StorageTypeDto.Frozen;
+        Line.MoveTo(locationId, freezer);
+        return Changed.InvokeAsync(Line);
+    }
+
+    private Task AssignAsync(ProductSummaryDto product)
+    {
+        (Line.ProductId, Line.Name) = (product.Id, product.Name);
+        return Changed.InvokeAsync(Line);
+    }
+
+    private Task UnassignAsync()
+    {
+        (Line.ProductId, Line.Name) = (null, Line.Text);
+        return Changed.InvokeAsync(Line);
+    }
+
+    private Task SetSkipAsync(bool skip)
+    {
+        Line.Skip = skip;
+        return Changed.InvokeAsync(Line);
+    }
+}

@@ -1,0 +1,88 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
+using FoodAssistant.Client.Http;
+using FoodAssistant.UI.Inventory;
+using Microsoft.Extensions.Localization;
+
+namespace FoodAssistant.UI.Checkout;
+
+/// <summary>Problems of single checkout lines, as text under the line (by position in the request).</summary>
+public static partial class CheckoutErrors
+{
+    /// <summary>What the page can see before sending: free text without product, no location.</summary>
+    public static Dictionary<int, string> Missing(
+        IReadOnlyList<CheckoutLine> lines,
+        IStringLocalizer<CheckoutText> text,
+        IStringLocalizer<InventoryText> inventory)
+    {
+        ArgumentNullException.ThrowIfNull(lines);
+        ArgumentNullException.ThrowIfNull(text);
+        ArgumentNullException.ThrowIfNull(inventory);
+        var errors = new Dictionary<int, string>();
+        for (var index = 0; index < lines.Count; index++)
+        {
+            var line = lines[index];
+            if (line.Skip)
+            {
+                continue;
+            }
+
+            if (line.ProductId is null)
+            {
+                errors[index] = text["AssignRequired"];
+            }
+            else if (line.LocationId is null)
+            {
+                errors[index] = Describe("storageLocationId", "required", text, inventory);
+            }
+        }
+
+        return errors;
+    }
+
+    /// <summary>The first field error the server reported per line (<c>lines[2].quantity.value</c> → line 2).</summary>
+    public static Dictionary<int, string> FromServer(
+        ApiError? error,
+        int lineCount,
+        IStringLocalizer<CheckoutText> text,
+        IStringLocalizer<InventoryText> inventory)
+    {
+        var errors = new Dictionary<int, string>();
+        foreach (var (key, codes) in error?.FieldErrors ?? new Dictionary<string, string[]>())
+        {
+            var match = LineField().Match(key);
+            if (!match.Success || codes.Length == 0)
+            {
+                continue;
+            }
+
+            var index = int.Parse(match.Groups["index"].Value, CultureInfo.InvariantCulture);
+            if (index < lineCount && !errors.ContainsKey(index))
+            {
+                errors[index] = Describe(match.Groups["field"].Value, codes[0], text, inventory);
+            }
+        }
+
+        return errors;
+    }
+
+    private static string Describe(
+        string field,
+        string code,
+        IStringLocalizer<CheckoutText> text,
+        IStringLocalizer<InventoryText> inventory)
+    {
+        var label = field switch
+        {
+            "storageLocationId" => inventory["FieldLocation"].Value,
+            "quantity" => inventory["FieldQuantity"].Value,
+            "expiryKind" => inventory["FieldKind"].Value,
+            _ => text["FieldProduct"].Value,
+        };
+        var message = text["FieldError." + code];
+        return $"{label}: {(message.ResourceNotFound ? text["FieldError.invalid"].Value : message.Value)}";
+    }
+
+    [GeneratedRegex(@"^lines\[(?<index>\d+)\]\.(?<field>[A-Za-z]+)")]
+    private static partial Regex LineField();
+}
