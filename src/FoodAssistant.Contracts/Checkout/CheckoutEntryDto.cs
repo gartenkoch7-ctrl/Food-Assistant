@@ -20,6 +20,10 @@ namespace FoodAssistant.Contracts.Checkout;
 /// The date comes from the shelf-life rule "frozen" (frozen at home, a use-by date). The client
 /// then sends no package date; the server computes the date again.
 /// </param>
+/// <param name="QuantityFromEntry">
+/// <paramref name="Quantity"/> is the amount of the list entry, not a default; a product assigned to
+/// free text then keeps it instead of taking its own default unit.
+/// </param>
 public sealed record CheckoutEntryDto(
     Guid ItemId,
     long ItemVersion,
@@ -30,4 +34,5 @@ public sealed record CheckoutEntryDto(
     Guid? StorageLocationId,
     DateOnly? ExpiresOn,
     ExpiryKindDto ExpiryKind,
-    bool ExpiryFromRule);
+    bool ExpiryFromRule,
+    bool QuantityFromEntry);

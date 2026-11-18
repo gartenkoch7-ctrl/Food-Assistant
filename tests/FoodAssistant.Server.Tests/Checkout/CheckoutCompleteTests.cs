@@ -118,6 +118,21 @@ public sealed class CheckoutCompleteTests(PostgresContainerFixture postgres)
     }
 
     [Fact]
+    public async Task Complete_BatchAdded_CanBeUndoneLikeAManualOne()
+    {
+        await using var app = await InventoryApp.StartAsync(postgres);
+        var listId = await DefaultListAsync(app);
+        await AddItemAsync(app, listId, app.Milk.Id);
+        var batchId = Assert.Single((await CompleteAsync(app, listId, Book(Assert.Single((await ProposeAsync(app, listId)).Entries)))).BatchIds);
+        var activity = Assert.Single(await app.RowsAsync<HouseholdActivity>(), a => a.Area == ActivityArea.Inventory && a.SubjectId == batchId);
+
+        var undone = await InventoryApi.UndoAsync(app, activity.Id);
+
+        Assert.Equal(new[] { batchId }, undone.RemovedBatchIds);
+        Assert.Empty(await app.RowsAsync<StockBatchRecord>());
+    }
+
+    [Fact]
     public async Task Complete_SelfFrozenWithDate_FrozenByRule_DateNotRemembered()
     {
         await using var app = await InventoryApp.StartAsync(postgres);

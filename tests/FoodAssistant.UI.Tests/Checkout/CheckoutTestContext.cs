@@ -61,11 +61,12 @@ public abstract class CheckoutTestContext : UiTestContext
         DateOnly? date = null,
         ExpiryKindDto kind = ExpiryKindDto.None,
         bool fromRule = false,
-        QuantityDto? quantity = null)
+        QuantityDto? quantity = null,
+        bool quantityFromEntry = false)
     {
         var entry = new CheckoutEntryDto(
             Guid.CreateVersion7(), 2, productId, text, productId is null ? null : "dairy",
-            quantity ?? new QuantityDto(1m, "l"), locationId, date, kind, fromRule);
+            quantity ?? new QuantityDto(1m, "l"), locationId, date, kind, fromRule, quantityFromEntry);
         CheckoutClient.Entries.Add(entry);
         return entry;
     }

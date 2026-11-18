@@ -17,6 +17,7 @@ public sealed class CheckoutLine
         ProductId = entry.ProductId;
         Name = entry.Text;
         Quantity = entry.Quantity;
+        QuantityFromEntry = entry.QuantityFromEntry;
         LocationId = entry.StorageLocationId;
         Date = entry.ExpiresOn;
         Kind = entry.ExpiryKind;
@@ -40,6 +41,9 @@ public sealed class CheckoutLine
     public string Name { get; set; }
 
     public QuantityDto Quantity { get; set; }
+
+    /// <summary>The amount came from the list entry (not a default), so an assigned product keeps it.</summary>
+    public bool QuantityFromEntry { get; }
 
     public Guid? LocationId { get; set; }
 

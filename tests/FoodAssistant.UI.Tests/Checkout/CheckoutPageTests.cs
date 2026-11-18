@@ -155,6 +155,34 @@ public sealed class CheckoutPageTests : CheckoutTestContext
     }
 
     [Fact]
+    public async Task Conflict_ReloadsTheSuggestions_AndSaysWhy()
+    {
+        AddEntry("Milch", Guid.CreateVersion7(), Fridge.Id);
+        CheckoutClient.Answers.Enqueue(ApiResult<CheckoutResultDto>.Failure(
+            new ApiError(409, ErrorCodes.Conflict, null, new Dictionary<string, string[]>(), null)));
+        var cut = RenderPage();
+
+        await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
+
+        Assert.Equal(2, CheckoutClient.ProposalCalls);
+        Assert.Contains("Lagerorte haben sich inzwischen geändert", cut.Markup, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task ProductArchivedMeanwhile_OffersThePickerAgain()
+    {
+        AddEntry("Butter", Guid.CreateVersion7(), Fridge.Id);
+        CheckoutClient.Answers.Enqueue(ApiResult<CheckoutResultDto>.Failure(new ApiError(400, CheckoutErrorCodes.ValidationFailed, null,
+            new Dictionary<string, string[]> { ["lines[0].productId"] = ["not_found"] }, null)));
+        var cut = RenderPage();
+
+        await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
+
+        Assert.Contains(Row(cut, "Butter").QuerySelectorAll("label"), l => l.TextContent.Contains("Produkt für „Butter“", StringComparison.Ordinal));
+        Assert.Contains("Produkt: Gibt es nicht mehr.", Row(cut, "Butter").TextContent, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void NothingChecked_ShowsTheEmptyState()
     {
         var cut = RenderPage();

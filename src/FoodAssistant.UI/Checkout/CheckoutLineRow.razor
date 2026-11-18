@@ -28,7 +28,8 @@
             <p class="fa-checkout-secondary">@Format("AssignedFrom", Line.Text)</p>
         }
         <p class="fa-checkout-secondary">@InventoryFields.Quantity(Line.Quantity, Common, CultureInfo.CurrentCulture) · @DateText</p>
-        @if (IsFreezer && Line.Date is null)
+        @* Frozen at home (no date, or "selbst eingefroren"): the server dates it by the rule, a package date rests. *@
+        @if (IsFreezer && (Line.Date is null || Line.SelfFrozen))
         {
             <p class="fa-checkout-secondary">@Inventory["FrozenAtHomeHint"]</p>
         }
@@ -84,6 +85,7 @@
     private string DateText => Line.Date is { } date
         ? string.Format(CultureInfo.CurrentCulture, T["DateLine"].Value, Inventory["Kind." + Line.Kind].Value, date.ToString("d", CultureInfo.CurrentCulture))
             + (Line.FromRule ? $" · {T["FromRule"].Value}" : string.Empty)
+            + (IsFreezer && Line.SelfFrozen ? $" · {T["DateResting"].Value}" : string.Empty)
         : Inventory["ExpiryNoDate"].Value;
 
     private string Format(string key) => Format(key, Line.Name);
@@ -107,14 +109,21 @@
     private Task AssignAsync(ProductSummaryDto product)
     {
         (Line.ProductId, Line.Name) = (product.Id, product.Name);
-        if (Line.Quantity is { Value: 1m, Unit: UnitCodes.Piece } && !string.IsNullOrEmpty(product.DefaultUnit))
-        {
-            Line.Quantity = new QuantityDto(1m, product.DefaultUnit);
-        }
 
-        if (CategoryTypes.TryGetValue(product.CategoryKey, out var type) && Locations.FirstOrDefault(l => l.Type == type) is { } location)
+        // Only free text got the generic suggestion; a product line (picker shown again because its
+        // product was archived) keeps what the server suggested or the person chose.
+        if (Line.IsFreeText)
         {
-            Move(location.Id);
+            // Still the server's "1 piece" default (not from the entry, not edited): take the product's unit.
+            if (!Line.QuantityFromEntry && Line.Quantity is { Value: 1m, Unit: UnitCodes.Piece } && !string.IsNullOrEmpty(product.DefaultUnit))
+            {
+                Line.Quantity = new QuantityDto(1m, product.DefaultUnit);
+            }
+
+            if (CategoryTypes.TryGetValue(product.CategoryKey, out var type) && Locations.FirstOrDefault(l => l.Type == type) is { } location)
+            {
+                Move(location.Id);
+            }
         }
 
         return Changed.InvokeAsync(Line);

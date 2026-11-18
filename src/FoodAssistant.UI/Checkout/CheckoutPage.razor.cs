@@ -125,10 +125,26 @@ public sealed partial class CheckoutPage
         }
 
         _unansweredBody = null;
+        if (result.Error is { ErrorCode: ErrorCodes.Conflict } conflict)
+        {
+            // A location was deleted or switched between fridge and freezer: the suggestions (rule dates,
+            // last purchases) were made for the old places, so everything is loaded again.
+            await LoadAsync();
+            _error = conflict;
+            return;
+        }
+
         if (result.Value is not { } done)
         {
             _error = result.Error;
             _rowErrors = CheckoutErrors.FromServer(result.Error, _lines.Count, T, Inventory);
+
+            // A product archived meanwhile: the line offers the product picker again instead of only "skip".
+            foreach (var index in CheckoutErrors.LinesWithField(result.Error, "productId", _lines.Count))
+            {
+                (_lines[index].ProductId, _lines[index].Name) = (null, _lines[index].Text);
+            }
+
             return;
         }
 

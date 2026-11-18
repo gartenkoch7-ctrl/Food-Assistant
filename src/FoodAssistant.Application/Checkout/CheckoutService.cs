@@ -154,7 +154,8 @@ public sealed class CheckoutService(
             location?.Id,
             expiry.ExpiresOn,
             (ExpiryKindDto)expiry.Kind,
-            expiry.FromRule);
+            expiry.FromRule,
+            item.Quantity is not null);
     }
 
     private void Report(Guid listId, CheckoutCommitted stored, List<CheckoutBatch> batches, int staleCount)

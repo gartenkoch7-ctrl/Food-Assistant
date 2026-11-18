@@ -41,6 +41,9 @@
   <data name="FieldError.must_be_positive" xml:space="preserve"><value>The amount must be greater than 0.</value></data>
   <data name="FieldError.must_be_none" xml:space="preserve"><value>Without a date there is no kind.</value></data>
   <data name="FieldError.invalid_unit" xml:space="preserve"><value>Unknown unit.</value></data>
+  <data name="DateResting" xml:space="preserve"><value>package date rests</value></data>
+  <data name="Error.common.conflict" xml:space="preserve"><value>Storage locations changed meanwhile – reloaded. Please check the lines and add them again.</value></data>
+  <data name="Error.common.idempotency_request_in_progress" xml:space="preserve"><value>The booking is still running. Please send again in a moment.</value></data>
   <data name="Error.checkout.list_not_found" xml:space="preserve"><value>This list no longer exists.</value></data>
   <data name="Error.checkout.validation_failed" xml:space="preserve"><value>Please check the marked lines.</value></data>
   <data name="Error.checkout.nothing_to_complete" xml:space="preserve"><value>There is nothing to add.</value></data>

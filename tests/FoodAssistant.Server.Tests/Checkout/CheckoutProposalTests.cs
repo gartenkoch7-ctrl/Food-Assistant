@@ -43,11 +43,11 @@ public sealed class CheckoutProposalTests(PostgresContainerFixture postgres)
         Assert.Equal(new[] { milk.Id, frozenPeas.Id, bread.Id, pantryCheese.Id, lastBought.Id }, proposal.Entries.Select(e => e.ItemId));
         var entries = proposal.Entries.ToDictionary(e => e.ItemId);
         Assert.Equal(
-            new CheckoutEntryDto(milk.Id, milk.Version, app.Milk.Id, "Milk", ProductCategories.Dairy, new QuantityDto(1m, "l"), app.Fridge.Id, null, ExpiryKindDto.None, false),
+            new CheckoutEntryDto(milk.Id, milk.Version, app.Milk.Id, "Milk", ProductCategories.Dairy, new QuantityDto(1m, "l"), app.Fridge.Id, null, ExpiryKindDto.None, false, false),
             entries[milk.Id]);
         Assert.Equal((app.Freezer.Id, today.AddDays(90), ExpiryKindDto.UseBy, true), Summary(entries[frozenPeas.Id]));
         Assert.Equal(
-            new CheckoutEntryDto(bread.Id, bread.Version, null, "Bread", null, new QuantityDto(2m, "piece"), app.Freezer.Id, null, ExpiryKindDto.None, false),
+            new CheckoutEntryDto(bread.Id, bread.Version, null, "Bread", null, new QuantityDto(2m, "piece"), app.Freezer.Id, null, ExpiryKindDto.None, false, true),
             entries[bread.Id]);
         Assert.Equal((app.Pantry.Id, null, ExpiryKindDto.None, false), Summary(entries[pantryCheese.Id]));
         Assert.Equal((app.Pantry.Id, today.AddDays(10), ExpiryKindDto.BestBefore, false), Summary(entries[lastBought.Id]));

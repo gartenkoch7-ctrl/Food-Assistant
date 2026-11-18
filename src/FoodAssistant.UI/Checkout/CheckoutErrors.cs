@@ -66,6 +66,17 @@ public static partial class CheckoutErrors
         return errors;
     }
 
+    /// <summary>Lines the server reported an error for in <paramref name="field"/> (e.g. <c>productId</c>).</summary>
+    public static IReadOnlyList<int> LinesWithField(ApiError? error, string field, int lineCount) =>
+        error is null
+            ? []
+            : [.. error.FieldErrors.Keys
+            .Select(key => LineField().Match(key))
+            .Where(match => match.Success && match.Groups["field"].Value == field)
+            .Select(match => int.Parse(match.Groups["index"].Value, CultureInfo.InvariantCulture))
+            .Where(index => index < lineCount)
+            .Distinct()];
+
     private static string Describe(
         string field,
         string code,
