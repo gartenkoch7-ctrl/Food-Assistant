@@ -23,8 +23,10 @@ COPY src/FoodAssistant.Web.Client/FoodAssistant.Web.Client.csproj src/FoodAssist
 RUN dotnet restore src/FoodAssistant.Server/FoodAssistant.Server.csproj
 
 COPY src/ src/
+# No --no-restore: the Web SDK adds the package with _framework/blazor.web.js only when it sees
+# the Razor components, which are copied after the cached restore above (found in M1 step 0).
 RUN dotnet publish src/FoodAssistant.Server/FoodAssistant.Server.csproj \
-        --configuration Release --no-restore --output /app/publish -p:UseAppHost=false
+        --configuration Release --output /app/publish -p:UseAppHost=false
 
 # Writable directories for the volumes, owned by the non-root app user (UID 1654 in the .NET images).
 # Created here because COPY --chown needs no RUN (and thus no emulation) in the final stage.
