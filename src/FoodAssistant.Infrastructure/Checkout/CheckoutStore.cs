@@ -212,7 +212,10 @@ internal sealed class CheckoutStore(AppDbContext db, IHouseholdContext household
                 p.DefaultUnitCode,
                 p.DefaultStorageLocationId,
                 lastLocation.TryGetValue(p.Id, out var location) ? location : null,
-                p is { LastShelfLifeDays: { } days, LastExpiryKind: { } kind } && kind != ExpiryKind.None
+                // Only values the domain would suggest count; anything else (e.g. imported data) is "unknown",
+                // so a freezer line still gets the rule "frozen".
+                p is { LastShelfLifeDays: { } days and >= 0 and <= PurchasedBatch.MaxRememberedDays, LastExpiryKind: { } kind }
+                    && kind != ExpiryKind.None
                     ? new LastPurchase(days, kind)
                     : null));
     }

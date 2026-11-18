@@ -54,6 +54,21 @@ public sealed class CheckoutProposalTests(PostgresContainerFixture postgres)
     }
 
     [Fact]
+    public async Task Propose_StoredShelfLifeOutOfRange_FreezerStillGetsTheRule()
+    {
+        await using var app = await InventoryApp.StartAsync(postgres);
+        app.Rules.Set(StorageType.Frozen, new ShelfLifeRule { DaysFrozen = 90 });
+        var listId = await DefaultListAsync(app);
+        var peas = await HouseholdDataSeed.ProductAsync(app.Services, app.HouseholdId, "Peas", ProductCategories.Frozen);
+        await UpdateProductAsync(app, peas.Id, p => (p.LastShelfLifeDays, p.LastExpiryKind) = (99_999, ExpiryKind.BestBefore));
+        await AddItemAsync(app, listId, peas.Id);
+
+        var entry = Assert.Single((await ProposeAsync(app, listId)).Entries);
+
+        Assert.Equal((app.Freezer.Id, app.Today().AddDays(90), ExpiryKindDto.UseBy, true), Summary(entry));
+    }
+
+    [Fact]
     public async Task Propose_NoLocations_NoSuggestedLocation_CompleteRequiresOne()
     {
         await using var app = await InventoryApp.StartAsync(postgres);

@@ -120,7 +120,12 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
   zwischen Gefrierort und anderem Ort wechselt – ein Gefrierdatum darf nie im Kühlschrank landen.
   **Offen:** Der Server merkt sich beim letzten Kauf nicht den Lagertyp; wurde zuletzt TK-Ware gekauft,
   schlägt er deren Tage auch für einen Kühlschrank-Vorschlag vor (Entscheidung nötig, z. B. Spalte
-  `LastStorageType` oder nur aus nicht gefrorenen Chargen lernen). Der Client nimmt denselben `Idempotency-Key` nur für dieselbe Anfrage nach einem Fehler
+  `LastStorageType` oder nur aus nicht gefrorenen Chargen lernen).
+  **Offen:** Ein beim Abschluss entfernter Eintrag ist ein normaler Tombstone. Ändert ein anderes Gerät ihn
+  danach mit älterer `baseVersion` (online mit altem Stand oder offline), gewinnt nach ADR-0005 die Änderung
+  gegen das Löschen; der Eintrag kommt abgehakt zurück und würde beim nächsten Abschluss erneut gebucht.
+  Lösung braucht eine Entscheidung (z. B. Tombstone als „gebucht“ markieren – Schemaänderung – und im
+  `ShoppingConflictResolver` gegen alte Änderungen gewinnen lassen oder nur unabgehakt zurückholen). Der Client nimmt denselben `Idempotency-Key` nur für dieselbe Anfrage nach einem Fehler
   ohne Antwort (Netz/offline oder 409 `common.idempotency_request_in_progress`); jede andere Anfrage bekommt einen neuen (sonst 422 `common.idempotency_key_reused`).
   Erfolg: Ansage + Snackbar, zurück zur Liste; mit `staleItemIds` bleibt die Seite, lädt neu und nennt die Anzahl.
 
