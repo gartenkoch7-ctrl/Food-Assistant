@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="StoresTitle" xml:space="preserve"><value>Stores</value></data>
+  <data name="StoresEmptyHeading" xml:space="preserve"><value>No stores yet</value></data>
+  <data name="StoresEmptyText" xml:space="preserve"><value>Add your stores. A shopping list can be assigned to a store and is then sorted in the order of its sections.</value></data>
+  <data name="StoresCreate" xml:space="preserve"><value>Add store</value></data>
+  <data name="StoresListLabel" xml:space="preserve"><value>Stores</value></data>
+  <data name="StoreEdit" xml:space="preserve"><value>Edit {0}</value></data>
+  <data name="StoreDelete" xml:space="preserve"><value>Delete {0}</value></data>
+  <data name="StoreOrder" xml:space="preserve"><value>Order of {0}</value></data>
+  <data name="StoreOrderShort" xml:space="preserve"><value>Order</value></data>
+  <data name="StoreDeleteTitle" xml:space="preserve"><value>Delete store?</value></data>
+  <data name="StoreDeleteText" xml:space="preserve"><value>"{0}" will be deleted. Lists with this store are kept but no longer assigned to a store.</value></data>
+  <data name="StoreDialogNew" xml:space="preserve"><value>New store</value></data>
+  <data name="StoreDialogEdit" xml:space="preserve"><value>Edit store</value></data>
+  <data name="StoreReloaded" xml:space="preserve"><value>The store was changed in the meantime. The current state is shown.</value></data>
+  <data name="FieldStoreName" xml:space="preserve"><value>Name</value></data>
+  <data name="FieldError.required" xml:space="preserve"><value>Required</value></data>
+  <data name="OrderHeading" xml:space="preserve"><value>Section order: {0}</value></data>
+  <data name="OrderListLabel" xml:space="preserve"><value>Sections in the order of the store</value></data>
+  <data name="OrderLearned" xml:space="preserve"><value>Learned</value></data>
+  <data name="OrderManual" xml:space="preserve"><value>Own order</value></data>
+  <data name="OrderHintLearned" xml:space="preserve"><value>Learned from your check-offs in the store. Move a section and save to set your own order.</value></data>
+  <data name="OrderHintManual" xml:space="preserve"><value>Your own order applies until you go back to the learned one.</value></data>
+  <data name="OrderUp" xml:space="preserve"><value>Move {0} up</value></data>
+  <data name="OrderDown" xml:space="preserve"><value>Move {0} down</value></data>
+  <data name="OrderMoved" xml:space="preserve"><value>{0}: position {1} of {2}</value></data>
+  <data name="OrderSave" xml:space="preserve"><value>Save order</value></data>
+  <data name="OrderReset" xml:space="preserve"><value>Back to learned order</value></data>
+  <data name="OrderSaved" xml:space="preserve"><value>Order saved.</value></data>
+  <data name="OrderResetDone" xml:space="preserve"><value>Learned order restored.</value></data>
+  <data name="Error.stores.store_not_found" xml:space="preserve"><value>This store no longer exists.</value></data>
+  <data name="Error.stores.validation_failed" xml:space="preserve"><value>Please check your input.</value></data>
+</root>

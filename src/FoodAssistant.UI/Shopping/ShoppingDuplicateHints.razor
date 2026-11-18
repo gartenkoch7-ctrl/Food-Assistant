@@ -1,0 +1,98 @@
+@using System.Globalization
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Shopping
+@using FoodAssistant.Contracts.Shopping
+@inject IShoppingClient Shopping
+@inject SessionState Session
+@inject ILiveAnnouncer Announcer
+@inject IStringLocalizer<ShoppingText> T
+
+@* Hints for open items of the same product. Merging adds the quantities (same unit) into the first item and removes the second. *@
+<ApiErrorAlert Error="_error" FeatureText="T" />
+@if (_notice is not null)
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" role="status" Class="fa-duplicate-hint">@_notice</MudAlert>
+}
+
+@foreach (var duplicate in Duplicates)
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" role="status" Class="fa-duplicate-hint">
+        <span>@string.Format(CultureInfo.CurrentCulture, T["DuplicateHint"].Value, duplicate.First.Text)</span>
+        @if (Session.CanEdit && CanMerge(duplicate))
+        {
+            <MudButton Size="Size.Small" Variant="Variant.Outlined"
+                       aria-label="@string.Format(CultureInfo.CurrentCulture, T["DuplicateMergeLabel"].Value, duplicate.First.Text)"
+                       OnClick="() => MergeAsync(duplicate)">@T["DuplicateMerge"]</MudButton>
+        }
+    </MudAlert>
+}
+
+@code {
+    private ShoppingMerger _merger = default!;
+    private ApiError? _error;
+    private string? _notice;
+    private bool _merging;
+    private (Guid First, Guid Second)? _messagePair;
+
+    /// <summary>The open items of the list.</summary>
+    [Parameter, EditorRequired]
+    public IReadOnlyList<ShoppingItemDto> Items { get; set; } = [];
+
+    /// <summary>Raised after a merge attempt (also a failed one) with whether the hint is gone (merged, or the first entry was checked meanwhile; after a half-done merge both entries stay), so the page reads the list again and moves the focus.</summary>
+    [Parameter]
+    public EventCallback<bool> Merged { get; set; }
+
+    private IEnumerable<DuplicatePair> Duplicates =>
+        Items.Where(i => i is { ProductId: not null, Checked: false })
+            .GroupBy(i => i.ProductId)
+            .Where(g => g.Count() > 1)
+            .Select(g => new DuplicatePair(g.First(), g.Skip(1).First()));
+
+    protected override void OnInitialized() => _merger = new ShoppingMerger(Shopping);
+
+    // A message belongs to the pair it was about. Only the second item says whether that pair is gone: after a lost
+    // merge the server keeps the first one checked, so it leaves the open items while the notice must stay.
+    protected override void OnParametersSet()
+    {
+        if (_messagePair is { } pair && Items.All(i => i.Id != pair.Second))
+        {
+            (_error, _notice, _messagePair) = (null, null, null);
+        }
+    }
+
+    // Quantities of the same unit are summed; items without any quantity just collapse into one.
+    private static bool CanMerge(DuplicatePair pair) =>
+        (pair.First.Quantity is null && pair.Second.Quantity is null)
+        || (pair.First.Quantity is { } a && pair.Second.Quantity is { } b && a.Unit == b.Unit);
+
+    private async Task MergeAsync(DuplicatePair pair)
+    {
+        if (_merging || Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        _merging = true;
+        _error = null;
+        _notice = null;
+        var result = await _merger.MergeAsync(household, pair.First, pair.Second);
+        _error = result.Error;
+        _messagePair = (pair.First.Id, pair.Second.Id);
+        _notice = result.Status switch
+        {
+            MergeStatus.Conflict => T["MergeConflict"].Value,
+            MergeStatus.HalfDone => T["MergeHalfDone"].Value,
+            _ => null,
+        };
+        if (result.Status == MergeStatus.Merged)
+        {
+            // The button the focus was on disappears with the hint; the page moves the focus on after reloading.
+            Announcer.Announce(string.Format(CultureInfo.CurrentCulture, T["MergeDone"].Value, pair.First.Text));
+        }
+
+        _merging = false;
+        await Merged.InvokeAsync(result.Status is MergeStatus.Merged or MergeStatus.Conflict);
+    }
+
+    private sealed record DuplicatePair(ShoppingItemDto First, ShoppingItemDto Second);
+}

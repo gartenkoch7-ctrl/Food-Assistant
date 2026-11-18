@@ -7,5 +7,71 @@
   <!-- German is the neutral language of the project; ShoppingText.en.resx holds the English texts. -->
   <data name="ShoppingTitle" xml:space="preserve"><value>Einkauf</value></data>
   <data name="ShoppingEmptyHeading" xml:space="preserve"><value>Deine Einkaufsliste ist leer</value></data>
-  <data name="ShoppingEmptyText" xml:space="preserve"><value>Artikel, die du kaufen willst, erscheinen hier. Im Laden kannst du sie auch ohne Netz abhaken.</value></data>
+  <data name="ShoppingEmptyText" xml:space="preserve"><value>Artikel, die du kaufen willst, erscheinen hier.</value></data>
+  <data name="DefaultListName" xml:space="preserve"><value>Einkaufsliste</value></data>
+  <data name="ListsLabel" xml:space="preserve"><value>Einkaufslisten</value></data>
+  <data name="ListOpen" xml:space="preserve"><value>{0} öffnen</value></data>
+  <data name="ListOpenButton" xml:space="preserve"><value>Öffnen</value></data>
+  <data name="ListStore" xml:space="preserve"><value>Laden: {0}</value></data>
+  <data name="ListOpenCount" xml:space="preserve"><value>{0} offen</value></data>
+  <data name="ListEdit" xml:space="preserve"><value>{0} bearbeiten</value></data>
+  <data name="ListDelete" xml:space="preserve"><value>{0} löschen</value></data>
+  <data name="ListDeleteTitle" xml:space="preserve"><value>Liste löschen?</value></data>
+  <data name="ListDeleteText" xml:space="preserve"><value>„{0}“ und alle Einträge darauf werden gelöscht.</value></data>
+  <data name="ListCreate" xml:space="preserve"><value>Liste anlegen</value></data>
+  <data name="ListDialogNew" xml:space="preserve"><value>Neue Liste</value></data>
+  <data name="ListDialogEdit" xml:space="preserve"><value>Liste bearbeiten</value></data>
+  <data name="ListReloaded" xml:space="preserve"><value>Die Liste wurde inzwischen geändert. Angezeigt ist der aktuelle Stand.</value></data>
+  <data name="FieldListName" xml:space="preserve"><value>Name</value></data>
+  <data name="FieldStore" xml:space="preserve"><value>Laden</value></data>
+  <data name="NoStore" xml:space="preserve"><value>Kein Laden</value></data>
+  <data name="FieldDefault" xml:space="preserve"><value>Standardliste</value></data>
+  <data name="FieldDefaultHint" xml:space="preserve"><value>Auf die Standardliste kommen Artikel ohne Angabe einer Liste, zum Beispiel bei zu geringem Bestand.</value></data>
+  <data name="AllLists" xml:space="preserve"><value>Alle Listen</value></data>
+  <data name="NotFoundHeading" xml:space="preserve"><value>Liste nicht gefunden</value></data>
+  <data name="NotFoundText" xml:space="preserve"><value>Diese Liste gibt es nicht mehr. Vielleicht wurde sie gelöscht.</value></data>
+  <data name="QuickAddLabel" xml:space="preserve"><value>Artikel hinzufügen</value></data>
+  <data name="QuickAddButton" xml:space="preserve"><value>Hinzufügen</value></data>
+  <data name="PickProduct" xml:space="preserve"><value>Produkt wählen</value></data>
+  <data name="PickProductLabel" xml:space="preserve"><value>Produkt suchen</value></data>
+  <data name="CartHeading" xml:space="preserve"><value>Im Wagen ({0})</value></data>
+  <data name="CompleteShopping" xml:space="preserve"><value>Einkauf abschließen</value></data>
+  <data name="ItemCheck" xml:space="preserve"><value>{0} abhaken</value></data>
+  <data name="ItemUncheck" xml:space="preserve"><value>{0} zurücknehmen</value></data>
+  <data name="ItemEdit" xml:space="preserve"><value>{0} bearbeiten</value></data>
+  <data name="OriginAuto" xml:space="preserve"><value>automatisch</value></data>
+  <data name="DuplicateHint" xml:space="preserve"><value>„{0}“ steht mehrfach auf der Liste.</value></data>
+  <data name="DuplicateMerge" xml:space="preserve"><value>Zusammenführen</value></data>
+  <data name="DuplicateMergeLabel" xml:space="preserve"><value>{0} zusammenführen</value></data>
+  <data name="LiveChecked" xml:space="preserve"><value>{0} wurde abgehakt.</value></data>
+  <data name="ItemDialogTitle" xml:space="preserve"><value>Eintrag</value></data>
+  <data name="FieldText" xml:space="preserve"><value>Bezeichnung</value></data>
+  <data name="FieldQuantity" xml:space="preserve"><value>Menge</value></data>
+  <data name="FieldNote" xml:space="preserve"><value>Notiz</value></data>
+  <data name="FieldSection" xml:space="preserve"><value>Bereich</value></data>
+  <data name="FieldMove" xml:space="preserve"><value>In andere Liste verschieben</value></data>
+  <data name="MoveAction" xml:space="preserve"><value>Verschieben</value></data>
+  <data name="ItemReadOnly" xml:space="preserve"><value>Du darfst Einträge hinzufügen und abhaken, aber nicht ändern.</value></data>
+  <data name="ItemDelete" xml:space="preserve"><value>Eintrag löschen</value></data>
+  <data name="ItemDeleteTitle" xml:space="preserve"><value>Eintrag löschen?</value></data>
+  <data name="ItemDeleteText" xml:space="preserve"><value>„{0}“ wird von der Liste entfernt.</value></data>
+  <data name="Close" xml:space="preserve"><value>Schließen</value></data>
+  <data name="FieldError.required" xml:space="preserve"><value>Pflichtfeld</value></data>
+  <data name="Error.shopping.list_not_found" xml:space="preserve"><value>Diese Liste gibt es nicht mehr.</value></data>
+  <data name="Error.shopping.item_not_found" xml:space="preserve"><value>Diesen Eintrag gibt es nicht mehr.</value></data>
+  <data name="Error.shopping.validation_failed" xml:space="preserve"><value>Bitte prüfe deine Eingabe.</value></data>
+  <data name="Error.shopping.default_list" xml:space="preserve"><value>Die Standardliste kann nicht gelöscht werden. Mache zuerst eine andere Liste zur Standardliste.</value></data>
+  <data name="Error.shopping.unknown_version" xml:space="preserve"><value>Dieser Eintrag ist nicht auf dem aktuellen Stand. Bitte versuche es noch einmal.</value></data>
+  <data name="Error.shopping.restricted_change" xml:space="preserve"><value>Mit eingeschränktem Zugang darfst du Einträge nur hinzufügen und abhaken.</value></data>
+  <data name="MergeConflict" xml:space="preserve"><value>Ein Eintrag wurde inzwischen von jemand anderem geändert. Es wurde nichts zusammengeführt.</value></data>
+  <data name="MergeHalfDone" xml:space="preserve"><value>Die Mengen wurden summiert, aber der doppelte Eintrag konnte nicht entfernt werden. Bitte entferne ihn selbst.</value></data>
+  <data name="ChangeNotApplied" xml:space="preserve"><value>Der Eintrag wurde inzwischen von jemand anderem geändert. Deine Änderung wurde nicht übernommen; angezeigt ist der aktuelle Stand.</value></data>
+  <data name="DeleteNotApplied" xml:space="preserve"><value>Der Eintrag wurde nicht gelöscht, weil er inzwischen von jemand anderem geändert oder abgehakt wurde. Angezeigt ist der aktuelle Stand.</value></data>
+  <data name="ItemInCart" xml:space="preserve"><value>{0} im Wagen</value></data>
+  <data name="ItemBackOnList" xml:space="preserve"><value>{0} wieder auf der Liste</value></data>
+  <data name="Error.catalog.product_not_found" xml:space="preserve"><value>Dieses Produkt gibt es nicht mehr.</value></data>
+  <data name="Error.common.conflict" xml:space="preserve"><value>Das hat sich inzwischen geändert. Bitte versuche es noch einmal.</value></data>
+  <data name="MergeDone" xml:space="preserve"><value>{0} zusammengeführt</value></data>
+  <data name="MoveUnsaved" xml:space="preserve"><value>Du hast ungespeicherte Änderungen am Eintrag. Speichere sie zuerst, dann verschiebe den Eintrag.</value></data>
+  <data name="StoreGone" xml:space="preserve"><value>Dieser Laden wurde inzwischen gelöscht. Wähle einen anderen oder keinen Laden.</value></data>
 </root>

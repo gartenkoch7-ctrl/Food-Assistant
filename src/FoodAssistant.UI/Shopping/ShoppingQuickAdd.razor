@@ -1,0 +1,104 @@
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Shopping
+@using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Shopping
+@inject IShoppingClient Shopping
+@inject SessionState Session
+@inject IStringLocalizer<ShoppingText> T
+
+@* Free text with Enter (the submit button is the visible twin of the key), or a product from the catalog. Adding works for every role.
+   Nothing is disabled while a request runs (a disabled control loses the focus); a second submit is ignored instead. *@
+<form class="fa-quick-add" @onsubmit="AddTextAsync" @onsubmit:preventDefault="true">
+    <MudTextField T="string" @ref="_field" @bind-Value="_text" Immediate="true" Label="@T["QuickAddLabel"]" Variant="Variant.Outlined"
+                  MaxLength="200" />
+    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+               StartIcon="@Icons.Material.Rounded.Add">@T["QuickAddButton"]</MudButton>
+    <MudButton Variant="Variant.Outlined" aria-expanded="@(_picking ? "true" : "false")" aria-controls="@(_picking ? "fa-quick-add-picker" : null)"
+               StartIcon="@Icons.Material.Rounded.Search" OnClick="() => _picking = !_picking">@T["PickProduct"]</MudButton>
+</form>
+
+@if (_picking)
+{
+    @* A new key after each pick clears the field for the next product. *@
+    <div id="fa-quick-add-picker" class="fa-quick-add-picker" @key="_pickerKey">
+        <ProductPicker Label="@T["PickProductLabel"]" AllowCreate="Session.CanEdit" ProductSelected="AddProductAsync" />
+    </div>
+}
+
+<ApiErrorAlert Error="_error" FeatureText="T" />
+
+@code {
+    private MudTextField<string>? _field;
+    private string? _text;
+    private bool _busy;
+    private bool _picking;
+    private int _pickerKey;
+    private ApiError? _error;
+
+    // The id of an item stays the same across retries until the add succeeded, so a retry after a lost
+    // response creates nothing twice (the server answers a known id with the existing item).
+    private string? _retryKey;
+    private Guid _retryId;
+
+    [Parameter, EditorRequired]
+    public Guid ListId { get; set; }
+
+    /// <summary>Raised with the item the server created (or already had, for a repeated id).</summary>
+    [Parameter]
+    public EventCallback<ShoppingItemDto> Added { get; set; }
+
+    private Task AddTextAsync() =>
+        string.IsNullOrWhiteSpace(_text)
+            ? Task.CompletedTask
+            : AddAsync($"{ListId:D}:text:" + _text.Trim(), id => new CreateShoppingItemRequest(id, null, _text.Trim(), null, null, null), clearText: true);
+
+    private Task AddProductAsync(ProductSummaryDto product) =>
+        AddAsync($"{ListId:D}:product:" + product.Id, id => new CreateShoppingItemRequest(id, product.Id, null, null, null, null), clearText: false);
+
+    private async Task AddAsync(string key, Func<Guid, CreateShoppingItemRequest> request, bool clearText)
+    {
+        if (_busy || Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        if (_retryKey != key)
+        {
+            (_retryKey, _retryId) = (key, Guid.CreateVersion7());
+        }
+
+        var sent = _text?.Trim();
+        _busy = true;
+        _error = null;
+        var result = await Shopping.AddItemAsync(household, ListId, request(_retryId), CancellationToken.None);
+        _busy = false;
+        _error = result.Error;
+        if (!result.IsSuccess)
+        {
+            return;
+        }
+
+        _retryKey = null;
+        if (clearText)
+        {
+            // Only what was sent is cleared: text typed while the request ran stays.
+            _text = _text?.Trim() == sent ? null : _text;
+        }
+        else
+        {
+            _pickerKey++;
+        }
+
+        await Added.InvokeAsync(result.Value!);
+        await FocusAsync();
+    }
+
+    /// <summary>Puts the focus into the text field (after adding or when the button the focus was on disappeared).</summary>
+    public async Task FocusAsync()
+    {
+        if (_field is not null)
+        {
+            await _field.FocusAsync();
+        }
+    }
+}

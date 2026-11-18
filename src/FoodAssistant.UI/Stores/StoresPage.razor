@@ -1,0 +1,164 @@
+@page "/settings/stores"
+@implements IDisposable
+@using System.Globalization
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Stores
+@using FoodAssistant.Client.Sync
+@using FoodAssistant.Contracts.Stores
+@using FoodAssistant.Contracts.Sync
+@inject IStoreClient Stores
+@inject SessionState Session
+@inject IDialogService Dialogs
+@inject ILiveUpdates Live
+@inject IStringLocalizer<StoresText> T
+@inject IStringLocalizer<CommonText> Common
+
+<PageTitle>@T["StoresTitle"] – @AppInfo.Name</PageTitle>
+
+<h1>@T["StoresTitle"]</h1>
+
+<ApiErrorAlert Error="_error" FeatureText="T" />
+
+@if (_loading)
+{
+    <LoadingState />
+}
+else if (_stores.Count == 0 && _error is null)
+{
+    <EmptyState Icon="@Icons.Material.Rounded.Storefront" Heading="@T["StoresEmptyHeading"]" Text="@T["StoresEmptyText"]">
+        @if (Session.CanEdit)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => OpenAsync(null)">@T["StoresCreate"]</MudButton>
+        }
+    </EmptyState>
+}
+else
+{
+    <ul class="fa-list" aria-label="@T["StoresListLabel"]">
+        @foreach (var store in _stores)
+        {
+            <ListRow @key="store.Id" Icon="@Icons.Material.Rounded.Storefront" Name="@store.Name">
+                <End>
+                    <MudButton Variant="@(_selectedId == store.Id ? Variant.Filled : Variant.Outlined)" Color="Color.Primary"
+                               aria-expanded="@(_selectedId == store.Id ? "true" : "false")" aria-controls="@(_selectedId == store.Id ? "fa-store-order" : null)"
+                               aria-label="@string.Format(CultureInfo.CurrentCulture, T["StoreOrder"].Value, store.Name)"
+                               OnClick="() => Select(store)">@T["StoreOrderShort"]</MudButton>
+                    @if (Session.CanEdit)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                       aria-label="@string.Format(CultureInfo.CurrentCulture, T["StoreEdit"].Value, store.Name)"
+                                       OnClick="() => OpenAsync(store)" />
+                        <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                       aria-label="@string.Format(CultureInfo.CurrentCulture, T["StoreDelete"].Value, store.Name)"
+                                       OnClick="() => DeleteAsync(store)" />
+                    }
+                </End>
+            </ListRow>
+        }
+    </ul>
+    @if (Session.CanEdit)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add"
+                   OnClick="() => OpenAsync(null)">@T["StoresCreate"]</MudButton>
+    }
+
+    @if (Selected is { } selected)
+    {
+        <SectionOrderEditor @key="selected.Id" StoreId="selected.Id" StoreName="@selected.Name" />
+    }
+}
+
+@code {
+    private IReadOnlyList<StoreDto> _stores = [];
+    private ApiError? _error;
+    private Guid? _selectedId;
+    private bool _loading = true;
+    private int _generation;
+
+    private StoreDto? Selected => _stores.FirstOrDefault(s => s.Id == _selectedId);
+
+    protected override async Task OnInitializedAsync()
+    {
+        Live.Changed += OnLiveChangedAsync;
+        Live.Resynced += OnResyncedAsync;
+        await ReloadAsync();
+    }
+
+    private void Select(StoreDto store) => _selectedId = _selectedId == store.Id ? null : store.Id;
+
+    private async Task ReloadAsync()
+    {
+        // Answers of an older reload that arrive after a newer one started are dropped.
+        var generation = ++_generation;
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            _loading = false;
+            return;
+        }
+
+        var result = await Stores.ListStoresAsync(household, CancellationToken.None);
+        if (generation != _generation)
+        {
+            return;
+        }
+
+        _error = result.Error;
+        _stores = result.Value ?? _stores;
+        _loading = false;
+    }
+
+    private async Task OpenAsync(StoreDto? store)
+    {
+        var parameters = new DialogParameters<StoreDialog> { { d => d.Store, store } };
+        var title = store is null ? T["StoreDialogNew"].Value : T["StoreDialogEdit"].Value;
+        var dialog = await Dialogs.ShowAsync<StoreDialog>(title, parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false })
+        {
+            await ReloadAsync();
+        }
+    }
+
+    private async Task DeleteAsync(StoreDto store)
+    {
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            T["StoreDeleteTitle"],
+            string.Format(CultureInfo.CurrentCulture, T["StoreDeleteText"].Value, store.Name),
+            yesText: Common["Delete"],
+            cancelText: Common["Cancel"]);
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        var result = await Stores.DeleteStoreAsync(household, store.Id, $"\"{store.Version}\"", CancellationToken.None);
+        await ReloadAsync();
+        _error = result.Error ?? _error;
+    }
+
+    private Task OnLiveChangedAsync(HouseholdChangesMessage message) =>
+        message.HouseholdId == Session.ActiveHouseholdId && message.Changes.Any(c => c.EntityType == SyncEntityTypes.Store)
+            ? InvokeAsync(async () =>
+            {
+                await ReloadAsync();
+                StateHasChanged();
+            })
+            : Task.CompletedTask;
+
+    // After a reconnect the changes in between are unknown, so everything is fetched again.
+    private Task OnResyncedAsync() => InvokeAsync(async () =>
+    {
+        await ReloadAsync();
+        StateHasChanged();
+    });
+
+    public void Dispose()
+    {
+        Live.Changed -= OnLiveChangedAsync;
+        Live.Resynced -= OnResyncedAsync;
+    }
+}

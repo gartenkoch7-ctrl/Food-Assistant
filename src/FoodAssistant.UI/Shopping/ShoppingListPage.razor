@@ -1,0 +1,100 @@
+@page "/shopping/{ListId:guid}"
+@implements IDisposable
+@using System.Globalization
+@using FoodAssistant.Client.Shopping
+@using FoodAssistant.Client.Stores
+@using FoodAssistant.Client.Sync
+@inject IShoppingClient Shopping
+@inject IStoreClient Stores
+@inject SessionState Session
+@inject IDialogService Dialogs
+@inject ILiveUpdates Live
+@inject ILiveAnnouncer Announcer
+@inject NavigationManager Navigation
+@inject TimeProvider Time
+@inject IStringLocalizer<ShoppingText> T
+@inject IStringLocalizer<SectionText> Sections
+
+<PageTitle>@ListName – @AppInfo.Name</PageTitle>
+
+@if (_loading)
+{
+    <h1>@T["ShoppingTitle"]</h1>
+    <LoadingState />
+}
+else if (_list is null)
+{
+    <h1>@T["ShoppingTitle"]</h1>
+    <ApiErrorAlert Error="_error" FeatureText="T" />
+    @* Only a successful answer without this list means "not found"; after a failed load the alert above says what happened. *@
+    @if (_error is null)
+    {
+        <EmptyState Icon="@Icons.Material.Rounded.ShoppingCart" Heading="@T["NotFoundHeading"]" Text="@T["NotFoundText"]">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/shopping">@T["AllLists"]</MudButton>
+        </EmptyState>
+    }
+}
+else
+{
+    <div class="fa-list-header">
+        <h1>@ListName</h1>
+        <div class="fa-list-header-actions">
+            @if (_lists.Count > 1)
+            {
+                <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Rounded.List" Href="/shopping">@T["AllLists"]</MudButton>
+            }
+            @if (Session.CanEdit)
+            {
+                <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Rounded.Edit" OnClick="EditListAsync">@string.Format(CultureInfo.CurrentCulture, T["ListEdit"].Value, ListName)</MudButton>
+                <MudButton Variant="Variant.Text" StartIcon="@Icons.Material.Rounded.Add" OnClick="NewListAsync">@T["ListCreate"]</MudButton>
+            }
+        </div>
+    </div>
+
+    <ApiErrorAlert Error="_error" FeatureText="T" />
+    <ShoppingQuickAdd @key="(1, ListId)" @ref="_quickAdd" ListId="ListId" Added="OnAdded" />
+    <ShoppingDuplicateHints @key="(2, ListId)" Items="OpenItems" Merged="OnMergedAsync" />
+
+    @if (OpenItems.Count == 0 && CheckedItems.Count == 0 && _error is null)
+    {
+        <EmptyState Icon="@Icons.Material.Rounded.ShoppingCart" Heading="@T["ShoppingEmptyHeading"]" Text="@T["ShoppingEmptyText"]" />
+    }
+
+    @foreach (var group in OpenGroups)
+    {
+        <ShoppingSectionGroup @key="group.Key" Heading="@Sections[group.Key]">
+            @foreach (var item in group)
+            {
+                <ShoppingItemRow @key="item.Id" Item="item" Checking="@(i => _own.Mark(i.Id))" Changed="OnChanged" NotApplied="OnNotApplied" Failed="@(e => OnFailedAsync(item, e))" Open="OpenItemAsync" />
+            }
+        </ShoppingSectionGroup>
+    }
+
+    @if (CheckedItems.Count > 0)
+    {
+        <section aria-labelledby="fa-cart-heading">
+            <h2 id="fa-cart-heading" class="fa-shopping-heading">
+                <button type="button" class="fa-cart-toggle" aria-expanded="@(_cartOpen ? "true" : "false")" aria-controls="fa-cart-list"
+                        @onclick="() => _cartOpen = !_cartOpen">
+                    <MudIcon Icon="@(_cartOpen ? Icons.Material.Rounded.ExpandLess : Icons.Material.Rounded.ExpandMore)" aria-hidden="true" />
+                    @string.Format(CultureInfo.CurrentCulture, T["CartHeading"].Value, CheckedItems.Count)
+                </button>
+            </h2>
+            <ul id="fa-cart-list" class="fa-list" hidden="@(!_cartOpen)">
+                @if (_cartOpen)
+                {
+                    @foreach (var item in CheckedItems)
+                    {
+                        <ShoppingItemRow @key="item.Id" Item="item" Checking="@(i => _own.Mark(i.Id))" Changed="OnChanged" NotApplied="OnNotApplied" Failed="@(e => OnFailedAsync(item, e))" Open="OpenItemAsync" />
+                    }
+                }
+            </ul>
+        </section>
+
+        @if (Session.CanEdit)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.ShoppingCartCheckout"
+                       OnClick="@(() => Navigation.NavigateTo($"/shopping/{ListId:D}/complete"))">@T["CompleteShopping"]</MudButton>
+        }
+    }
+}

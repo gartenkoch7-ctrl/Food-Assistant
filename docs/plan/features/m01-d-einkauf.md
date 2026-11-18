@@ -11,7 +11,7 @@ Eine Spur, weil D2 und D3 Dateien von D1 erweitern (§11).
 ## Aufgaben
 - [x] D1 Listen und Einträge (Server) mit Konfliktregeln
 - [x] D2 Läden, Bereiche, gelernte und manuelle Reihenfolge (Domain + Server)
-- [ ] D3 Client und UI: Listen, Liste mit Bereichen, Abhaken, Läden-Seite
+- [x] D3 Client und UI: Listen, Liste mit Bereichen, Abhaken, Läden-Seite
 
 ## Fachregeln (verbindlich)
 

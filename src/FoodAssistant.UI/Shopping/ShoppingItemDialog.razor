@@ -1,0 +1,216 @@
+@using System.Globalization
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Shopping
+@using FoodAssistant.Contracts.Common
+@using FoodAssistant.Contracts.Shopping
+@using FoodAssistant.UI.Inventory
+@inject IShoppingClient Shopping
+@inject SessionState Session
+@inject IDialogService Dialogs
+@inject IStringLocalizer<ShoppingText> T
+@inject IStringLocalizer<SectionText> Sections
+@inject IStringLocalizer<CommonText> Common
+
+@* Edits one item (Member and up) or shows it read-only. Closes with DialogResult.Ok(true) after a change, a move or a delete. *@
+<MudDialog>
+    <TitleContent>@_item.Text</TitleContent>
+    <DialogContent>
+        <ApiErrorAlert Error="_error" FeatureText="T" />
+        @if (_notice is not null)
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" role="status">@_notice</MudAlert>
+        }
+        @if (!Session.CanEdit)
+        {
+            <p role="note">@T["ItemReadOnly"]</p>
+            <dl class="fa-item-facts">
+                <dt>@T["FieldQuantity"]</dt>
+                <dd>@(Item.Quantity is { } q ? InventoryFields.Quantity(q, Common, CultureInfo.CurrentCulture) : "–")</dd>
+                <dt>@T["FieldNote"]</dt>
+                <dd>@(string.IsNullOrWhiteSpace(Item.Note) ? "–" : Item.Note)</dd>
+                <dt>@T["FieldSection"]</dt>
+                <dd>@Sections[Item.SectionKey]</dd>
+            </dl>
+        }
+        else
+        {
+            <div class="fa-dialog-fields">
+                <MudTextField T="string" @bind-Value="_text" Label="@T["FieldText"]" Required="true" RequiredError="@T["FieldError.required"]" MaxLength="200" Variant="Variant.Outlined"
+                              ReadOnly="@(_item.ProductId is not null)" Error="_textInvalid" ErrorText="@T["FieldError.required"]" />
+                <QuantityInput @bind-Value="_quantity" Label="@T["FieldQuantity"]" />
+                <MudTextField T="string" @bind-Value="_note" Label="@T["FieldNote"]" MaxLength="500" Variant="Variant.Outlined" />
+                <MudSelect T="string" @bind-Value="_section" Label="@T["FieldSection"]" Variant="Variant.Outlined">
+                    @foreach (var key in SectionKeys.All)
+                    {
+                        <MudSelectItem T="string" Value="@key">@Sections[key]</MudSelectItem>
+                    }
+                </MudSelect>
+                @if (_targets.Count > 0)
+                {
+                    <div class="fa-item-move" role="group" aria-label="@T["FieldMove"]">
+                        <MudSelect T="string" @bind-Value="_target" Label="@T["FieldMove"]" Variant="Variant.Outlined">
+                            @foreach (var list in _targets)
+                            {
+                                <MudSelectItem T="string" Value="@list.Id.ToString("D")">@NameOf(list)</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudButton Variant="Variant.Outlined" Disabled="@(_busy || _target.Length == 0)" OnClick="MoveAsync">@T["MoveAction"]</MudButton>
+                    </div>
+                }
+            </div>
+        }
+    </DialogContent>
+    <DialogActions>
+        @if (Session.CanEdit)
+        {
+            <MudButton Color="Color.Error" Disabled="_busy" StartIcon="@Icons.Material.Rounded.Delete" OnClick="DeleteAsync">@T["ItemDelete"]</MudButton>
+            <MudSpacer />
+            <MudButton Disabled="_busy" OnClick="() => MudDialog.Cancel()">@Common["Cancel"]</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_busy" OnClick="SaveAsync">@Common["Save"]</MudButton>
+        }
+        else
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => MudDialog.Cancel()">@T["Close"]</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private IReadOnlyList<ShoppingListDto> _targets = [];
+    private ShoppingItemDto _item = default!;
+    private string? _notice;
+    private ApiError? _error;
+    private string _text = string.Empty;
+    private QuantityDto? _quantity;
+    private string? _note;
+    private string _section = string.Empty;
+    private string _target = string.Empty;
+    private bool _textInvalid;
+    private bool _busy;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public ShoppingItemDto Item { get; set; } = default!;
+
+    /// <summary>All lists of the household; the others than the item's own are offered as move targets.</summary>
+    [Parameter]
+    public IReadOnlyList<ShoppingListDto> Lists { get; set; } = [];
+
+    protected override void OnInitialized()
+    {
+        _targets = [.. Lists.Where(l => l.Id != Item.ListId)];
+        Fill(Item);
+    }
+
+    // The item as the server has it now; a lost conflict shows the winner here and keeps the dialog open.
+    private void Fill(ShoppingItemDto item)
+    {
+        _item = item;
+        _text = item.Text;
+        _quantity = item.Quantity;
+        _note = item.Note;
+        _section = item.SectionKey;
+    }
+
+    private string NameOf(ShoppingListDto list) => string.IsNullOrWhiteSpace(list.Name) ? T["DefaultListName"].Value : list.Name;
+
+    private async Task SaveAsync()
+    {
+        _textInvalid = string.IsNullOrWhiteSpace(_text);
+        if (_textInvalid)
+        {
+            return;
+        }
+
+        var request = new ChangeShoppingItemRequest(
+            _item.Version, _item.Checked, _quantity, string.IsNullOrWhiteSpace(_note) ? null : _note.Trim(), _text.Trim(), _section);
+        await RunChangeAsync(
+            household => Shopping.ChangeItemAsync(household, _item.Id, request, CancellationToken.None),
+            outcome => !ShoppingOutcomes.ChangeKeptServerState(outcome, request.Checked),
+            "ChangeNotApplied");
+    }
+
+    private bool HasUnsavedChanges =>
+        _text.Trim() != _item.Text || !Equals(_quantity, _item.Quantity) || (string.IsNullOrWhiteSpace(_note) ? null : _note.Trim()) != _item.Note
+        || _section != _item.SectionKey;
+
+    // Moving closes the dialog, which would silently drop what was typed: ask to save first instead.
+    private Task MoveAsync()
+    {
+        if (HasUnsavedChanges)
+        {
+            _notice = T["MoveUnsaved"];
+            return Task.CompletedTask;
+        }
+
+        return RunAsync(household => Shopping.MoveItemAsync(household, _item.Id, new MoveShoppingItemRequest(Guid.Parse(_target)), CancellationToken.None));
+    }
+
+    private async Task DeleteAsync()
+    {
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            T["ItemDeleteTitle"],
+            string.Format(CultureInfo.CurrentCulture, T["ItemDeleteText"].Value, _item.Text),
+            yesText: Common["Delete"],
+            cancelText: Common["Cancel"]);
+        if (confirmed == true)
+        {
+            await RunChangeAsync(
+                household => Shopping.DeleteItemAsync(household, _item.Id, _item.Version, CancellationToken.None),
+                ShoppingOutcomes.DeleteApplied,
+                "DeleteNotApplied");
+        }
+    }
+
+    // The server resolves concurrent changes instead of refusing them (ADR-0005). When this change lost, closing
+    // silently would suggest it went through, so the dialog says so and shows what the server kept.
+    private async Task RunChangeAsync(
+        Func<Guid, Task<ApiResult<ShoppingItemChangeResult>>> call, Func<ShoppingConflictOutcomeDto, bool> applied, string noticeKey)
+    {
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        _notice = null;
+        var result = await call(household);
+        _busy = false;
+        if (!result.IsSuccess)
+        {
+            _error = result.Error;
+        }
+        else if (applied(result.Value!.Outcome))
+        {
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        else
+        {
+            Fill(result.Value.Item);
+            _notice = T[noticeKey];
+        }
+    }
+
+    private async Task RunAsync<TResult>(Func<Guid, Task<ApiResult<TResult>>> call)
+    {
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        var result = await call(household);
+        _busy = false;
+        if (result.IsSuccess)
+        {
+            MudDialog.Close(DialogResult.Ok(true));
+            return;
+        }
+
+        _error = result.Error;
+    }
+}

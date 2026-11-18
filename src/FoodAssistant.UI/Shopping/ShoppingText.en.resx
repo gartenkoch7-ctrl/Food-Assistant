@@ -6,5 +6,71 @@
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="ShoppingTitle" xml:space="preserve"><value>Shopping</value></data>
   <data name="ShoppingEmptyHeading" xml:space="preserve"><value>Your shopping list is empty</value></data>
-  <data name="ShoppingEmptyText" xml:space="preserve"><value>Items you want to buy show up here. In the shop you can tick them off even without a connection.</value></data>
+  <data name="ShoppingEmptyText" xml:space="preserve"><value>Items you want to buy appear here.</value></data>
+  <data name="DefaultListName" xml:space="preserve"><value>Shopping list</value></data>
+  <data name="ListsLabel" xml:space="preserve"><value>Shopping lists</value></data>
+  <data name="ListOpen" xml:space="preserve"><value>Open {0}</value></data>
+  <data name="ListOpenButton" xml:space="preserve"><value>Open</value></data>
+  <data name="ListStore" xml:space="preserve"><value>Store: {0}</value></data>
+  <data name="ListOpenCount" xml:space="preserve"><value>{0} open</value></data>
+  <data name="ListEdit" xml:space="preserve"><value>Edit {0}</value></data>
+  <data name="ListDelete" xml:space="preserve"><value>Delete {0}</value></data>
+  <data name="ListDeleteTitle" xml:space="preserve"><value>Delete list?</value></data>
+  <data name="ListDeleteText" xml:space="preserve"><value>"{0}" and all items on it will be deleted.</value></data>
+  <data name="ListCreate" xml:space="preserve"><value>Add list</value></data>
+  <data name="ListDialogNew" xml:space="preserve"><value>New list</value></data>
+  <data name="ListDialogEdit" xml:space="preserve"><value>Edit list</value></data>
+  <data name="ListReloaded" xml:space="preserve"><value>The list was changed in the meantime. The current state is shown.</value></data>
+  <data name="FieldListName" xml:space="preserve"><value>Name</value></data>
+  <data name="FieldStore" xml:space="preserve"><value>Store</value></data>
+  <data name="NoStore" xml:space="preserve"><value>No store</value></data>
+  <data name="FieldDefault" xml:space="preserve"><value>Default list</value></data>
+  <data name="FieldDefaultHint" xml:space="preserve"><value>Items without a chosen list go onto the default list, for example when stock runs low.</value></data>
+  <data name="AllLists" xml:space="preserve"><value>All lists</value></data>
+  <data name="NotFoundHeading" xml:space="preserve"><value>List not found</value></data>
+  <data name="NotFoundText" xml:space="preserve"><value>This list no longer exists. It may have been deleted.</value></data>
+  <data name="QuickAddLabel" xml:space="preserve"><value>Add item</value></data>
+  <data name="QuickAddButton" xml:space="preserve"><value>Add</value></data>
+  <data name="PickProduct" xml:space="preserve"><value>Choose product</value></data>
+  <data name="PickProductLabel" xml:space="preserve"><value>Search product</value></data>
+  <data name="CartHeading" xml:space="preserve"><value>In the cart ({0})</value></data>
+  <data name="CompleteShopping" xml:space="preserve"><value>Finish shopping</value></data>
+  <data name="ItemCheck" xml:space="preserve"><value>Check off {0}</value></data>
+  <data name="ItemUncheck" xml:space="preserve"><value>Uncheck {0}</value></data>
+  <data name="ItemEdit" xml:space="preserve"><value>Edit {0}</value></data>
+  <data name="OriginAuto" xml:space="preserve"><value>automatic</value></data>
+  <data name="DuplicateHint" xml:space="preserve"><value>"{0}" is on the list more than once.</value></data>
+  <data name="DuplicateMerge" xml:space="preserve"><value>Merge</value></data>
+  <data name="DuplicateMergeLabel" xml:space="preserve"><value>Merge {0}</value></data>
+  <data name="LiveChecked" xml:space="preserve"><value>{0} was checked off.</value></data>
+  <data name="ItemDialogTitle" xml:space="preserve"><value>Item</value></data>
+  <data name="FieldText" xml:space="preserve"><value>Name</value></data>
+  <data name="FieldQuantity" xml:space="preserve"><value>Quantity</value></data>
+  <data name="FieldNote" xml:space="preserve"><value>Note</value></data>
+  <data name="FieldSection" xml:space="preserve"><value>Section</value></data>
+  <data name="FieldMove" xml:space="preserve"><value>Move to another list</value></data>
+  <data name="MoveAction" xml:space="preserve"><value>Move</value></data>
+  <data name="ItemReadOnly" xml:space="preserve"><value>You may add and check off items but not change them.</value></data>
+  <data name="ItemDelete" xml:space="preserve"><value>Delete item</value></data>
+  <data name="ItemDeleteTitle" xml:space="preserve"><value>Delete item?</value></data>
+  <data name="ItemDeleteText" xml:space="preserve"><value>"{0}" will be removed from the list.</value></data>
+  <data name="Close" xml:space="preserve"><value>Close</value></data>
+  <data name="FieldError.required" xml:space="preserve"><value>Required</value></data>
+  <data name="Error.shopping.list_not_found" xml:space="preserve"><value>This list no longer exists.</value></data>
+  <data name="Error.shopping.item_not_found" xml:space="preserve"><value>This item no longer exists.</value></data>
+  <data name="Error.shopping.validation_failed" xml:space="preserve"><value>Please check your input.</value></data>
+  <data name="Error.shopping.default_list" xml:space="preserve"><value>The default list cannot be deleted. Make another list the default first.</value></data>
+  <data name="Error.shopping.unknown_version" xml:space="preserve"><value>This item is not up to date. Please try again.</value></data>
+  <data name="Error.shopping.restricted_change" xml:space="preserve"><value>With restricted access you may only add and check off items.</value></data>
+  <data name="MergeConflict" xml:space="preserve"><value>An item was changed by someone else in the meantime. Nothing was merged.</value></data>
+  <data name="MergeHalfDone" xml:space="preserve"><value>The quantities were added up, but the duplicate item could not be removed. Please remove it yourself.</value></data>
+  <data name="ChangeNotApplied" xml:space="preserve"><value>The item was changed by someone else in the meantime. Your change was not applied; the current state is shown.</value></data>
+  <data name="DeleteNotApplied" xml:space="preserve"><value>The item was not deleted because someone else changed or checked it in the meantime. The current state is shown.</value></data>
+  <data name="ItemInCart" xml:space="preserve"><value>{0} in the cart</value></data>
+  <data name="ItemBackOnList" xml:space="preserve"><value>{0} back on the list</value></data>
+  <data name="Error.catalog.product_not_found" xml:space="preserve"><value>This product no longer exists.</value></data>
+  <data name="Error.common.conflict" xml:space="preserve"><value>This changed in the meantime. Please try again.</value></data>
+  <data name="MergeDone" xml:space="preserve"><value>{0} merged</value></data>
+  <data name="MoveUnsaved" xml:space="preserve"><value>The item has unsaved changes. Save them first, then move the item.</value></data>
+  <data name="StoreGone" xml:space="preserve"><value>This store was deleted in the meantime. Choose another store or none.</value></data>
 </root>

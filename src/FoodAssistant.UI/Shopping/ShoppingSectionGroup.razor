@@ -1,0 +1,17 @@
+<section aria-labelledby="@_headingId">
+    <h2 id="@_headingId" class="fa-shopping-heading">@Heading</h2>
+    <ul class="fa-list">
+        @ChildContent
+    </ul>
+</section>
+
+@code {
+    private readonly string _headingId = $"fa-shopping-group-{Guid.NewGuid():N}";
+
+    [Parameter, EditorRequired]
+    public string Heading { get; set; } = string.Empty;
+
+    /// <summary>The rows (<c>ShoppingItemRow</c>) of the group.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

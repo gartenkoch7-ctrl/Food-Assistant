@@ -88,3 +88,38 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
 ## Import von Listen
 - MVP: Grocy (Einkaufslisten), CSV.
 - M5: **Bring!** nur per eingefügtem Text (eine Zeile pro Artikel, Menge wird erkannt).
+
+## Oberfläche (D3)
+- `/shopping` öffnet bei genau einer Liste direkt `/shopping/{id}` (Ersetzen im Verlauf); weitere Listen
+  legt man auf der Listenseite an („Liste anlegen“), „Alle Listen“ erscheint ab zwei Listen.
+- Die Listenseite gruppiert offene Einträge nach der Reihenfolge von `GetSectionOrderAsync(list.StoreId)`
+  (ohne Laden: Standardreihenfolge); Überschriften je Bereich, abgehakte unter „Im Wagen (n)“ als
+  zugeklapptes Aufklapp-Element. Namen der Bereiche kommen aus `Catalog/SectionText`.
+- Abhaken ist optimistisch: Zeile kippt sofort, bei Fehler zurück und `ApiErrorAlert`; der Knopf wird
+  nie deaktiviert (Fokus), eine zweite Betätigung während der Anfrage wird ignoriert. Eingeschränkte
+  Mitglieder bekommen bei `shopping.restricted_change` (jemand hat Text/Menge/Notiz geändert) einmal
+  einen Neuversuch auf dem frisch gelesenen Eintrag.
+- Fremde Abhaker (offen → abgehakt zwischen zwei Ladevorgängen) werden über `ILiveAnnouncer` dezent
+  angesagt. Der Server veröffentlicht die Änderung **vor** der HTTP-Antwort, die Live-Meldung eines eigenen
+  Abhakens kommt also meist, während die Anfrage noch läuft: Die Seite merkt sich eigene Einträge
+  (`OwnItemChanges`, 15 s wie `InventoryPage`) und sagt sie nicht als fremd an. Eigene Wechsel Liste ↔ Wagen
+  werden stattdessen kurz angesagt („Milch im Wagen“), weil der Fokus mit der Zeile verschwindet.
+- Die Bereichsreihenfolge wird nur beim ersten Laden, nach `shopping_list`/`store`-Änderungen und nach
+  einem Resync geholt, nicht bei jeder Eintragsänderung. Ein Resync selbst sagt nichts an; eine ausstehende Ansage einer überholten Live-Ladung wird nachgeholt.
+  Jedes Abhaken ändert die Version des Ladens (gelernte Felder liegen auf der Ladenzeile); eine Umbenennung bekommt
+  daher oft 412. Der Laden-Dialog liest dann neu und wiederholt die Umbenennung einmal, solange der Name selbst
+  unverändert ist; nur bei geändertem Namen zeigt er den Serverstand mit Hinweis.
+  Ändern und Zurücksetzen der manuellen Bereichsreihenfolge löst keine Live-Meldung aus: Andere Geräte
+  sehen sie erst nach der nächsten Laden-, Listen- oder Abhak-Änderung oder nach einem Resync.
+- Der Server entscheidet Konflikte (Outcome), statt abzulehnen. Bei einem `PUT` gewinnt der eingehende
+  Zustand immer (`NoConflict`, `LastWriteWins`, `ChangeWinsOverDelete`, `CheckedWinsOverDelete`), außer bei
+  `CheckedWins` mit **un**abgehakter Anfrage: dann behält der Server seinen abgehakten Stand. Ein `DELETE`
+  gilt nur bei `NoConflict`/`BothDeleted`. Die UI (`ShoppingOutcomes`) zeigt nur dann einen Hinweis und
+  lässt den Eintragsdialog offen (mit dem Stand des Servers), wenn die Änderung verworfen bzw. das Löschen
+  nicht angewendet wurde. Beim Zusammenführen folgt auf eine angewendete Summe immer das `DELETE`
+  (sonst stünde die Summe neben dem Duplikat); Hinweise „nichts zusammengeführt“ bzw. „Duplikat nicht
+  entfernt“, bei Erfolg Ansage „{Text} zusammengeführt“ und Fokus ins Eingabefeld.
+- Eingeschränkte Mitglieder sehen Listen, Läden und Reihenfolge nur lesend, dürfen ergänzen und abhaken;
+  der Eintragsdialog zeigt für sie nur die Werte.
+- Zusammenführen doppelter Produkte: erster Eintrag per `PUT` mit summierter Menge (gleiche Einheit oder
+  beide ohne Menge), zweiter per `DELETE` mit seiner Version.
