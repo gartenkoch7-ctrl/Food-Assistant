@@ -183,8 +183,11 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.inventory.undo` | Vorrat | Aktion rückgängig machen | `foodassistant.outcome`, `foodassistant.batches` |
 | `foodassistant.households.update_settings` | Haushalte | Haushaltseinstellungen ändern | `foodassistant.outcome` |
 | `foodassistant.persistence.migrate` | Persistenz | Datenbank-Migration | `foodassistant.migrations.pending` |
+| `foodassistant.restock.create_rule` | Nachkauf | Wiederkehrende Regel anlegen | `foodassistant.outcome` |
+| `foodassistant.restock.delete_rule` | Nachkauf | Wiederkehrende Regel löschen | `foodassistant.outcome` |
 | `foodassistant.restock.minimum_stock` | Nachkauf | Mindestbestand eines Produkts nach einer Bestandsänderung prüfen | `foodassistant.outcome` (`None`, `AddToList`, `Arm`, `Disarm`, `product_gone`) |
 | `foodassistant.restock.recurring_run` | Nachkauf | Lauf der wiederkehrenden Einträge für einen Haushalt | `foodassistant.items` (angelegte Einträge) |
+| `foodassistant.restock.update_rule` | Nachkauf | Wiederkehrende Regel ändern | `foodassistant.outcome` |
 | `foodassistant.shelf_life.reset_override` | Haltbarkeit | Eigene Haltbarkeitswerte zurücksetzen | `foodassistant.scope` (`category`/`product`), `foodassistant.outcome` (`ok`, `not_found`) |
 | `foodassistant.shelf_life.set_override` | Haltbarkeit | Eigene Haltbarkeitswerte speichern | `foodassistant.scope`, `foodassistant.outcome` (`ok`, `invalid`, `not_found`) |
 | `foodassistant.shopping.add_item` | Einkauf | Eintrag anlegen (auch intern: Mindestbestand, wiederkehrend) | `foodassistant.outcome` |

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="RecurringTitle" xml:space="preserve"><value>Recurring items</value></data>
+  <data name="RecurringIntro" xml:space="preserve"><value>These items are added to the shopping list automatically, as long as the last entry has not been bought or deleted.</value></data>
+  <data name="RecurringEmptyHeading" xml:space="preserve"><value>No recurring items yet</value></data>
+  <data name="RecurringEmptyText" xml:space="preserve"><value>Set what you buy regularly, for example milk every week. The entry then appears on the list when it is due.</value></data>
+  <data name="RecurringCreate" xml:space="preserve"><value>Add rule</value></data>
+  <data name="RecurringListLabel" xml:space="preserve"><value>Recurring items</value></data>
+  <data name="RuleEdit" xml:space="preserve"><value>Edit {0}</value></data>
+  <data name="RuleDelete" xml:space="preserve"><value>Delete {0}</value></data>
+  <data name="RuleDeleteTitle" xml:space="preserve"><value>Delete rule?</value></data>
+  <data name="RuleDeleteText" xml:space="preserve"><value>"{0}" will no longer be added to the list automatically. Entries already created stay.</value></data>
+  <data name="RuleDialogNew" xml:space="preserve"><value>New rule</value></data>
+  <data name="RuleDialogEdit" xml:space="preserve"><value>Edit rule</value></data>
+  <data name="RuleSummary" xml:space="preserve"><value>{0} · {1} · next due {2}</value></data>
+  <data name="SummaryDaily" xml:space="preserve"><value>daily</value></data>
+  <data name="SummaryWeekly" xml:space="preserve"><value>weekly, {0}</value></data>
+  <data name="SummaryMonthly" xml:space="preserve"><value>monthly, on day {0}</value></data>
+  <data name="DefaultListName" xml:space="preserve"><value>Shopping list</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Product from the catalog (optional)</value></data>
+  <data name="FieldText" xml:space="preserve"><value>Item</value></data>
+  <data name="FieldQuantity" xml:space="preserve"><value>Quantity</value></data>
+  <data name="FieldList" xml:space="preserve"><value>Shopping list</value></data>
+  <data name="FieldFrequency" xml:space="preserve"><value>Frequency</value></data>
+  <data name="FieldDayOfWeek" xml:space="preserve"><value>Weekday</value></data>
+  <data name="FieldDayOfMonth" xml:space="preserve"><value>Day of the month</value></data>
+  <data name="ClearProduct" xml:space="preserve"><value>Remove product</value></data>
+  <data name="Frequency.Daily" xml:space="preserve"><value>Daily</value></data>
+  <data name="Frequency.Weekly" xml:space="preserve"><value>Weekly</value></data>
+  <data name="Frequency.Monthly" xml:space="preserve"><value>Monthly</value></data>
+  <data name="DayOfMonthHint" xml:space="preserve"><value>In shorter months the last day of the month applies.</value></data>
+  <data name="FieldError.required" xml:space="preserve"><value>Required</value></data>
+  <data name="FieldError.dayOfMonth" xml:space="preserve"><value>Please enter a day from 1 to 31.</value></data>
+  <data name="Error.restock.rule_not_found" xml:space="preserve"><value>This rule no longer exists.</value></data>
+  <data name="Error.restock.validation_failed" xml:space="preserve"><value>Please check your input.</value></data>
+  <data name="Error.shopping.list_not_found" xml:space="preserve"><value>This shopping list no longer exists.</value></data>
+  <data name="Error.catalog.product_not_found" xml:space="preserve"><value>This product no longer exists.</value></data>
+</root>

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FoodAssistant.Contracts.Inventory;
+using FoodAssistant.Contracts.Restock;
 using FoodAssistant.Contracts.Shopping;
 using FoodAssistant.Domain.Expiry;
 using FoodAssistant.Domain.Inventory;
@@ -19,6 +20,7 @@ public sealed class ContractEnumTests
         { typeof(ConsumptionReasonDto), typeof(ConsumptionReason) },
         { typeof(BatchOriginDto), typeof(BatchOrigin) },
         { typeof(ShoppingItemOriginDto), typeof(ShoppingItemOrigin) },
+        { typeof(RecurrenceFrequencyDto), typeof(RecurrenceFrequency) },
     };
 
     [Theory]

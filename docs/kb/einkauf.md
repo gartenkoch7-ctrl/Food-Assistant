@@ -95,6 +95,22 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
 - Regel: täglich, wöchentlich (Wochentag), monatlich (Tag); Ziel-Liste; Menge.
 - Ein Hintergrunddienst legt den Eintrag zum Termin an (Zeitzone des Haushalts), nicht doppelt,
   wenn er noch offen ist.
+- **API:** `GET/POST /shopping/recurring`, `PUT/DELETE /shopping/recurring/{ruleId}` (Lesen jede Rolle, Schreiben
+  Mitglied, `If-Match` Pflicht bei PUT/DELETE). Unbekannte oder fremde Liste → 404 `shopping.list_not_found`,
+  unbekanntes Produkt → 404 `catalog.product_not_found`, unbekannte Regel → 404 `restock.rule_not_found`.
+  Eine Regel mit Produkt speichert dessen Namen als `text`; der Eintrag nutzt beim Lauf Name und Bereich des
+  Produkts (archiviert → Freitext der Regel, Bereich `other`).
+- **Termine** (`RecurrenceSchedule`, Haushaltsdaten): täglich = morgen; wöchentlich = nächster Wochentag **nach**
+  dem Bezugstag; monatlich = nächster Tag `dom` nach dem Bezugstag, in kürzeren Monaten der letzte Tag. Erster
+  Termin beim Anlegen/Ändern des Plans: `NextDue(…, gestern)`, also heute, wenn er passt. Ändern von Text, Menge
+  oder Liste lässt den Termin unberührt.
+- **Lauf** (`RecurringItemsJob`, alle 15 min, erster Lauf 30 s nach dem Start; je Haushalt ein Scope über
+  `IHouseholdScopeFactory`, Fehler je Haushalt geloggt): Regeln mit `NextDueOn ≤ heute`; ist der zuletzt
+  erzeugte Eintrag (`LastCreatedItemId`) noch offen (nicht abgehakt, nicht gelöscht), wird übersprungen, sonst
+  ein Eintrag mit Herkunft „wiederkehrend“ angelegt. In beiden Fällen rückt `NextDueOn` auf den nächsten Termin
+  nach heute (ein langer Ausfall legt also keine Einträge nach).
+- **Oberfläche:** `/shopping/recurring` (Link auf „Mehr“), Anlegen/Bearbeiten/Löschen ab Mitglied; Produkt über
+  `ProductPicker` oder Freitext.
 
 ## Import von Listen
 - MVP: Grocy (Einkaufslisten), CSV.

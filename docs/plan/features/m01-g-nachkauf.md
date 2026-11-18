@@ -9,7 +9,7 @@ Branch `feat/m01-g-restock` · Welle 2 · Pakete: G1 → G2.
 
 ## Aufgaben
 - [x] G1 Mindestbestand (Handler auf `IStockChangedHandler`)
-- [ ] G2 Wiederkehrende Artikel (Regeln, Hintergrunddienst, UI)
+- [x] G2 Wiederkehrende Artikel (Regeln, Hintergrunddienst, UI)
 
 ## Detailplan
 

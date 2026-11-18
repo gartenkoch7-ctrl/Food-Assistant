@@ -11,6 +11,9 @@ public static class RestockRegistration
     {
         ArgumentNullException.ThrowIfNull(services);
         services.AddScoped<IStockChangedHandler, MinimumStockHandler>();
+        services.AddScoped<RecurringRuleService>();
+        services.AddScoped<IRecurringItemsRunner, RecurringItemsRunner>();
+        services.AddHostedService<RecurringItemsJob>();
         return services;
     }
 }

@@ -12,6 +12,7 @@ public static class RestockInfrastructureRegistration
     {
         ArgumentNullException.ThrowIfNull(builder);
         builder.Services.AddScoped<IRestockStore, RestockStore>();
+        builder.Services.AddScoped<IRecurringRuleStore, RecurringRuleStore>();
         return builder;
     }
 }
