@@ -197,6 +197,22 @@ public sealed class CheckoutPageTests : CheckoutTestContext
     }
 
     [Fact]
+    public async Task SkipAndBookAfterAll_KeepTheFocusInTheRow()
+    {
+        AddEntry("Brot", Guid.CreateVersion7(), Fridge.Id);
+        var cut = RenderPage();
+        int Focuses() => JSInterop.Invocations.Count(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase));
+        var before = Focuses();
+
+        await cut.InvokeAsync(() => RowButton(cut, "Brot", "Überspringen").Click()).WaitAsync(Timeout, Ct);
+        cut.WaitForAssertion(() => Assert.Equal(before + 1, Focuses()), Timeout);
+        await cut.InvokeAsync(() => RowButton(cut, "Brot", "Doch buchen").Click()).WaitAsync(Timeout, Ct);
+
+        cut.WaitForAssertion(() => Assert.Equal(before + 2, Focuses()), Timeout);
+        Assert.Equal("-1", Row(cut, "Brot").QuerySelector("h2")!.GetAttribute("tabindex"));
+    }
+
+    [Fact]
     public void NothingChecked_ShowsTheEmptyState()
     {
         var cut = RenderPage();

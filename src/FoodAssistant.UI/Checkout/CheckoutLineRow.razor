@@ -9,7 +9,8 @@
 
 @* One bought entry: a heading with its name, the suggested values as text, location choice and actions. *@
 <li class="fa-checkout-row @(Line.Skip ? "fa-checkout-row--skipped" : null)">
-    <h2 class="fa-checkout-name">@Line.Name</h2>
+    @* Focus target when the pressed control disappears (skip, book after all, product picked or cleared). *@
+    <h2 class="fa-checkout-name" tabindex="-1" @ref="_heading">@Line.Name</h2>
     @if (Line.Skip)
     {
         <p class="fa-checkout-secondary">@T["Skipped"]</p>
@@ -72,6 +73,9 @@
 </li>
 
 @code {
+    private ElementReference _heading;
+    private bool _focusHeading;
+
     [Parameter, EditorRequired]
     public CheckoutLine Line { get; set; } = default!;
 
@@ -140,18 +144,32 @@
             Move(location.Id);
         }
 
+        _focusHeading = true;
         return Changed.InvokeAsync(Line);
     }
 
     private Task UnassignAsync()
     {
         Line.ClearProduct();
+        _focusHeading = true;
         return Changed.InvokeAsync(Line);
     }
 
     private Task SetSkipAsync(bool skip)
     {
         Line.Skip = skip;
+        _focusHeading = true;
         return Changed.InvokeAsync(Line);
+    }
+
+    // The pressed control is gone after the re-render; keep keyboard focus in the row (WCAG 2.4.3),
+    // like ShelfLifeRowView does after a reset.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusHeading)
+        {
+            _focusHeading = false;
+            await _heading.FocusAsync();
+        }
     }
 }
