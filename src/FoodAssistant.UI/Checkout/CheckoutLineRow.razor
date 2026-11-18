@@ -34,7 +34,9 @@
             <p class="fa-checkout-secondary">@Inventory["FrozenAtHomeHint"]</p>
         }
         @* The label names the line: every row has a location field, and a list of "Lagerort" fields is ambiguous. *@
+        @* The line's error is the field's error text: shown under it and linked (ErrorId → aria-describedby). *@
         <MudSelect T="Guid?" Label="@Format("LocationLabel")" Value="Line.LocationId" ValueChanged="MoveAsync"
+                   Error="@(Error is not null)" ErrorText="@Error" ErrorId="@ErrorId"
                    Variant="Variant.Outlined" Dense="true" Required="true">
             @foreach (var location in Locations)
             {
@@ -50,8 +52,9 @@
             <MudButton Variant="Variant.Text" aria-label="@Format("SkipLabel")" OnClick="() => SetSkipAsync(true)">@T["Skip"]</MudButton>
         </div>
     }
-    @* No role="alert" here: the page announces one summary instead of every line at once. *@
-    @if (Error is not null)
+    @* The error of a booked line shows at its location field (above); no role="alert": the page announces
+       one summary instead of every line at once. A skipped line has no field, so the text stands alone. *@
+    @if (Error is not null && Line.Skip)
     {
         <MudText Typo="Typo.caption" Color="Color.Error">@Error</MudText>
     }
@@ -79,6 +82,8 @@
     /// <summary>Asks the page to open the editor for the line.</summary>
     [Parameter]
     public EventCallback<CheckoutLine> Edit { get; set; }
+
+    private string ErrorId => $"checkout-line-error-{Line.ItemId:N}";
 
     private bool IsFreezer => Locations.FirstOrDefault(l => l.Id == Line.LocationId)?.Type == StorageTypeDto.Frozen;
 

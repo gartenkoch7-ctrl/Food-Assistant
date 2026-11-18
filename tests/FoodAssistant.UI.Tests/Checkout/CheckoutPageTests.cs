@@ -160,6 +160,9 @@ public sealed class CheckoutPageTests : CheckoutTestContext
 
         Assert.Contains("Lagerort: Gibt es nicht mehr.", Row(cut, "Milch").TextContent, StringComparison.Ordinal);
         Assert.Contains("Bitte prüfe die markierten Zeilen.", cut.Markup, StringComparison.Ordinal);
+        var caption = Assert.Single(Row(cut, "Milch").QuerySelectorAll("[id^='checkout-line-error-']"));
+        Assert.Contains(Row(cut, "Milch").QuerySelectorAll("[aria-describedby]"),
+            e => e.GetAttribute("aria-describedby")!.Split(' ').Contains(caption.Id));
     }
 
     [Fact]
