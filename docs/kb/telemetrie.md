@@ -95,6 +95,7 @@ Rest frei für weitere API-Konventionen.
 | `MigrationFailed` / 2003 | Log, Critical | Persistenz | Migration fehlgeschlagen; der Server stoppt | Exception |
 | `AccountCreationRefused` / 2020 | Log, Information | Konten | Konto nicht angelegt; nur Fehlercodes, keine Eingaben | `ErrorCodes` |
 | `InvitationRedemptionConflict` / 2021 | Log, Warning | Konten | Einladung parallel eingelöst; diese Einlösung zurückgerollt | `InvitationId` |
+| `FetchFailed` / 2450 | Log, Warning | Open Food Facts | Abruf bei Open Food Facts fehlgeschlagen (ohne Barcode und Antwortinhalt) | `Reason`: `throttled`, `timeout`, `network`, `invalid_response`, `http_<status>` |
 | `ChangeNotificationFailed` / 2200 | Log, Warning | Sync | Live-Update nach dem Commit nicht gesendet; die Speicherung bleibt gültig, Clients holen über das Änderungsprotokoll nach | `HouseholdId`, Exception |
 | `SetupCompleted` / 3000 | Log, Information | Konten | Ersteinrichtung abgeschlossen | `UserId`, `HouseholdId` |
 | `SetupRejected` / 3001 | Log, Warning | Konten | Ersteinrichtung abgelehnt, sie war bereits abgeschlossen | – |
@@ -119,6 +120,8 @@ Rest frei für weitere API-Konventionen.
 | `UndoApplied` / 3303 | Log, Information | Vorrat | Aktion rückgängig gemacht | `ActivityId` |
 | `UndoRejected` / 3304 | Log, Information | Vorrat | Rückgängig abgelehnt (409) | `Reason`: `already_undone`, `not_undoable`, `expired`, `invalid_payload`, `changed`, `concurrent` |
 | `StockHandlerFailed` / 3305 | Log, Warning | Vorrat | Ein `IStockChangedHandler` ist nach dem Speichern gescheitert; die Änderung bleibt gültig | Exception |
+| `LookupUnavailable` / 3350 | Log, Warning | Open Food Facts | Barcode-Abfrage nicht möglich und nichts im Cache; Antwort 503 (der Barcode wird nie geloggt) | – |
+| `ServedStale` / 3351 | Log, Information | Open Food Facts | Open Food Facts nicht erreichbar; abgelaufener Cache-Eintrag ausgeliefert | – |
 | `BrowserCallUnavailable` / 4000 | Log, Debug | UI | Browser-Aufruf nicht verfügbar; nur Operationsname | `Operation`, Exception |
 | `NetworkError` / 4010 | Log, Debug | Client | API-Aufruf ohne Antwort fehlgeschlagen (auch Zeitüberschreitung des HttpClient); nur HTTP-Methode, nie Pfad/Query | `Method`, Exception |
 | `InvalidResponse` / 4011 | Log, Warning | Client | Erfolgsantwort der API mit unlesbarem JSON-Körper (z. B. HTML eines Proxys); nur HTTP-Methode, ohne Exception (Meldung kann Teile des Körpers zitieren) | `Method` |
@@ -140,6 +143,8 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.catalog.delete_location` | Katalog | Lagerort löschen | `foodassistant.outcome` |
 | `foodassistant.catalog.update_location` | Katalog | Lagerort ändern | `foodassistant.outcome` |
 | `foodassistant.catalog.update_product` | Katalog | Produkt ändern | `foodassistant.outcome` |
+| `foodassistant.food_facts.fetch` | Open Food Facts | Abruf der Produktdaten (Span-Art Client; nur Server-Aufruf, nur Barcode im Pfad, der in `url.full` gekürzt wird) | `foodassistant.outcome` (`found`, `not_found`, `timeout`, `network`, `invalid_response`, `http_<status>`), `http.response.status_code` |
+| `foodassistant.food_facts.lookup` | Open Food Facts | Barcode-Abfrage mit Cache | `foodassistant.cache` (`hit`, `miss`, `stale`), `foodassistant.outcome` (`found`, `not_found`, `unavailable`) |
 | `foodassistant.households.change_member_role` | Haushalte | Mitgliedsrolle ändern | `foodassistant.outcome` |
 | `foodassistant.households.create` | Haushalte | Haushalt anlegen | `foodassistant.household_id` |
 | `foodassistant.households.create_invitation` | Haushalte | Einladung erstellen | – |
@@ -167,3 +172,5 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.catalog.products.created` | Counter `{product}` | Katalog | Angelegte Produkte | `source`: `manual`, `food_facts` |
 | `foodassistant.inventory.batches.added` | Counter `{batch}` | Vorrat | Eingebuchte Chargen (auch Reste) | `origin`: `Manual`, `Scanned`, `Purchase`, `Import`, `Leftover` |
 | `foodassistant.inventory.consumptions` | Counter `{event}` | Vorrat | Verbrauchsereignisse (je Charge) | `kind`: `UsedUp`, `Partial`, `Discarded`; `reason`: Grund oder `none` |
+| `foodassistant.food_facts.lookups` | Counter `{lookup}` | Open Food Facts | Barcode-Abfragen nach Cache-Zustand und Ergebnis | `cache`: `hit`, `miss`, `stale`; `outcome`: `found`, `not_found`, `unavailable` |
+| `foodassistant.food_facts.fetch.duration` | Histogramm `s` | Open Food Facts | Dauer der Aufrufe bei Open Food Facts | `outcome` wie beim Ablauf `fetch` |
