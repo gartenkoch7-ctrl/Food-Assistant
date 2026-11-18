@@ -9,7 +9,7 @@ Branch `feat/m01-d-shopping` · Pakete nacheinander: D1 → D2 → D3 (D3 erst n
 Eine Spur, weil D2 und D3 Dateien von D1 erweitern (§11).
 
 ## Aufgaben
-- [ ] D1 Listen und Einträge (Server) mit Konfliktregeln
+- [x] D1 Listen und Einträge (Server) mit Konfliktregeln
 - [ ] D2 Läden, Bereiche, gelernte und manuelle Reihenfolge (Domain + Server)
 - [ ] D3 Client und UI: Listen, Liste mit Bereichen, Abhaken, Läden-Seite
 

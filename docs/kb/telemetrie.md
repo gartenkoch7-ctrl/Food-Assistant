@@ -106,6 +106,10 @@ Rest frei für weitere API-Konventionen.
 | `MemberRoleChanged` / 3023 | Log, Information | Haushalte | Rolle eines Mitglieds geändert | `HouseholdId`, `UserId`, `Role` |
 | `MemberRemoved` / 3024 | Log, Information | Haushalte | Mitglied aus Haushalt entfernt | `HouseholdId`, `UserId` |
 | `LastOwnerProtected` / 3025 | Log, Warning | Haushalte | Änderung abgelehnt: letzter Besitzer würde fehlen | `HouseholdId` |
+| `ShoppingConflictResolved` / 3400 | Log, Information | Einkauf | Konflikt eines Einkaufslisten-Eintrags nach ADR-0005 aufgelöst (Ergebnis ≠ `Created`/`NoConflict`) | `ItemId`, `Outcome` |
+| `ShoppingListCreated` / 3401 | Log, Information | Einkauf | Einkaufsliste angelegt | `ListId` |
+| `ShoppingListDeleted` / 3402 | Log, Information | Einkauf | Einkaufsliste samt Einträgen gelöscht | `ListId` |
+| `RestrictedChangeDenied` / 3403 | Log, Information | Einkauf | Eingeschränktes Mitglied wollte mehr als abhaken → 403 `shopping.restricted_change` | – |
 | `BrowserCallUnavailable` / 4000 | Log, Debug | UI | Browser-Aufruf nicht verfügbar; nur Operationsname | `Operation`, Exception |
 | `NetworkError` / 4010 | Log, Debug | Client | API-Aufruf ohne Antwort fehlgeschlagen (auch Zeitüberschreitung des HttpClient); nur HTTP-Methode, nie Pfad/Query | `Method`, Exception |
 | `InvalidResponse` / 4011 | Log, Warning | Client | Erfolgsantwort der API mit unlesbarem JSON-Körper (z. B. HTML eines Proxys); nur HTTP-Methode, ohne Exception (Meldung kann Teile des Körpers zitieren) | `Method` |
@@ -127,6 +131,13 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.households.remove_member` | Haushalte | Mitglied entfernen | `foodassistant.outcome` |
 | `foodassistant.households.revoke_invitation` | Haushalte | Einladung widerrufen | `foodassistant.outcome` |
 | `foodassistant.persistence.migrate` | Persistenz | Datenbank-Migration | `foodassistant.migrations.pending` |
+| `foodassistant.shopping.add_item` | Einkauf | Eintrag anlegen (auch intern: Mindestbestand, wiederkehrend) | `foodassistant.outcome` |
+| `foodassistant.shopping.change_item` | Einkauf | Eintrag ändern/abhaken mit Konfliktregeln | `foodassistant.outcome` |
+| `foodassistant.shopping.create_list` | Einkauf | Einkaufsliste anlegen | `foodassistant.outcome` |
+| `foodassistant.shopping.delete_item` | Einkauf | Eintrag löschen mit Konfliktregeln | `foodassistant.outcome` |
+| `foodassistant.shopping.delete_list` | Einkauf | Einkaufsliste löschen | `foodassistant.outcome` |
+| `foodassistant.shopping.move_item` | Einkauf | Eintrag auf andere Liste verschieben | `foodassistant.outcome` |
+| `foodassistant.shopping.update_list` | Einkauf | Einkaufsliste ändern (auch Standardliste wechseln) | `foodassistant.outcome` |
 | HTTP-Anfragen | – | Kommen aus der ASP.NET-Core-Instrumentierung, nicht aus eigenen Abläufen | – |
 
 ## Messwerte
@@ -135,3 +146,5 @@ Rest frei für weitere API-Konventionen.
 |---|---|---|---|---|
 | `foodassistant.api.idempotency.requests` | Counter `{request}` | API – Idempotenz | Schreibende Anfragen mit `Idempotency-Key` nach Ergebnis | `outcome`: `stored`, `replayed`, `key_reused`, `in_progress`, `invalid_key`, `abandoned` (5xx, Exception oder vor dem Handler abgewiesen, z. B. Antiforgery; Wiederholung läuft erneut), `stored_without_body` (Antwort > 1 MiB: nur Status und Header gespeichert), `store_failed`, `write_failed` (Handler fertig, Ergebnis nicht schreibbar; Schlüssel bleibt bis Lease-Ende reserviert) |
 | `foodassistant.api.rate_limit.rejections` | Counter `{request}` | API – Rate-Limits | Mit 429 abgewiesene Anfragen | `policy`: `auth-strict`, `api`, `openid` (`/connect/*`, `/.well-known/*`, vor der Authentifizierung pro Netz), `global` (API-Anfragen ohne passenden Endpunkt) |
+| `foodassistant.shopping.conflicts` | Counter `{conflict}` | Einkauf | Nach ADR-0005 aufgelöste Konflikte von Einträgen | `outcome`: `CheckedWins`, `ChangeWinsOverDelete`, `CheckedWinsOverDelete`, `BothDeleted`, `LastWriteWins` |
+| `foodassistant.shopping.items.checked` | Counter `{item}` | Einkauf | Abgehakte Einträge (Übergang offen → abgehakt) | – |
