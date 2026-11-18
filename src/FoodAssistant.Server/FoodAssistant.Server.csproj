@@ -9,6 +9,14 @@
     <ProjectReference Include="..\FoodAssistant.Web.Client\FoodAssistant.Web.Client.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <InternalsVisibleTo Include="FoodAssistant.Server.Tests" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+    <PackageReference Include="OpenIddict.AspNetCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 </Project>

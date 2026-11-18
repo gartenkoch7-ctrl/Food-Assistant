@@ -8,6 +8,7 @@ public static class ApplicationRegistration
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        services.AddAccountsAndHouseholds();
         return services;
     }
 }

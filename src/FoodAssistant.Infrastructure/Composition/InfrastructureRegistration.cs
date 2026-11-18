@@ -8,6 +8,8 @@ public static class InfrastructureRegistration
     public static IHostApplicationBuilder AddInfrastructure(this IHostApplicationBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
+        builder.AddPersistence();
+        builder.AddAccountsPersistence();
         return builder;
     }
 }
