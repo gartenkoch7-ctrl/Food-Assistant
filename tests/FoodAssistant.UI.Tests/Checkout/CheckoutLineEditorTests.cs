@@ -50,6 +50,32 @@ public sealed class CheckoutLineEditorTests : CheckoutTestContext
         Assert.False(edited.FromRule);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task SuggestedDate_GoesWhenTheDialogMovesItOutOfTheFreezer(bool viaRowLater)
+    {
+        var line = new CheckoutLine(AddEntry("Spinat", Guid.CreateVersion7(), Freezer.Id, Today.AddDays(300), ExpiryKindDto.BestBefore));
+        var dialog = await EditAsync(line);
+        Dialogs.WaitForAssertion(() => Assert.Contains("Lagerort", Dialogs.Markup, StringComparison.Ordinal), Timeout);
+
+        if (!viaRowLater)
+        {
+            await Dialogs.InvokeAsync(() => Dialogs.FindComponent<MudSelect<Guid?>>().Instance.ValueChanged.InvokeAsync(Fridge.Id)).WaitAsync(Timeout, Ct);
+            Assert.Empty(Dialogs.FindAll("label.fa-option input"));
+        }
+
+        await Dialogs.InvokeAsync(() => ButtonByText(Dialogs, "Speichern").Click()).WaitAsync(Timeout, Ct);
+        var edited = Assert.IsType<CheckoutLine>((await dialog.Result.WaitAsync(Timeout, Ct))!.Data);
+        if (viaRowLater)
+        {
+            // Saved untouched, the date stays a suggestion; a later move in the row still drops it.
+            edited.MoveTo(Fridge.Id, freezer: false, fromFreezer: true);
+        }
+
+        Assert.Equal(((Guid?)Fridge.Id, (DateOnly?)null, ExpiryKindDto.None), (edited.LocationId, edited.Date, edited.Kind));
+    }
+
     [Fact]
     public async Task Fridge_HasNoFreezerSwitch_AmountIsTakenOver()
     {

@@ -16,7 +16,7 @@
   <data name="Skip" xml:space="preserve"><value>Skip</value></data>
   <data name="SkipLabel" xml:space="preserve"><value>Skip {0}</value></data>
   <data name="Unskip" xml:space="preserve"><value>Add after all</value></data>
-  <data name="UnskipLabel" xml:space="preserve"><value>Add {0} after all</value></data>
+  <data name="UnskipLabel" xml:space="preserve"><value>Add after all: {0}</value></data>
   <data name="Skipped" xml:space="preserve"><value>Not added to the stock, only removed from the list.</value></data>
   <data name="AssignLabel" xml:space="preserve"><value>Product for “{0}”</value></data>
   <data name="AssignedFrom" xml:space="preserve"><value>Entry on the list: {0}</value></data>

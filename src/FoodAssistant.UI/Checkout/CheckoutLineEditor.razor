@@ -17,7 +17,7 @@
             {
                 <MudText Typo="Typo.caption" Color="Color.Error" role="alert">@Inventory["FieldError.required"]</MudText>
             }
-            <MudSelect T="Guid?" Label="@Inventory["FieldLocation"]" @bind-Value="_locationId" Required="true" Variant="Variant.Outlined">
+            <MudSelect T="Guid?" Label="@Inventory["FieldLocation"]" Value="_locationId" ValueChanged="SelectLocation" Required="true" Variant="Variant.Outlined">
                 @foreach (var location in Locations)
                 {
                     <MudSelectItem T="Guid?" Value="@location.Id">@location.Name</MudSelectItem>
@@ -92,6 +92,20 @@
         _selfFrozen = Line.SelfFrozen;
     }
 
+    // The untouched last-purchase suggestion goes visibly when the place changes between freezer and
+    // the rest: it may stem from frozen goods (or fresh ones) and must not travel to the other side.
+    private void SelectLocation(Guid? locationId)
+    {
+        var wasFreezer = IsFreezer;
+        _locationId = locationId;
+        if (wasFreezer != IsFreezer && IsUntouchedSuggestion)
+        {
+            (_date, _kind) = (null, null);
+        }
+    }
+
+    private bool IsUntouchedSuggestion => Line.Suggested && _date == Line.Date && _kind == Line.Kind;
+
     private void Save()
     {
         _quantityMissing = _quantity is null;
@@ -106,8 +120,10 @@
         edited.Quantity = _quantity!;
         if (_date is { } date)
         {
-            // Saved from the date field, the date counts as the person's own, even if it was suggested.
-            (edited.Date, edited.Kind, edited.FromRule, edited.Suggested) = (date, _kind!.Value, false, false);
+            // Only a changed date counts as the person's own; an untouched suggestion stays one, so
+            // MoveTo below still drops it when the line crosses the freezer boundary.
+            var suggested = IsUntouchedSuggestion;
+            (edited.Date, edited.Kind, edited.FromRule, edited.Suggested) = (date, _kind!.Value, false, suggested);
         }
         else if (!Line.FromRule)
         {
