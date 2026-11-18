@@ -4,6 +4,9 @@
 *.sh text eol=lf
 .githooks/* text eol=lf
 Dockerfile text eol=lf
+# Read by Linux tools on the server (Caddy, docker compose's .env parser).
+Caddyfile text eol=lf
+.env.example text eol=lf
 
 *.png binary
 *.ico binary

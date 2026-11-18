@@ -1,5 +1,7 @@
 using FoodAssistant.Application.Accounts;
 using FoodAssistant.Contracts.Accounts;
+using FoodAssistant.Server.Api.Idempotency;
+using FoodAssistant.Server.Api.RateLimiting;
 
 namespace FoodAssistant.Server.Auth;
 
@@ -10,7 +12,7 @@ internal static class SetupEndpoints
     {
         var setup = api.MapGroup("/setup").WithTags("Setup").AllowAnonymous();
         setup.MapGet("", GetStatusAsync);
-        setup.MapPost("", CompleteAsync);
+        setup.MapPost("", CompleteAsync).RequireRateLimiting(RateLimitPolicies.AuthStrict).WithoutIdempotency();
         return api;
     }
 

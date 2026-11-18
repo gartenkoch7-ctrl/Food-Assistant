@@ -12,6 +12,10 @@ wird hier eingetragen.
 | Schlüsselring (Data Protection) und Token-Schlüssel (mit dem Schlüsselring verschlüsselt; wer das Volume lesen kann, kann beide lesen) | Volume `FoodAssistant__DataProtectionPath` | dauerhaft; Verlust beendet Sitzungen |
 | Vorrat, Einkaufslisten, Rezepte | PostgreSQL (Server) | bis Haushalt gelöscht + 30 Tage |
 | Offline-Cache | SQLite auf dem Handy | bis Abmeldung/Haushaltswechsel |
+| Sitzungs-Cookie `__Host-FoodAssistant.Session` (HttpOnly, Secure, SameSite=Strict) und Antiforgery-Cookie | Browser | Sitzungs-Cookie 14 Tage gleitend (persistent), Antiforgery-Cookie bis Browserende; beide bis Abmeldung (ADR-0003) |
+| Sprachwahl: Cookie `.AspNetCore.Culture` und `localStorage` `foodassistant.language` | Browser | bis der Nutzer sie löscht; nur der Sprachcode, technisch notwendig |
+| Farbschema: `localStorage` `foodassistant.theme` | Browser | bis der Nutzer es löscht; nur `light`/`dark`/`system`/Kontrast |
+| Idempotenz-Speicher (Fingerprint der Anfrage, gespeicherte Antwort) | Arbeitsspeicher des Servers | 24 h, geht beim Neustart verloren (ADR-0004) |
 | Aktivitätsverlauf | PostgreSQL | 90 Tage |
 | Sicherheitsprotokoll | PostgreSQL | 180 Tage |
 | Backups | Volume des Self-Hosters | Standard 14 Stück (ADR-0007) |

@@ -1,6 +1,8 @@
 using FoodAssistant.Application.Diagnostics;
 using FoodAssistant.Contracts.Accounts;
 using FoodAssistant.Infrastructure.Accounts;
+using FoodAssistant.Server.Api.Idempotency;
+using FoodAssistant.Server.Api.RateLimiting;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
@@ -17,8 +19,9 @@ internal static class LoginEndpoints
     {
         var auth = api.MapGroup("/auth").WithTags("Auth");
         auth.MapGet("/antiforgery", GetAntiforgeryToken).AllowAnonymous();
-        auth.MapPost("/login", LoginAsync).AllowAnonymous().AddEndpointFilter(new CookieAntiforgeryFilter(always: true));
-        auth.MapPost("/logout", LogoutAsync).RequireAuthorization().AddEndpointFilter(new CookieAntiforgeryFilter(always: true));
+        auth.MapPost("/login", LoginAsync).AllowAnonymous().RequireRateLimiting(RateLimitPolicies.AuthStrict).WithoutIdempotency()
+            .AddEndpointFilter(new CookieAntiforgeryFilter(always: true));
+        auth.MapPost("/logout", LogoutAsync).RequireAuthorization().WithoutIdempotency().AddEndpointFilter(new CookieAntiforgeryFilter(always: true));
         return api;
     }
 

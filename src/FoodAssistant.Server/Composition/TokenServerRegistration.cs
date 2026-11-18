@@ -1,3 +1,4 @@
+using FoodAssistant.Server.Api.Hosting;
 using FoodAssistant.Server.Auth;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.IdentityModel.Tokens;
@@ -19,15 +20,13 @@ public static class TokenServerRegistration
     {
         ArgumentNullException.ThrowIfNull(builder);
         var services = builder.Services;
-        var isDevelopment = builder.Environment.IsDevelopment();
-        var publicUrl = builder.Configuration[PublicUrlKey];
-        if (!isDevelopment && !Uri.TryCreate(publicUrl, UriKind.Absolute, out _))
-        {
-            // Without a fixed issuer it would follow the Host header, and tokens would break as soon
-            // as the app reaches the server under another name (ADR-0007: the public URL is mandatory).
-            throw new InvalidOperationException(
-                "FoodAssistant__PublicUrl is not set or not an absolute URL (e.g. https://food.example.org).");
-        }
+        var isDevelopment = builder.Environment.IsDevelopment()
+            || builder.Environment.IsEnvironment(HostingOptions.TestingEnvironment);
+
+        // Without a fixed issuer it would follow the Host header, and tokens would break as soon as
+        // the app reaches the server under another name. Outside development the public URL is
+        // mandatory (ADR-0007); HostingOptionsValidator stops the start with a clear message.
+        Uri.TryCreate(builder.Configuration[PublicUrlKey], UriKind.Absolute, out var issuer);
 
         services.AddOpenIddict()
             .AddServer(options =>
@@ -47,9 +46,9 @@ public static class TokenServerRegistration
                 options.SetAccessTokenLifetime(TimeSpan.FromMinutes(15));
                 options.SetRefreshTokenLifetime(TimeSpan.FromDays(90));
 
-                if (!string.IsNullOrWhiteSpace(publicUrl))
+                if (issuer is not null)
                 {
-                    options.SetIssuer(new Uri(publicUrl, UriKind.Absolute));
+                    options.SetIssuer(issuer);
                 }
 
                 if (isDevelopment)

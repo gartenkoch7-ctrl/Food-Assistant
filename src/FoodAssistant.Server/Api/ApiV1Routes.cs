@@ -1,3 +1,6 @@
+using FoodAssistant.Server.Api.Idempotency;
+using FoodAssistant.Server.Api.Info;
+using FoodAssistant.Server.Api.RateLimiting;
 using FoodAssistant.Server.Auth;
 
 namespace FoodAssistant.Server.Api;
@@ -8,8 +11,15 @@ public static class ApiV1Routes
     public static RouteGroupBuilder MapApiV1(this IEndpointRouteBuilder endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-        var api = endpoints.MapGroup("/api/v1");
-        api.MapAccountEndpoints();
-        return api;
+
+        // Public like the API itself (open source), but rate limited: it is generated per request.
+        endpoints.MapOpenApi().RequireRateLimiting(RateLimitPolicies.Api);
+
+        var group = endpoints.MapGroup("/api/v1")
+            .RequireRateLimiting(RateLimitPolicies.Api)
+            .WithIdempotency();
+        group.MapInfoEndpoints();
+        group.MapAccountEndpoints();
+        return group;
     }
 }

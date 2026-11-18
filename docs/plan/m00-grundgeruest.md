@@ -55,12 +55,29 @@ Schritt 0 ──┬── A Architektur + CI ─────────┐
 B → A → C → E → D. Nach jedem Merge: Build, Tests, `check-file-length.ps1`.
 
 ## Akzeptanz M0
-- [ ] `dotnet build` ohne Warnungen, `dotnet test` grün (inkl. Testcontainers mit Docker)
-- [ ] Architektur- und Telemetrie-Konventionstests aktiv
-- [ ] `docker compose up` startet Server + PostgreSQL, `/health` und `/api/v1/info` antworten
-- [ ] Einrichtung: erstes Konto + Haushalt anlegen, Einladung erzeugen und annehmen (API-Tests)
-- [ ] Web-App zeigt App-Shell im Theme mit Navigation, DE/EN
-- [ ] Gesamt-Review nach §9 ohne offene Befunde
+- [x] `dotnet build` ohne Warnungen, `dotnet test` grün (inkl. Testcontainers mit Docker) – 507 Tests
+- [x] Architektur- und Telemetrie-Konventionstests aktiv
+- [x] `docker compose up` startet Server + PostgreSQL, `/health` und `/api/v1/info` antworten
+- [x] Einrichtung: erstes Konto + Haushalt anlegen, Einladung erzeugen und annehmen (API-Tests)
+- [x] Web-App zeigt App-Shell im Theme mit Navigation, DE/EN
+- [x] Gesamt-Review nach §9 ohne offene Befunde (2 Runden)
+
+## Integration (steuernde Sitzung)
+- Fehlerantworten von D laufen über `ApiProblems` (C); `ValidationFailed` nimmt einen Feature-Code.
+- Rate-Limiter zwischen Authentifizierung und Autorisierung (`api` pro Person); `auth-strict` auf
+  Login, Einrichtung, Einladung annehmen; eigener Limiter pro Netz für `/connect/*` und
+  `/.well-known/*` **vor** der Authentifizierung, weil OpenIddict dort selbst antwortet.
+- Idempotenz: `WithoutIdempotency()` für Login, Logout, Einrichtung, Einladung annehmen (Wiederholung
+  käme ohne Cookie, Fingerprint enthielte das Passwort); Antiforgery-Ablehnungen werden nicht gespeichert.
+- `PublicUrl` prüft nur noch `HostingOptionsValidator`; Umgebung `Testing` gilt wie `Development`.
+- API-Tests (C) brauchen jetzt die Datenbank (`PostgresContainerFixture`), weil der Server beim Start migriert.
 
 ## Rückblick
-(nach Abschluss: Einstufungen zu hoch/zu niedrig)
+- **C (Opus/high) zu breit geschnitten:** API-Konventionen, Telemetrie und Docker in einer Spur, 14
+  Review-Runden, ca. 2,5 h. Künftig Docker/Deploy als eigene Sonnet-Spur abtrennen und
+  Review-Runden bei reinen Kompromissfragen früher an die steuernde Sitzung zurückgeben.
+- **D (Opus/high) passend:** Auth/Datenmodell brauchten die Stufe.
+- **B (Opus/high) eher zu hoch:** Domain-Logik nach klaren Regeln hätte Sonnet geschafft.
+- **A, E (Sonnet) passend.**
+- **Nahtstellen unterschätzt:** Middleware-Reihenfolge, Rate-Limits und Idempotenz zwischen C und D
+  ergaben die meisten Review-Befunde. Solche Querschnittsthemen gehören in Schritt 0 oder in eine Spur.

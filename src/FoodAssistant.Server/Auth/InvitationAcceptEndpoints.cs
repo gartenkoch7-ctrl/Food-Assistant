@@ -1,5 +1,7 @@
 using FoodAssistant.Application.Accounts;
 using FoodAssistant.Contracts.Accounts;
+using FoodAssistant.Server.Api.Idempotency;
+using FoodAssistant.Server.Api.RateLimiting;
 
 namespace FoodAssistant.Server.Auth;
 
@@ -15,6 +17,8 @@ internal static class InvitationAcceptEndpoints
         api.MapPost("/invitations/accept", AcceptAsync)
             .WithTags("Invitations")
             .AllowAnonymous()
+            .RequireRateLimiting(RateLimitPolicies.AuthStrict)
+            .WithoutIdempotency()
             .AddEndpointFilter(new CookieAntiforgeryFilter(always: false));
         return api;
     }

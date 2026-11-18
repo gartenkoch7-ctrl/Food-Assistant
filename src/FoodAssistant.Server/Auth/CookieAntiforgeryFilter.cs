@@ -1,4 +1,5 @@
 using FoodAssistant.Contracts.Accounts;
+using FoodAssistant.Server.Api.Idempotency;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Identity;
 
@@ -28,6 +29,7 @@ internal sealed class CookieAntiforgeryFilter(bool always) : IEndpointFilter
             {
                 var logger = httpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(AuthLog.Category);
                 AuthLog.AntiforgeryRejected(logger);
+                IdempotencyExclusions.DoNotStoreResponse(httpContext);
                 return ProblemResults.Problem(
                     StatusCodes.Status400BadRequest,
                     AccountErrorCodes.AntiforgeryInvalid,

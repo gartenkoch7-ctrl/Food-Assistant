@@ -17,7 +17,9 @@ public static class AuthRegistration
     public static WebApplication UseAuth(this WebApplication app)
     {
         ArgumentNullException.ThrowIfNull(app);
+        app.UseOpenIdRateLimiting();
         app.UseAuthentication();
+        app.UseApiRateLimiting();
         app.UseAuthorization();
 
         // The OpenID endpoints live outside /api/v1; mapped here so Program.cs stays untouched.
