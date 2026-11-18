@@ -35,6 +35,10 @@ else
             @(_staleCount == 1 ? T["StaleOne"].Value : string.Format(CultureInfo.CurrentCulture, T["Stale"].Value, _staleCount))
         </MudAlert>
     }
+    @if (_locationsChanged)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" role="alert">@T["Error.common.conflict"]</MudAlert>
+    }
     @if (_checkLines)
     {
         <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" role="alert">@T["CheckLines"]</MudAlert>

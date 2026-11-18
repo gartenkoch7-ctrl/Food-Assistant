@@ -77,6 +77,23 @@ public sealed class CheckoutLineEditorTests : CheckoutTestContext
     }
 
     [Fact]
+    public async Task DroppedSuggestion_TypedAgain_CountsAsThePersonsOwnDate()
+    {
+        var line = new CheckoutLine(AddEntry("Milch", Guid.CreateVersion7(), Fridge.Id, Today.AddDays(7), ExpiryKindDto.BestBefore));
+        var dialog = await EditAsync(line);
+        Dialogs.WaitForAssertion(() => Assert.Contains("Lagerort", Dialogs.Markup, StringComparison.Ordinal), Timeout);
+
+        await Dialogs.InvokeAsync(() => Dialogs.FindComponent<MudSelect<Guid?>>().Instance.ValueChanged.InvokeAsync(Freezer.Id)).WaitAsync(Timeout, Ct);
+        await Dialogs.InvokeAsync(() => Dialogs.Find(".fa-date-field input").Change("25.11.2026")).WaitAsync(Timeout, Ct);
+        await Dialogs.InvokeAsync(() => Dialogs.FindAll("label.fa-option input")[0].Change(true)).WaitAsync(Timeout, Ct);
+        await Dialogs.InvokeAsync(() => ButtonByText(Dialogs, "Speichern").Click()).WaitAsync(Timeout, Ct);
+
+        var edited = Assert.IsType<CheckoutLine>((await dialog.Result.WaitAsync(Timeout, Ct))!.Data);
+        var request = edited.ToRequest();
+        Assert.Equal(((Guid?)Freezer.Id, (DateOnly?)Today.AddDays(7), ExpiryKindDto.BestBefore, false), (request.StorageLocationId, request.ExpiresOn, request.ExpiryKind, edited.Suggested));
+    }
+
+    [Fact]
     public async Task Fridge_HasNoFreezerSwitch_AmountIsTakenOver()
     {
         var line = new CheckoutLine(AddEntry("Milch", Guid.CreateVersion7(), Fridge.Id, Today.AddDays(7), ExpiryKindDto.BestBefore));

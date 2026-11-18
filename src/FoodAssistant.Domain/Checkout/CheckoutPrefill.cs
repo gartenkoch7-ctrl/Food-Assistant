@@ -49,7 +49,10 @@ public static class CheckoutPrefill
         DateOnly today)
     {
         ArgumentNullException.ThrowIfNull(frozenRule);
-        if (lastPurchase is { } last && last.Kind != ExpiryKind.None)
+        // A stored value outside the remembered range (negative, or a date past DateOnly.MaxValue) is no suggestion.
+        if (lastPurchase is { } last
+            && last.Kind != ExpiryKind.None
+            && last.Days is >= 0 and <= PurchasedBatch.MaxRememberedDays)
         {
             return new ExpiryProposal(today.AddDays(last.Days), last.Kind, FromRule: false);
         }

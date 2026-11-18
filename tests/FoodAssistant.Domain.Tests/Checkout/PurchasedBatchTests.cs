@@ -69,6 +69,16 @@ public sealed class PurchasedBatchTests
     public void ShelfLifeOf_DateInThePast_IsNull() =>
         Assert.Null(PurchasedBatch.ShelfLifeOf(Create(StorageType.Chilled, Today.AddDays(-1), ExpiryKind.BestBefore), Today));
 
+    [Theory]
+    [InlineData(PurchasedBatch.MaxRememberedDays, true)]
+    [InlineData(PurchasedBatch.MaxRememberedDays + 1, false)]
+    public void ShelfLifeOf_RemembersAtMostTenYears(int days, bool remembered) =>
+        Assert.Equal(remembered, PurchasedBatch.ShelfLifeOf(Create(StorageType.Ambient, Today.AddDays(days), ExpiryKind.BestBefore), Today) is not null);
+
+    [Fact]
+    public void ShelfLifeOf_NeverExpiresDate_IsNotRemembered() =>
+        Assert.Null(PurchasedBatch.ShelfLifeOf(Create(StorageType.Ambient, DateOnly.MaxValue, ExpiryKind.BestBefore), Today));
+
     [Fact]
     public void ShelfLifeOf_DateToday_IsZeroDays() =>
         Assert.Equal(0, PurchasedBatch.ShelfLifeOf(Create(StorageType.Ambient, Today, ExpiryKind.BestBefore), Today)!.Days);

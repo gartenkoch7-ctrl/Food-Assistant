@@ -57,6 +57,7 @@
     // No preselection for a newly entered date (safety, as when adding a batch); a suggested one keeps its kind.
     private ExpiryKindDto? _kind;
     private bool _selfFrozen;
+    private bool _suggestionDropped;
     private bool _quantityMissing;
     private bool _kindMissing;
 
@@ -100,11 +101,12 @@
         _locationId = locationId;
         if (wasFreezer != IsFreezer && IsUntouchedSuggestion)
         {
-            (_date, _kind) = (null, null);
+            (_date, _kind, _suggestionDropped) = (null, null, true);
         }
     }
 
-    private bool IsUntouchedSuggestion => Line.Suggested && _date == Line.Date && _kind == Line.Kind;
+    // Once dropped, a date typed in again is the person's own, even if it equals the old suggestion.
+    private bool IsUntouchedSuggestion => Line.Suggested && !_suggestionDropped && _date == Line.Date && _kind == Line.Kind;
 
     private void Save()
     {

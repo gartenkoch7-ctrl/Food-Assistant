@@ -8,6 +8,12 @@ namespace FoodAssistant.Domain.Checkout;
 public static class PurchasedBatch
 {
     /// <summary>
+    /// Longest shelf life remembered for the next purchase (10 years, like the shelf-life rules). A
+    /// "never expires" date such as 31.12.9999 would otherwise be suggested again and overflow.
+    /// </summary>
+    public const int MaxRememberedDays = 3650;
+
+    /// <summary>
     /// Creates the batch. In a freezer (F5): with a package date and not <paramref name="selfFrozen"/>
     /// it is bought frozen food (sealed, package date applies); otherwise it is frozen at home today
     /// (rule "frozen", the package date rests).
@@ -47,7 +53,8 @@ public static class PurchasedBatch
 
     /// <summary>
     /// Shelf life to remember for the next purchase: only a printed date the person entered counts,
-    /// never a rule-derived one (frozen at home), and never one already past.
+    /// never a rule-derived one (frozen at home), never one already past and none beyond
+    /// <see cref="MaxRememberedDays"/>.
     /// </summary>
     /// <returns>Days from <paramref name="today"/> to the printed date with its kind, or null.</returns>
     public static LastPurchase? ShelfLifeOf(StockBatch batch, DateOnly today)
@@ -61,6 +68,6 @@ public static class PurchasedBatch
         }
 
         var days = date.DayNumber - today.DayNumber;
-        return days >= 0 ? new LastPurchase(days, batch.PackageExpiryKind) : null;
+        return days is >= 0 and <= MaxRememberedDays ? new LastPurchase(days, batch.PackageExpiryKind) : null;
     }
 }

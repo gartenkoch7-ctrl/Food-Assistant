@@ -91,7 +91,8 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
   der Regel schickt der Client **nicht** zurück (ohne Datum = selbst eingefroren); die Art eines
   eingetragenen Datums ist Pflicht (keine Vorbelegung).
 - **Letzter Kauf** wird nur aus einem vom Nutzer eingetragenen Packungsdatum gelernt (Charge bleibt
-  verschlossen, Datum nicht in der Vergangenheit), nie aus einem Regeldatum.
+  verschlossen, Datum nicht in der Vergangenheit, höchstens 3650 Tage – „läuft nie ab“ wie 31.12.9999
+  wird nicht gelernt), nie aus einem Regeldatum.
 - **Eine Transaktion** mit Änderungsprotokoll-Sperre des Haushalts zuerst. Unter der Sperre werden alle
   Einträge erneut geprüft (noch auf der Liste, abgehakt, nicht gelöscht, gleiche `Version`) und die
   Produkte (nicht archiviert). Was nicht passt, wird nicht verarbeitet und als `staleItemIds` gemeldet –
@@ -108,8 +109,11 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
   neues Produkt über den Katalog an) oder „Überspringen“; ein zugeordnetes Produkt übernimmt bei
   „1 Stück“ ohne Menge im Eintrag (`quantityFromEntry = false`) seine Standardeinheit und den ersten Ort
   vom Lagertyp seiner Kategorie. Meldet der Server `lines[i].productId` (Produkt inzwischen archiviert),
-  bietet die Zeile wieder den `ProductPicker` an. Auf 409 `common.conflict` (Lagerort geändert) lädt die
-  Seite Vorschlag und Lagerorte neu. Ein Datum, das der
+  bietet die Zeile wieder den `ProductPicker` an. Vor dem Senden liest die Seite die Lagerorte neu: Hat
+  einer seit dem Laden zwischen Gefrierort und anderem gewechselt, werden die Zeilen dort „umgezogen“
+  (nicht selbst eingetragene Daten fallen weg) und erst angezeigt statt gesendet. Auf 409
+  `common.conflict` (Lagerort zwischen Planung und Speichern geändert) lädt die Seite Vorschlag und
+  Lagerorte neu. Ein Datum, das der
   Nutzer nicht selbst eingetragen hat (Regel „gefroren“, letzter Kauf), fällt weg, sobald die Zeile
   zwischen Gefrierort und anderem Ort wechselt – ein Gefrierdatum darf nie im Kühlschrank landen.
   **Offen:** Der Server merkt sich beim letzten Kauf nicht den Lagertyp; wurde zuletzt TK-Ware gekauft,

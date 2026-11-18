@@ -169,6 +169,24 @@ public sealed class CheckoutPageTests : CheckoutTestContext
     }
 
     [Fact]
+    public async Task LocationRetypedSinceLoading_DropsTheSuggestion_AndAsksToCheckFirst()
+    {
+        AddEntry("Spinat", Guid.CreateVersion7(), Fridge.Id, Today.AddDays(7), ExpiryKindDto.BestBefore);
+        var cut = RenderPage();
+        Catalog.Locations[Catalog.Locations.IndexOf(Fridge)] = Fridge with { Type = StorageTypeDto.Frozen };
+
+        await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
+
+        Assert.Empty(CheckoutClient.Completions);
+        Assert.Contains("Lagerorte haben sich inzwischen geändert", cut.Markup, StringComparison.Ordinal);
+        Assert.DoesNotContain("25.11.2026", Row(cut, "Spinat").TextContent, StringComparison.Ordinal);
+
+        await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
+        var line = Assert.Single(Assert.Single(CheckoutClient.Completions).Request.Lines);
+        Assert.Equal(((DateOnly?)null, ExpiryKindDto.None), (line.ExpiresOn, line.ExpiryKind));
+    }
+
+    [Fact]
     public async Task ProductArchivedMeanwhile_OffersThePickerAgain()
     {
         AddEntry("Butter", Guid.CreateVersion7(), Fridge.Id);

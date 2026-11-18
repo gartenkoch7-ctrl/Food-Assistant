@@ -48,6 +48,13 @@ public sealed class CheckoutPrefillTests
         Assert.Equal(new ExpiryProposal(Today.AddDays(7), ExpiryKind.BestBefore, false), proposal);
     }
 
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(PurchasedBatch.MaxRememberedDays + 1)]
+    [InlineData(int.MaxValue)]
+    public void Propose_LastPurchaseOutOfRange_IsNoSuggestion(int days) =>
+        Assert.Equal(ExpiryProposal.None, CheckoutPrefill.Propose(StorageType.Chilled, new LastPurchase(days, ExpiryKind.BestBefore), FrozenRule, Today));
+
     [Fact]
     public void Propose_FreezerWithoutLastPurchase_RuleFromTodayAsUseBy() =>
         Assert.Equal(

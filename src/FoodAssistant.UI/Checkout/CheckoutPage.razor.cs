@@ -26,6 +26,7 @@ public sealed partial class CheckoutPage
     private bool _loaded;
     private bool _saving;
     private bool _checkLines;
+    private bool _locationsChanged;
     private int _staleCount;
 
     // The key stays the same while the same request is repeated after a failure without answer, so
@@ -91,6 +92,33 @@ public sealed partial class CheckoutPage
         }
     }
 
+    // Suggestions were made for the location types when the page loaded. A location switched between
+    // fridge and freezer since then would carry a freezer date into the fridge (or the reverse), so the
+    // lines are moved "across" again (MoveTo drops dates the person did not enter) and shown first.
+    // The server checks the rest of the way (planning to commit) itself.
+    private async Task<bool> LocationsRetypedAsync(Guid household)
+    {
+        if ((await Catalog.ListStorageLocationsAsync(household, CancellationToken.None)).Value is not { } current)
+        {
+            return false;
+        }
+
+        var changed = false;
+        foreach (var line in _lines.Where(l => !l.Skip))
+        {
+            var before = _locations.FirstOrDefault(l => l.Id == line.LocationId)?.Type;
+            var after = current.FirstOrDefault(l => l.Id == line.LocationId)?.Type;
+            if (before is { } was && after is { } now && was != now)
+            {
+                line.MoveTo(line.LocationId, now == StorageTypeDto.Frozen, was == StorageTypeDto.Frozen);
+                changed = true;
+            }
+        }
+
+        _locations = current;
+        return changed;
+    }
+
     private async Task SubmitAsync()
     {
         if (_saving || Session.ActiveHouseholdId is not { } household)
@@ -100,7 +128,8 @@ public sealed partial class CheckoutPage
 
         _rowErrors = CheckoutErrors.Missing(_lines, T, Inventory);
         _checkLines = _rowErrors.Count > 0;
-        if (_checkLines)
+        _locationsChanged = !_checkLines && await LocationsRetypedAsync(household);
+        if (_checkLines || _locationsChanged)
         {
             return;
         }
