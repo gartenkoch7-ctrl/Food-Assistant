@@ -188,6 +188,9 @@ public sealed class SessionState : IDisposable
     {
         Me = null;
         ActiveHousehold = null;
+
+        // The throttle only breaks a "/me 200, data 401" loop; a new sign-in starts fresh.
+        _lastExpiryReload = null;
         await _live.StopAsync().ConfigureAwait(false);
         return status;
     }

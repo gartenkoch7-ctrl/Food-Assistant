@@ -17,6 +17,12 @@ public interface ILiveUpdates
 
     LiveConnectionState State { get; }
 
+    /// <summary>
+    /// Begins connecting and returns quickly. Contract (SessionState calls it while holding its
+    /// transition lock): never throws, never waits for the connection handshake to finish and never
+    /// waits for <see cref="Changed"/>/<see cref="Resynced"/> handlers; connection problems are
+    /// reported through <see cref="State"/> and <see cref="StateChanged"/>.
+    /// </summary>
     Task StartAsync(Guid householdId, CancellationToken cancellationToken);
 
     Task StopAsync();

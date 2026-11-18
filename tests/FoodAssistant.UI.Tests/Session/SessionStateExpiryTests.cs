@@ -84,6 +84,23 @@ public sealed class SessionStateExpiryTests
     }
 
     [Fact]
+    public async Task NewSignInAfterExpiry_ReactsToTheNext401Immediately()
+    {
+        var session = await SignedInAsync();
+        var me = _accounts.Me;
+        _accounts.Me = null;
+        _expiry.Notify();
+        Assert.Equal(SessionStatus.SignedOut, session.Status);
+
+        _accounts.Me = me;
+        await session.LoadAsync(Ct);
+        _accounts.Me = null;
+        _expiry.Notify();
+
+        Assert.Equal(SessionStatus.SignedOut, session.Status);
+    }
+
+    [Fact]
     public async Task FailingReload_IsLogged_AndKeepsTheSession()
     {
         var session = await SignedInAsync();
