@@ -12,6 +12,7 @@ wird hier eingetragen.
 | Schlüsselring (Data Protection) und Token-Schlüssel (mit dem Schlüsselring verschlüsselt; wer das Volume lesen kann, kann beide lesen) | Volume `FoodAssistant__DataProtectionPath` | dauerhaft; Verlust beendet Sitzungen |
 | Vorrat, Einkaufslisten, Rezepte | PostgreSQL (Server) | bis Haushalt gelöscht + 30 Tage |
 | Offline-Cache | SQLite auf dem Handy | bis Abmeldung/Haushaltswechsel |
+| Open-Food-Facts-Cache (Barcode + öffentliche Produktdaten, ohne Haushalts- oder Personenbezug; serverweit) | PostgreSQL (Server) | 30 Tage (gefunden) bzw. 2 Tage (nicht gefunden), danach bei Bedarf erneuert; Einträge, die 90 Tage niemand abgefragt hat, werden beim nächsten Schreiben gelöscht; gehört nicht in den Haushaltsexport |
 | Sitzungs-Cookie `__Host-FoodAssistant.Session` (HttpOnly, Secure, SameSite=Strict) und Antiforgery-Cookie | Browser | Sitzungs-Cookie 14 Tage gleitend (persistent), Antiforgery-Cookie bis Browserende; beide bis Abmeldung (ADR-0003) |
 | Sprachwahl: Cookie `.AspNetCore.Culture` und `localStorage` `foodassistant.language` | Browser | bis der Nutzer sie löscht; nur der Sprachcode, technisch notwendig |
 | Farbschema: `localStorage` `foodassistant.theme` | Browser | bis der Nutzer es löscht; nur `light`/`dark`/`system`/Kontrast |
@@ -26,7 +27,7 @@ wird hier eingetragen.
 |---|---|---|
 | KI-Anbieter (Cloud) | nur wenn konfiguriert und Funktion genutzt | nur nötige Fachdaten (z. B. Vorratsnamen, Mengen, Rezeptwunsch), keine Personendaten |
 | Ollama | wie oben, bleibt im eigenen Netz | wie oben |
-| Open Food Facts | Barcode-Abfrage unbekannter Produkte | nur der Barcode |
+| Open Food Facts | Barcode-Abfrage unbekannter Produkte, nur durch den Server; abschaltbar mit `FoodAssistant__OpenFoodFacts__Enabled=false` | nur der Barcode; der `User-Agent` nennt App-Version und das Projekt als Kontakt (kein Nutzerbezug); die IP des Servers ist für Open Food Facts sichtbar |
 | ntfy | wenn konfiguriert | Text der Benachrichtigung |
 | Web-Push-Dienst des Browsers | Benachrichtigungen im Web | verschlüsselter Inhalt der Benachrichtigung |
 | OTLP-Ziel | wenn konfiguriert | Telemetrie ohne Nutzerinhalte |

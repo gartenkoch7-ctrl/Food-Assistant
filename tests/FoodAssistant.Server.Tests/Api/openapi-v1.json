@@ -352,6 +352,35 @@
           }
         }
       }
+    },
+    "/api/v1/households/{householdId}/food-facts/{barcode}": {
+      "get": {
+        "tags": [
+          "FoodFacts"
+        ],
+        "parameters": [
+          {
+            "name": "barcode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FoodFactsProductDto"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -437,6 +466,60 @@
           }
         }
       },
+      "FoodFactsProductDto": {
+        "required": [
+          "barcode",
+          "name",
+          "brand",
+          "quantityText",
+          "packageQuantity",
+          "suggestedCategoryKey",
+          "stale"
+        ],
+        "type": "object",
+        "properties": {
+          "barcode": {
+            "type": "string"
+          },
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "brand": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "quantityText": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "packageQuantity": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/QuantityDto"
+              }
+            ]
+          },
+          "suggestedCategoryKey": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "stale": {
+            "type": "boolean"
+          }
+        }
+      },
       "HouseholdRole": {
         "enum": [
           "restricted",
@@ -455,6 +538,26 @@
             "type": "string"
           },
           "password": {
+            "type": "string"
+          }
+        }
+      },
+      "QuantityDto": {
+        "required": [
+          "value",
+          "unit"
+        ],
+        "type": "object",
+        "properties": {
+          "value": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d\u002B)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "unit": {
             "type": "string"
           }
         }
@@ -543,6 +646,9 @@
     },
     {
       "name": "Members"
+    },
+    {
+      "name": "FoodFacts"
     }
   ]
 }
