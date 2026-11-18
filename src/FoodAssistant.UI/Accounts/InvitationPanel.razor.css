@@ -1,0 +1,46 @@
+.fa-household-section {
+    margin-top: var(--fa-space-8);
+}
+
+.fa-invitation-create {
+    margin-top: var(--fa-space-3);
+}
+
+.fa-invitation-result {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--fa-space-3);
+    max-width: 28rem;
+    margin-top: var(--fa-space-4);
+    padding: var(--fa-space-4);
+    background: var(--fa-surface-raised);
+    border: 1px solid var(--fa-line);
+    border-radius: var(--fa-radius-md);
+}
+
+.fa-invitation-result ::deep .mud-input-control {
+    width: 100%;
+}
+
+.fa-invitation-note {
+    margin: 0;
+    color: var(--fa-ink-muted);
+}
+
+.fa-invitation-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.fa-invitation {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--fa-space-3);
+    min-height: var(--fa-row-height);
+    padding: var(--fa-space-2) 0;
+    border-bottom: 1px solid var(--fa-line);
+}

@@ -7,9 +7,9 @@ Vorlauf „läuft bald ab“). ADR-0002, ADR-0003. Anmeldung/Abmelden liefert S0
 Branch `feat/m01-k-accounts-ui` · Pakete: K1 → K2.
 
 ## Aufgaben
-- [ ] Bekannte Lücke aus Review S0 (bewusst offen): Haushaltswechsel während eines 401-Neuladens kann den alten Haushalt wieder aktivieren (`SessionState.SelectHouseholdAsync` erhöht die Generation nicht). Beim Bau der Haushaltsauswahl lösen: Speicher erst innerhalb des Übergangs lesen.
+- [x] Bekannte Lücke aus Review S0 (bewusst offen): Haushaltswechsel während eines 401-Neuladens kann den alten Haushalt wieder aktivieren (`SessionState.SelectHouseholdAsync` erhöht die Generation nicht). Beim Bau der Haushaltsauswahl lösen: Speicher erst innerhalb des Übergangs lesen.
 - [x] K1 Server: Haushaltseinstellungen lesen/ändern
-- [ ] K2 Client und UI: Einrichtung, Einladung annehmen, Haushalt & Mitglieder, Einladungen mit Link/QR
+- [x] K2 Client und UI: Einrichtung, Einladung annehmen, Haushalt & Mitglieder, Einladungen mit Link/QR
 
 ## Detailplan
 

@@ -111,6 +111,7 @@ Rest frei für weitere API-Konventionen.
 | `NetworkError` / 4010 | Log, Debug | Client | API-Aufruf ohne Antwort fehlgeschlagen (auch Zeitüberschreitung des HttpClient); nur HTTP-Methode, nie Pfad/Query | `Method`, Exception |
 | `InvalidResponse` / 4011 | Log, Warning | Client | Erfolgsantwort der API mit unlesbarem JSON-Körper (z. B. HTML eines Proxys); nur HTTP-Methode, ohne Exception (Meldung kann Teile des Körpers zitieren) | `Method` |
 | `ExpiryReloadFailed` / 4200 | Log, Warning | UI – Sitzung | Neuladen der Sitzung nach einer 401-Antwort eines Datenaufrufs ist mit einer Exception gescheitert (das Neuladen läuft ohne Aufrufer; höchstens einmal je 30 s) | Exception |
+| `ClipboardUnavailable` / 4210 | Log, Debug | UI – Konten | Einladungslink konnte nicht in die Zwischenablage kopiert werden (Berechtigung, kein sicherer Kontext); nur die Exception, nie Link oder Token | Exception |
 
 ## Abläufe (Activities)
 

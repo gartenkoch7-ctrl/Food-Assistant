@@ -1,0 +1,13 @@
+.fa-qr {
+    display: inline-block;
+    max-width: 16rem;
+    padding: var(--fa-space-2);
+    background: #ffffff;
+    border-radius: var(--fa-radius-sm, 8px);
+}
+
+.fa-qr ::deep svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}

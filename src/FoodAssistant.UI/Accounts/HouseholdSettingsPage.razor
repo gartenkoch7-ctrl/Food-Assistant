@@ -1,0 +1,34 @@
+@page "/settings/household"
+@implements IDisposable
+@inject SessionState Session
+@inject IStringLocalizer<AccountsText> T
+
+<PageTitle>@T["HouseholdTitle"] – @AppInfo.Name</PageTitle>
+
+<h1>@T["HouseholdTitle"]</h1>
+
+@if (Session.ActiveHouseholdId is { } householdId)
+{
+    <HouseholdSwitcher />
+
+    @* Keyed by household: switching starts every section afresh instead of showing the previous household's data. *@
+    <div @key="householdId">
+        <HouseholdSettingsForm HouseholdId="householdId" IsOwner="Session.IsOwner" />
+        @if (Session.CanEdit)
+        {
+            <MemberList HouseholdId="householdId" IsOwner="Session.IsOwner" />
+        }
+        @if (Session.IsOwner)
+        {
+            <InvitationPanel HouseholdId="householdId" />
+        }
+    </div>
+}
+
+@code {
+    protected override void OnInitialized() => Session.Changed += OnSessionChanged;
+
+    private void OnSessionChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Session.Changed -= OnSessionChanged;
+}

@@ -1,0 +1,32 @@
+@using QRCoder
+
+@* Always dark on light, in every theme: scanners need that contrast. The text alternative is the label. *@
+<div class="fa-qr" role="img" aria-label="@Label">@_svg</div>
+
+@code {
+    private MarkupString _svg;
+    private string? _renderedText;
+
+    /// <summary>What the code contains (the invitation link).</summary>
+    [Parameter, EditorRequired]
+    public string Text { get; set; } = string.Empty;
+
+    /// <summary>Text alternative; says where the same information is available as text.</summary>
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        if (_renderedText == Text)
+        {
+            return;
+        }
+
+        // The SVG comes from our own generator and contains only drawing commands, never the text itself.
+        using var generator = new QRCodeGenerator();
+        using var data = generator.CreateQrCode(Text, QRCodeGenerator.ECCLevel.M);
+        using var code = new SvgQRCode(data);
+        _svg = new MarkupString(code.GetGraphic(4));
+        _renderedText = Text;
+    }
+}

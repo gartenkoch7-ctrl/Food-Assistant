@@ -1,0 +1,55 @@
+@implements IDisposable
+@inject SessionState Session
+@inject ILiveAnnouncer Announcer
+@inject IStringLocalizer<AccountsText> T
+
+@* Only for people in several households. Arrow keys move through the radio group without leaving the
+   page; the switch itself is a separate button, so nothing changes by accident (WCAG 3.2.2). *@
+@if (Session.Me is { Households.Count: > 1 } me)
+{
+    <section class="fa-switcher" aria-labelledby="@_headingId">
+        <h2 id="@_headingId">@T["SwitcherHeading"]</h2>
+        <OptionGroup TValue="Guid"
+                     Legend="@T["SwitcherLegend"]"
+                     Options="Options(me)"
+                     Value="_pending"
+                     ValueChanged="Select" />
+        <MudButton Class="fa-switcher-apply" Variant="Variant.Filled" Color="Color.Primary"
+                   Disabled="@(_pending == Session.ActiveHouseholdId)" OnClick="SwitchAsync">@T["SwitcherApply"]</MudButton>
+    </section>
+}
+
+@code {
+    private readonly string _headingId = $"fa-switcher-{Guid.NewGuid():N}";
+    private Guid _pending;
+
+    protected override void OnInitialized()
+    {
+        _pending = Session.ActiveHouseholdId ?? Guid.Empty;
+        Session.Changed += OnSessionChanged;
+    }
+
+    private IReadOnlyList<ChoiceOption<Guid>> Options(FoodAssistant.Contracts.Accounts.MeResponse me) =>
+        [.. me.Households.Select(h => new ChoiceOption<Guid>(h.Id, $"{h.Name} – {T[AccountsKeys.Role(h.Role)]}"))];
+
+    private void Select(Guid householdId) => _pending = householdId;
+
+    private async Task SwitchAsync()
+    {
+        await Session.SelectHouseholdAsync(_pending);
+        var active = Session.ActiveHousehold;
+        if (active is not null && active.Id == _pending)
+        {
+            Announcer.Announce(T["SwitcherSwitched", active.Name]);
+        }
+    }
+
+    // The active household changes by switching here or by a reload of the session; the selection follows it.
+    private void OnSessionChanged() => _ = InvokeAsync(() =>
+    {
+        _pending = Session.ActiveHouseholdId ?? _pending;
+        StateHasChanged();
+    });
+
+    public void Dispose() => Session.Changed -= OnSessionChanged;
+}

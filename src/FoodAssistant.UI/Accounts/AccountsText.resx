@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- German is the neutral language of the project; AccountsText.en.resx holds the English texts. -->
+  <data name="FieldDisplayName" xml:space="preserve"><value>Anzeigename</value></data>
+  <data name="FieldUserName" xml:space="preserve"><value>Benutzername</value></data>
+  <data name="FieldPassword" xml:space="preserve"><value>Passwort</value></data>
+  <data name="FieldPasswordRepeat" xml:space="preserve"><value>Passwort wiederholen</value></data>
+  <data name="PasswordHint" xml:space="preserve"><value>Mindestens 10 Zeichen.</value></data>
+  <data name="FieldHouseholdName" xml:space="preserve"><value>Name des Haushalts</value></data>
+  <data name="FieldTimeZone" xml:space="preserve"><value>Zeitzone</value></data>
+  <data name="TimeZoneHint" xml:space="preserve"><value>Zum Beispiel Europe/Berlin. Ablaufdaten gelten in dieser Zeitzone.</value></data>
+  <data name="FieldError.required" xml:space="preserve"><value>Bitte ausfüllen.</value></data>
+  <data name="FieldError.too_long" xml:space="preserve"><value>Der Text ist zu lang.</value></data>
+  <data name="FieldError.password_too_short" xml:space="preserve"><value>Das Passwort braucht mindestens 10 Zeichen.</value></data>
+  <data name="FieldError.password_mismatch" xml:space="preserve"><value>Die Passwörter stimmen nicht überein.</value></data>
+  <data name="FieldError.invalid_time_zone" xml:space="preserve"><value>Unbekannte Zeitzone. Verwende eine Angabe wie Europe/Berlin.</value></data>
+  <data name="FieldError.invalid_user_name" xml:space="preserve"><value>Der Benutzername enthält ungültige Zeichen.</value></data>
+  <data name="FieldError.out_of_range" xml:space="preserve"><value>Der Wert liegt außerhalb des erlaubten Bereichs.</value></data>
+  <data name="FieldError.invalid" xml:space="preserve"><value>Ungültige Eingabe.</value></data>
+  <data name="Error.accounts.validation_failed" xml:space="preserve"><value>Bitte prüfe die markierten Felder.</value></data>
+  <data name="Error.accounts.username_taken" xml:space="preserve"><value>Dieser Benutzername ist schon vergeben.</value></data>
+  <data name="Error.accounts.setup_already_done" xml:space="preserve"><value>Die Einrichtung ist schon abgeschlossen. Melde dich mit deinem Konto an.</value></data>
+  <data name="Error.common.rate_limited" xml:space="preserve"><value>Zu viele Versuche. Bitte warte einen Moment.</value></data>
+  <data name="Error.invitations.invalid_or_expired" xml:space="preserve"><value>Die Einladung ist ungültig, abgelaufen, widerrufen oder schon benutzt. Bitte den Besitzer des Haushalts um eine neue Einladung.</value></data>
+  <data name="Error.invitations.already_member" xml:space="preserve"><value>Du bist schon Mitglied dieses Haushalts.</value></data>
+  <data name="Error.invitations.already_accepted" xml:space="preserve"><value>Die Einladung wurde schon angenommen.</value></data>
+  <data name="Error.invitations.not_found" xml:space="preserve"><value>Diese Einladung gibt es nicht mehr.</value></data>
+  <data name="Error.households.validation_failed" xml:space="preserve"><value>Bitte prüfe die markierten Felder.</value></data>
+  <data name="Error.households.last_owner" xml:space="preserve"><value>Der Haushalt braucht mindestens einen Besitzer. Ernenne zuerst jemand anderen zum Besitzer.</value></data>
+  <data name="Error.households.member_not_found" xml:space="preserve"><value>Dieses Mitglied gibt es nicht mehr.</value></data>
+  <data name="Error.households.forbidden" xml:space="preserve"><value>Dafür fehlt dir die Berechtigung.</value></data>
+  <data name="Error.households.not_found" xml:space="preserve"><value>Der Haushalt wurde nicht gefunden.</value></data>
+  <data name="Role.owner" xml:space="preserve"><value>Besitzer</value></data>
+  <data name="Role.member" xml:space="preserve"><value>Mitglied</value></data>
+  <data name="Role.restricted" xml:space="preserve"><value>Eingeschränkt</value></data>
+  <data name="RoleHint.owner" xml:space="preserve"><value>Darf alles, auch Einladungen und Rollen verwalten.</value></data>
+  <data name="RoleHint.member" xml:space="preserve"><value>Darf alles außer Mitglieder und Haushalt verwalten.</value></data>
+  <data name="RoleHint.restricted" xml:space="preserve"><value>Sieht Vorrat und Einkaufsliste, darf Einkäufe abhaken und ergänzen.</value></data>
+  <data name="SetupTitle" xml:space="preserve"><value>Haushalt einrichten</value></data>
+  <data name="SetupIntro" xml:space="preserve"><value>Lege das erste Konto an. Es verwaltet den Server und ist Besitzer deines Haushalts.</value></data>
+  <data name="SetupSubmit" xml:space="preserve"><value>Einrichten</value></data>
+  <data name="SetupBusy" xml:space="preserve"><value>Wird eingerichtet …</value></data>
+  <data name="InviteTitle" xml:space="preserve"><value>Einladung annehmen</value></data>
+  <data name="InviteIntro" xml:space="preserve"><value>Du wurdest in einen Haushalt eingeladen.</value></data>
+  <data name="InviteSignedInAs" xml:space="preserve"><value>Du bist als {0} angemeldet. Mit diesem Konto beitreten?</value></data>
+  <data name="InviteJoin" xml:space="preserve"><value>Haushalt beitreten</value></data>
+  <data name="InviteJoinBusy" xml:space="preserve"><value>Du trittst bei …</value></data>
+  <data name="InviteNewAccountHeading" xml:space="preserve"><value>Neues Konto anlegen</value></data>
+  <data name="InviteCreateAndJoin" xml:space="preserve"><value>Konto anlegen und beitreten</value></data>
+  <data name="InviteHaveAccount" xml:space="preserve"><value>Ich habe ein Konto – anmelden</value></data>
+  <data name="InviteMissingHeading" xml:space="preserve"><value>Einladungslink unvollständig</value></data>
+  <data name="InviteMissingText" xml:space="preserve"><value>In diesem Link fehlt der Einladungscode. Öffne den Link aus der Einladung noch einmal.</value></data>
+  <data name="HouseholdTitle" xml:space="preserve"><value>Haushalt</value></data>
+  <data name="SwitcherHeading" xml:space="preserve"><value>Haushalt wechseln</value></data>
+  <data name="SwitcherLegend" xml:space="preserve"><value>Aktiver Haushalt</value></data>
+  <data name="SwitcherApply" xml:space="preserve"><value>Wechseln</value></data>
+  <data name="SwitcherSwitched" xml:space="preserve"><value>Haushalt gewechselt zu {0}.</value></data>
+  <data name="SettingsHeading" xml:space="preserve"><value>Einstellungen</value></data>
+  <data name="SettingsLeadDays" xml:space="preserve"><value>Vorlauf „läuft bald ab“ (Tage)</value></data>
+  <data name="SettingsLeadDaysHint" xml:space="preserve"><value>So viele Tage vor dem Ablaufdatum gilt ein Vorrat als „läuft bald ab“ (0 bis 14).</value></data>
+  <data name="SettingsSaved" xml:space="preserve"><value>Einstellungen gespeichert.</value></data>
+  <data name="SettingsReadOnly" xml:space="preserve"><value>Nur Besitzer können die Einstellungen ändern.</value></data>
+  <data name="MembersHeading" xml:space="preserve"><value>Mitglieder</value></data>
+  <data name="MemberYou" xml:space="preserve"><value>(du)</value></data>
+  <data name="MemberRoleLabel" xml:space="preserve"><value>Rolle von {0}</value></data>
+  <data name="MemberApplyRole" xml:space="preserve"><value>Rolle übernehmen</value></data>
+  <data name="MemberApplyRoleLabel" xml:space="preserve"><value>Neue Rolle für {0} übernehmen</value></data>
+  <data name="MemberRemove" xml:space="preserve"><value>Entfernen</value></data>
+  <data name="MemberRemoveLabel" xml:space="preserve"><value>{0} entfernen</value></data>
+  <data name="MemberRemoveAsk" xml:space="preserve"><value>{0} wirklich aus dem Haushalt entfernen?</value></data>
+  <data name="MemberRemoveConfirm" xml:space="preserve"><value>Ja, entfernen</value></data>
+  <data name="MemberRoleChanged" xml:space="preserve"><value>Rolle von {0} geändert.</value></data>
+  <data name="MemberRemoved" xml:space="preserve"><value>{0} wurde entfernt.</value></data>
+  <data name="InvitationsHeading" xml:space="preserve"><value>Einladungen</value></data>
+  <data name="InvitationRoleLegend" xml:space="preserve"><value>Rolle der eingeladenen Person</value></data>
+  <data name="InvitationCreate" xml:space="preserve"><value>Einladung erstellen</value></data>
+  <data name="InvitationCreated" xml:space="preserve"><value>Einladung erstellt.</value></data>
+  <data name="InvitationLinkLabel" xml:space="preserve"><value>Einladungslink</value></data>
+  <data name="InvitationCopy" xml:space="preserve"><value>Link kopieren</value></data>
+  <data name="InvitationCopied" xml:space="preserve"><value>Link kopiert.</value></data>
+  <data name="InvitationCopyFailed" xml:space="preserve"><value>Kopieren ist nicht möglich. Markiere den Link und kopiere ihn von Hand.</value></data>
+  <data name="InvitationValidUntil" xml:space="preserve"><value>Gültig bis {0}. Der Link wird nur jetzt angezeigt.</value></data>
+  <data name="InvitationQrLabel" xml:space="preserve"><value>QR-Code mit dem Einladungslink. Ohne Kamera den Link darüber verwenden.</value></data>
+  <data name="InvitationListHeading" xml:space="preserve"><value>Bisherige Einladungen</value></data>
+  <data name="InvitationListEmpty" xml:space="preserve"><value>Es gibt noch keine Einladungen.</value></data>
+  <data name="InvitationRoleAndStatus" xml:space="preserve"><value>{0}, {1}, gültig bis {2}</value></data>
+  <data name="InvitationStatus.pending" xml:space="preserve"><value>offen</value></data>
+  <data name="InvitationStatus.accepted" xml:space="preserve"><value>angenommen</value></data>
+  <data name="InvitationStatus.revoked" xml:space="preserve"><value>widerrufen</value></data>
+  <data name="InvitationStatus.expired" xml:space="preserve"><value>abgelaufen</value></data>
+  <data name="InvitationRevoke" xml:space="preserve"><value>Widerrufen</value></data>
+  <data name="InvitationRevokeLabel" xml:space="preserve"><value>Einladung widerrufen: {0}</value></data>
+  <data name="InvitationRevoked" xml:space="preserve"><value>Einladung widerrufen.</value></data>
+</root>

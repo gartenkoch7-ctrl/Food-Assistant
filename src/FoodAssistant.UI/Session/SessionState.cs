@@ -98,23 +98,37 @@ public sealed class SessionState : IDisposable
             return;
         }
 
-        var stored = await _browser.GetItemAsync(HouseholdStorageKey, cancellationToken).ConfigureAwait(false);
-        var chosen = me.Households.FirstOrDefault(h => h.Id.ToString() == stored) ?? me.Households[0];
-        await TransitionAsync(generation, () => ActivateAsync(me, chosen, cancellationToken)).ConfigureAwait(false);
+        // The stored household is read inside the transition: a switch that finished while /me was in
+        // flight has written its choice by then, so the reload cannot re-activate the old household.
+        await TransitionAsync(generation, async () =>
+        {
+            var stored = await _browser.GetItemAsync(HouseholdStorageKey, cancellationToken).ConfigureAwait(false);
+            var chosen = me.Households.FirstOrDefault(h => h.Id.ToString() == stored) ?? me.Households[0];
+            return await ActivateAsync(me, chosen, cancellationToken).ConfigureAwait(false);
+        }).ConfigureAwait(false);
     }
 
     public async Task SelectHouseholdAsync(Guid householdId, CancellationToken cancellationToken = default)
     {
-        var generation = Volatile.Read(ref _generation);
-        var me = Me;
-        var household = me?.Households.FirstOrDefault(h => h.Id == householdId);
-        if (household is null)
+        if (Me?.Households.All(h => h.Id != householdId) ?? true)
         {
             return;
         }
 
-        await _browser.SetItemAsync(HouseholdStorageKey, householdId.ToString(), cancellationToken).ConfigureAwait(false);
-        await TransitionAsync(generation, () => ActivateAsync(me!, household, cancellationToken)).ConfigureAwait(false);
+        // A new generation drops a reload that is still waiting for /me; it started before this choice.
+        var generation = Interlocked.Increment(ref _generation);
+        await TransitionAsync(generation, async () =>
+        {
+            // Looked up again: a sign-out or reload may have changed the households since the check above.
+            var household = Me?.Households.FirstOrDefault(h => h.Id == householdId);
+            if (household is null)
+            {
+                return Status;
+            }
+
+            await _browser.SetItemAsync(HouseholdStorageKey, householdId.ToString(), cancellationToken).ConfigureAwait(false);
+            return await ActivateAsync(Me!, household, cancellationToken).ConfigureAwait(false);
+        }).ConfigureAwait(false);
     }
 
     /// <summary>Ends the session on the server, then here.</summary>

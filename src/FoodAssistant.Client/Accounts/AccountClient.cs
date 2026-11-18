@@ -16,4 +16,10 @@ public sealed class AccountClient(ApiHttpClient api) : IAccountClient
 
     public Task<ApiResult<SetupStatusResponse>> GetSetupStatusAsync(CancellationToken cancellationToken) =>
         api.GetAsync<SetupStatusResponse>("api/v1/setup", cancellationToken);
+
+    public Task<ApiResult<SetupResponse>> SetupAsync(SetupRequest request, CancellationToken cancellationToken) =>
+        api.SendAsync<SetupRequest, SetupResponse>(HttpMethod.Post, "api/v1/setup", request, null, null, cancellationToken);
+
+    public Task<ApiResult<AcceptInvitationResponse>> AcceptInvitationAsync(AcceptInvitationRequest request, CancellationToken cancellationToken) =>
+        api.SendAsync<AcceptInvitationRequest, AcceptInvitationResponse>(HttpMethod.Post, "api/v1/invitations/accept", request, null, null, cancellationToken);
 }

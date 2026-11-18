@@ -1,3 +1,4 @@
+using FoodAssistant.UI.Accounts;
 using FoodAssistant.UI.Common;
 using FoodAssistant.UI.Session;
 using FoodAssistant.UI.Shell;
@@ -31,6 +32,8 @@ public static class UiServiceCollectionExtensions
         services.TryAddSingleton(TimeProvider.System);
         services.TryAddScoped<SessionState>();
         services.TryAddScoped<ILiveAnnouncer, LiveAnnouncer>();
+        services.TryAddScoped<InvitationDraft>();
+        services.TryAddScoped<IClipboard, BrowserClipboard>();
         services.TryAddScoped<IUndoNotifier, UndoNotifier>();
         return services;
     }
