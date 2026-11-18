@@ -23,11 +23,14 @@ public interface IStoreSectionOrderStore
 
     /// <summary>
     /// Counts the transition <paramref name="from"/> → <paramref name="to"/> (if <paramref name="from"/>
-    /// is set) and remembers <paramref name="to"/> and <paramref name="at"/> as the last check-off.
-    /// <see langword="false"/> if a concurrent check-off in the same store interfered; nothing is saved then.
+    /// is set) and remembers <paramref name="to"/> and <paramref name="at"/> as the last check-off,
+    /// all under the household's change-log lock. <see langword="false"/> if the store's last
+    /// check-off is no longer <paramref name="expectedLast"/> (another check-off came first: the
+    /// caller decides <paramref name="from"/> again) or a save conflict occurred; nothing is saved then.
     /// </summary>
     Task<bool> RecordTransitionAsync(
         Guid storeId,
+        (string? SectionKey, DateTimeOffset? At) expectedLast,
         string? from,
         string to,
         DateTimeOffset at,

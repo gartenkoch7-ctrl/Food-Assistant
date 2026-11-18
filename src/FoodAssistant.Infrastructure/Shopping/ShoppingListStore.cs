@@ -197,7 +197,7 @@ internal sealed class ShoppingListStore(
         return list;
     }
 
-    // The store was deleted between validation and save (its row lock makes the insert fail).
+    // The store was deleted between validation and save; the foreign key refuses the list row.
     private static OperationResult<ShoppingListDto> StoreGone() =>
         OperationResult<ShoppingListDto>.Invalid(
             new Dictionary<string, string[]>(StringComparer.Ordinal) { ["storeId"] = ["not_found"] },

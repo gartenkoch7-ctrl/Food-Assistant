@@ -90,6 +90,7 @@ internal sealed class StoreSectionOrderStore(AppDbContext db, IHouseholdContext 
 
     public async Task<bool> RecordTransitionAsync(
         Guid storeId,
+        (string? SectionKey, DateTimeOffset? At) expectedLast,
         string? from,
         string to,
         DateTimeOffset at,
@@ -98,13 +99,23 @@ internal sealed class StoreSectionOrderStore(AppDbContext db, IHouseholdContext 
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
 
         // Change-log lock first (the store row is synchronised): taking it only at the save, after
-        // the counter row lock below, could deadlock with a concurrent store deletion.
+        // the counter row lock below, could deadlock with a concurrent store deletion. The lock
+        // also serialises check-offs of the household, so the last check-off read below is stable.
         await PostgresLocks.LockHouseholdChangeLogAsync(transaction.GetDbTransaction(), ActiveHouseholdId, cancellationToken)
             .ConfigureAwait(false);
         var store = await db.Set<Store>().SingleOrDefaultAsync(s => s.Id == storeId, cancellationToken).ConfigureAwait(false);
         if (store is null)
         {
             return true;
+        }
+
+        // The caller chose "from" based on the last check-off it read without the lock; another
+        // check-off may have come in between. Then it must decide again from the newer one.
+        if (!string.Equals(store.LastCheckedSectionKey, expectedLast.SectionKey, StringComparison.Ordinal)
+            || store.LastCheckedAt != expectedLast.At)
+        {
+            db.ChangeTracker.Clear();
+            return false;
         }
 
         if (from is not null)
@@ -127,8 +138,8 @@ internal sealed class StoreSectionOrderStore(AppDbContext db, IHouseholdContext 
             }
         }
 
-        // The store row (xmin) guards the whole step: a concurrent check-off in the same store
-        // makes this save fail, and the caller decides again from the newer last check-off.
+        // Store rename at the same moment: its xmin check fails this save (or the rename's) instead
+        // of losing a change; a new transition key taken meanwhile is a unique violation.
         store.LastCheckedSectionKey = to;
         store.LastCheckedAt = at;
         try

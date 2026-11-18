@@ -23,7 +23,9 @@ public sealed class StoreSectionOrderStoreTests(PostgresFixture postgres)
                  })
         {
             await using var scope = database.CreateScope(householdId);
-            Assert.True(await scope.Get<IStoreSectionOrderStore>().RecordTransitionAsync(storeId, from, to, at, Ct));
+            var orders = scope.Get<IStoreSectionOrderStore>();
+            var last = (await orders.GetLastCheckAsync(storeId, Ct))!.Value;
+            Assert.True(await orders.RecordTransitionAsync(storeId, last, from, to, at, Ct));
         }
 
         await using var check = database.CreateScope(householdId);
@@ -31,6 +33,29 @@ public sealed class StoreSectionOrderStoreTests(PostgresFixture postgres)
         var transition = Assert.Single(await store.GetTransitionsAsync(storeId, Ct));
         Assert.Equal(new SectionTransition(StoreSections.Produce, StoreSections.DairyChilled, 2), transition);
         Assert.Equal<(string?, DateTimeOffset?)?>((StoreSections.DairyChilled, at), await store.GetLastCheckAsync(storeId, Ct));
+    }
+
+    [Fact]
+    public async Task RecordTransition_LastCheckChangedMeanwhile_ReturnsFalseAndSavesNothing()
+    {
+        await using var database = await TestDatabase.CreateAsync(postgres.NewDatabaseConnectionString());
+        var (householdId, storeId) = await SeedStoreAsync(database);
+        var at = new DateTimeOffset(2026, 11, 18, 10, 0, 0, TimeSpan.Zero);
+        await using var slow = database.CreateScope(householdId);
+        await using var fast = database.CreateScope(householdId);
+        var slowStore = slow.Get<IStoreSectionOrderStore>();
+        var staleLast = (await slowStore.GetLastCheckAsync(storeId, Ct))!.Value;
+
+        // Another check-off lands between reading the last check-off and recording this one.
+        Assert.True(await fast.Get<IStoreSectionOrderStore>().RecordTransitionAsync(storeId, staleLast, null, StoreSections.Bakery, at, Ct));
+        var recorded = await slowStore.RecordTransitionAsync(
+            storeId, staleLast, StoreSections.Produce, StoreSections.DairyChilled, at.AddMinutes(1), Ct);
+
+        Assert.False(recorded);
+        await using var check = database.CreateScope(householdId);
+        var store = check.Get<IStoreSectionOrderStore>();
+        Assert.Empty(await store.GetTransitionsAsync(storeId, Ct));
+        Assert.Equal<(string?, DateTimeOffset?)?>((StoreSections.Bakery, at), await store.GetLastCheckAsync(storeId, Ct));
     }
 
     [Fact]

@@ -25,7 +25,7 @@ public sealed class SectionOrderLearning(IStoreSectionOrderStore store) : ISecti
                 && !string.Equals(previous, sectionKey, StringComparison.Ordinal)
                     ? previous
                     : null;
-            if (await store.RecordTransitionAsync(storeId, from, sectionKey, checkedAt, cancellationToken).ConfigureAwait(false))
+            if (await store.RecordTransitionAsync(storeId, last, from, sectionKey, checkedAt, cancellationToken).ConfigureAwait(false))
             {
                 return;
             }

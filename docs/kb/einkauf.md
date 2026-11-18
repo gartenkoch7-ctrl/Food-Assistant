@@ -36,8 +36,10 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
   `DELETE …/section-order` führt zur gelernten zurück.
 - Das Abhaken ändert die Ladenzeile (`LastChecked*`, nur über den Context, ADR-0005-Regel) und
   damit die Version (ETag) des Ladens. Wer gleichzeitig den Laden umbenennt, bekommt 412 und lädt neu.
-- Zwei gleichzeitige Abhaken im selben Laden: das zweite wird einmal mit dem neuen Stand wiederholt;
-  verliert es erneut, wird nur dieser Übergang ausgelassen (das Abhaken selbst ist dann schon gespeichert).
+- Gleichzeitiges Abhaken: Der Übergang wird unter der Änderungsprotokoll-Sperre des Haushalts
+  gespeichert, und nur wenn das letzte Abhaken des Ladens noch das gelesene ist. Kam ein anderes
+  dazwischen, wird `from` einmal mit dem neuen Stand entschieden; klappt auch das nicht, wird nur
+  dieser Übergang ausgelassen (das Abhaken selbst ist dann schon gespeichert).
 - Laden löschen setzt `StoreId` der Listen über den Context auf `null` (Kaskade umgeht sonst das
   Änderungsprotokoll); Reihenfolge-Daten gehen per Datenbank-Kaskade mit (nicht synchronisiert).
 

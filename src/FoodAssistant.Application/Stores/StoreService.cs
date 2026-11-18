@@ -189,6 +189,13 @@ public sealed class StoreService(
         if (sections!.Count == 0)
         {
             await sectionOrder.ClearManualOrderAsync(storeId, cancellationToken).ConfigureAwait(false);
+
+            // Deleted meanwhile: deleting nothing succeeded, but there is no order to return.
+            if (!await store.ExistsAsync(storeId, cancellationToken).ConfigureAwait(false))
+            {
+                return OperationResult<SectionOrderDto>.NotFound(StoreErrorCodes.StoreNotFound);
+            }
+
             StoresLog.SectionOrderReset(logger, storeId);
         }
         else
