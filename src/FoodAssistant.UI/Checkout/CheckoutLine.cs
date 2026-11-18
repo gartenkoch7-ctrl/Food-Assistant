@@ -19,6 +19,7 @@ public sealed class CheckoutLine
         Quantity = entry.Quantity;
         QuantityIsDefault = !entry.QuantityFromEntry;
         LocationId = entry.StorageLocationId;
+        LocationIsDefault = entry.ProductId is null;
         Date = entry.ExpiresOn;
         Kind = entry.ExpiryKind;
         FromRule = entry.ExpiryFromRule;
@@ -49,6 +50,12 @@ public sealed class CheckoutLine
     public bool QuantityIsDefault { get; set; }
 
     public Guid? LocationId { get; set; }
+
+    /// <summary>
+    /// Free text whose location is still the generic suggestion (first location); an assigned product
+    /// may then bring a location of its category. False once the person chose a location.
+    /// </summary>
+    public bool LocationIsDefault { get; set; }
 
     public DateOnly? Date { get; set; }
 
@@ -129,6 +136,7 @@ public sealed class CheckoutLine
     public void Apply(CheckoutLine edited)
     {
         ArgumentNullException.ThrowIfNull(edited);
+        LocationIsDefault = edited.LocationIsDefault;
         (Quantity, QuantityIsDefault, LocationId, Date, Kind, FromRule, Suggested, SelfFrozen) =
             (edited.Quantity, edited.QuantityIsDefault, edited.LocationId, edited.Date, edited.Kind, edited.FromRule, edited.Suggested, edited.SelfFrozen);
     }

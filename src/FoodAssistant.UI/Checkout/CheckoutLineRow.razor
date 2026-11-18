@@ -92,8 +92,10 @@
 
     private string Format(string key, string value) => string.Format(CultureInfo.CurrentCulture, T[key].Value, value);
 
+    // Chosen by the person: an assigned product no longer moves the line.
     private Task MoveAsync(Guid? locationId)
     {
+        Line.LocationIsDefault = false;
         Move(locationId);
         return Changed.InvokeAsync(Line);
     }
@@ -110,9 +112,9 @@
     {
         Line.AssignProduct(product.Id, product.Name, product.DefaultUnit);
 
-        // Only free text got the generic location (the first one); a product line (picker shown again
-        // because its product was archived) keeps what the server suggested or the person chose.
-        if (Line.IsFreeText
+        // Only free text got the generic location (the first one), and only while nobody chose another;
+        // a product line (picker shown again because its product was archived) keeps its location.
+        if (Line.LocationIsDefault
             && CategoryTypes.TryGetValue(product.CategoryKey, out var type)
             && Locations.FirstOrDefault(l => l.Type == type) is { } location)
         {

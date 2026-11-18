@@ -129,6 +129,7 @@
         var edited = Line.Copy();
         edited.Quantity = _quantity!;
         edited.QuantityIsDefault = Line.QuantityIsDefault && _quantity == Line.Quantity;
+        edited.LocationIsDefault = Line.LocationIsDefault && _locationId == Line.LocationId;
         if (_date is { } date)
         {
             // Only a changed date counts as the person's own; an untouched suggestion stays one, so

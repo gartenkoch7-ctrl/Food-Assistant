@@ -107,8 +107,8 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
   Datum mit Art als Text („aus Regel“ ausgeschrieben), Lagerort-Auswahl und „Ändern“ (Dialog: Menge, Ort,
   Datum + Art ohne Vorbelegung, im Gefrierort „selbst eingefroren“). Freitext: `ProductPicker` (legt ein
   neues Produkt über den Katalog an) oder „Überspringen“; ein zugeordnetes Produkt übernimmt bei
-  „1 Stück“ ohne Menge im Eintrag (`quantityFromEntry = false`) seine Standardeinheit und den ersten Ort
-  vom Lagertyp seiner Kategorie. Meldet der Server `lines[i].productId` (Produkt inzwischen archiviert),
+  „1 Stück“ ohne Menge im Eintrag (`quantityFromEntry = false`) seine Standardeinheit und – solange der
+  Nutzer keinen Ort gewählt hat – den ersten Ort vom Lagertyp seiner Kategorie. Meldet der Server `lines[i].productId` (Produkt inzwischen archiviert),
   bietet die Zeile wieder den `ProductPicker` an. Vor dem Senden liest die Seite die Lagerorte neu: Hat
   einer seit dem Laden den Lagertyp gewechselt, werden die Zeilen dort „umgezogen“ (beim Wechsel zwischen
   Gefrierort und anderem fallen nicht selbst eingetragene Daten weg) und erst angezeigt statt gesendet.

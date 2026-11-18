@@ -72,6 +72,28 @@ public sealed class CheckoutPageTests : CheckoutTestContext
         Assert.Equal((oat.Id, false, (Guid?)Fridge.Id, new QuantityDto(1m, "l")), (line.ProductId, line.Skip, line.StorageLocationId, line.Quantity));
     }
 
+    [Fact]
+    public async Task FreeText_LocationChosenFirst_StaysWhenAProductIsAssigned()
+    {
+        var oat = Product("Haferdrink");
+        Catalog.Products.Add(oat);
+        Catalog.Categories.Add(new CategoryDto("plant_based", "dairy_chilled", StorageTypeDto.Chilled));
+        AddEntry("Hafer", null, Fridge.Id, quantity: new QuantityDto(1m, "piece"));
+        var cut = RenderPage();
+
+        await cut.InvokeAsync(() => cut.FindComponent<MudBlazor.MudSelect<Guid?>>().Instance.ValueChanged.InvokeAsync(Freezer.Id)).WaitAsync(Timeout, Ct);
+        var input = cut.Find("li.fa-checkout-row input");
+        input.Focus();
+        input.Input("Hafer");
+        Popovers.WaitForAssertion(() => Assert.NotEmpty(Popovers.FindAll(".mud-list-item")), Timeout);
+        await Popovers.InvokeAsync(() => Popovers.FindAll(".mud-list-item")[0].Click()).WaitAsync(Timeout, Ct);
+        cut.WaitForAssertion(() => Assert.Contains("Eintrag auf der Liste: Hafer", cut.Markup, StringComparison.Ordinal), Timeout);
+        await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
+
+        var line = Assert.Single(Assert.Single(CheckoutClient.Completions).Request.Lines);
+        Assert.Equal((oat.Id, (Guid?)Freezer.Id), (line.ProductId, line.StorageLocationId));
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
