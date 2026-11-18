@@ -74,6 +74,35 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
 4. Freitext-Einträge werden beim Abschließen einem Produkt zugeordnet oder übersprungen.
 - Ab M3 kann ein **Kassenbon** den Abschluss vorbefüllen (inkl. Preise).
 
+### Abschluss im Detail (M1 F)
+- API: `GET …/shopping/lists/{listId}/checkout` (Vorschlag), `POST …` mit `Idempotency-Key` (Abschluss);
+  beide ab Mitglied, Eingeschränkte bekommen 403.
+- **Vorbelegung** (`CheckoutPrefill`, Domain):
+  - Menge: Menge des Eintrags, sonst 1 × Standardeinheit des Produkts, bei Freitext 1 Stück.
+  - Lagerort: Standard-Lagerort des Produkts → Ort der zuletzt angelegten (noch vorhandenen) Charge →
+    erster Ort (nach `SortOrder`, Name) vom Standard-Lagertyp der Kategorie → erster Ort. Ohne Lagerort
+    im Haushalt kein Vorschlag; der Abschluss verlangt dann einen (400 `lines[i].storageLocationId`).
+  - Ablaufdatum: bekannter „letzter Kauf“ (`Product.LastShelfLifeDays` + `LastExpiryKind`) → heute +
+    Tage mit dieser Art; sonst im Gefrierort Regel „gefroren“ ab heute als Verbrauchsdatum
+    (`expiryFromRule`, F5 „selbst eingefroren“), ohne Regel kein Datum; sonst kein Datum.
+  - Ein Eintrag mit archiviertem Produkt erscheint wie Freitext (ohne `productId`).
+- **Abschluss:** je Zeile `skip` oder Charge (Herkunft `Purchase`, Regeln wie „Neue Charge“ inkl. F5)
+  für ein bestehendes oder ein neu angelegtes Produkt (Name, Kategorie, Standardeinheit). Ein Datum aus
+  der Regel schickt der Client **nicht** zurück (ohne Datum = selbst eingefroren); die Art eines
+  eingetragenen Datums ist Pflicht (keine Vorbelegung).
+- **Letzter Kauf** wird nur aus einem vom Nutzer eingetragenen Packungsdatum gelernt (Charge bleibt
+  verschlossen, Datum nicht in der Vergangenheit), nie aus einem Regeldatum.
+- **Eine Transaktion** mit Änderungsprotokoll-Sperre des Haushalts zuerst. Unter der Sperre werden alle
+  Einträge erneut geprüft (noch auf der Liste, abgehakt, nicht gelöscht, gleiche `Version`) und die
+  Produkte (nicht archiviert). Was nicht passt, wird nicht verarbeitet und als `staleItemIds` gemeldet –
+  die übrigen Zeilen werden trotzdem gebucht. Ein inzwischen gelöschter Lagerort ergibt 409
+  `common.conflict` ohne Änderung.
+- Verarbeitete Einträge (auch übersprungene) bekommen `DeletedAt` und `Version + 1`; je Charge eine
+  Aktivität `batch_added` (Rückgängig wie beim Einbuchen). Danach laufen alle `IStockChangedHandler`
+  einmal mit allen betroffenen Produkten.
+- Eine Wiederholung mit gleichem `Idempotency-Key` bekommt die gespeicherte Antwort; ohne Schlüssel
+  findet sie nur noch gelöschte Einträge und meldet sie als `staleItemIds` (keine Doppelbuchung).
+
 ## Mindestbestand
 - Pro Produkt optional; Bestand unter Mindestbestand → Eintrag auf der Standardliste,
   markiert „automatisch“.

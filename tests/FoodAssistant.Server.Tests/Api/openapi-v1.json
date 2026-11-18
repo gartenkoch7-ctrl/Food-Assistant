@@ -2188,6 +2188,78 @@
           }
         }
       }
+    },
+    "/api/v1/households/{householdId}/shopping/lists/{listId}/checkout": {
+      "get": {
+        "tags": [
+          "Checkout"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "listId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Checkout"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "listId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteCheckoutRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2367,6 +2439,99 @@
           },
           "sectionKey": {
             "type": "string"
+          }
+        }
+      },
+      "CheckoutLineRequest": {
+        "required": [
+          "itemId",
+          "itemVersion",
+          "skip",
+          "productId",
+          "newProduct",
+          "quantity",
+          "storageLocationId",
+          "expiresOn",
+          "expiryKind",
+          "selfFrozen"
+        ],
+        "type": "object",
+        "properties": {
+          "itemId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "itemVersion": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "skip": {
+            "type": "boolean"
+          },
+          "productId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "newProduct": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/NewProductLine"
+              }
+            ]
+          },
+          "quantity": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/QuantityDto"
+              }
+            ]
+          },
+          "storageLocationId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "expiresOn": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date"
+          },
+          "expiryKind": {
+            "$ref": "#/components/schemas/ExpiryKindDto"
+          },
+          "selfFrozen": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CompleteCheckoutRequest": {
+        "required": [
+          "lines"
+        ],
+        "type": "object",
+        "properties": {
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CheckoutLineRequest"
+            }
           }
         }
       },
@@ -2794,6 +2959,25 @@
           "listId": {
             "type": "string",
             "format": "uuid"
+          }
+        }
+      },
+      "NewProductLine": {
+        "required": [
+          "name",
+          "categoryKey",
+          "defaultUnit"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "categoryKey": {
+            "type": "string"
+          },
+          "defaultUnit": {
+            "type": "string"
           }
         }
       },
@@ -3486,6 +3670,9 @@
     },
     {
       "name": "Shopping"
+    },
+    {
+      "name": "Checkout"
     }
   ]
 }

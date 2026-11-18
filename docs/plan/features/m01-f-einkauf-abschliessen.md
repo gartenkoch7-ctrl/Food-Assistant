@@ -8,7 +8,7 @@ KB: [einkauf](../../kb/einkauf.md) „Abhaken und Einkauf abschließen“, ADR-0
 Branch `feat/m01-f-checkout` · Welle 2 · Pakete: F1 → F2.
 
 ## Aufgaben
-- [ ] F1 Vorbelegung (Domain), Vorschlag und Abschluss (Server, eine Transaktion)
+- [x] F1 Vorbelegung (Domain), Vorschlag und Abschluss (Server, eine Transaktion)
 - [ ] F2 Abschluss-Seite (UI)
 
 ## Fachregeln (verbindlich)
