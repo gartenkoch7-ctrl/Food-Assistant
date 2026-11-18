@@ -76,7 +76,9 @@ public sealed class ProductShelfLifePageTests : UiTestContext
         dialogs.FindAll("button").Single(b => b.TextContent.Trim() == "Speichern").Click();
         cut.WaitForAssertion(() => Assert.Contains("30 Tage", cut.FindAll(".fa-shelf-life-row")[1].TextContent, StringComparison.Ordinal));
 
-        cut.Find("button[aria-label='Auf Standard zurücksetzen: Vollmilch, Gekühlt']").Click();
+        var reset = cut.Find("button[aria-label='Auf Kategoriewerte zurücksetzen: Vollmilch, Gekühlt']");
+        Assert.Equal("Auf Kategoriewerte zurücksetzen", reset.TextContent.Trim());
+        reset.Click();
 
         Assert.Equal(["product", "sources", "set product/Frozen", "reset product/Chilled"], _client.Calls);
         Assert.DoesNotContain("Eigen", cut.FindAll(".fa-shelf-life-row")[0].TextContent, StringComparison.Ordinal);

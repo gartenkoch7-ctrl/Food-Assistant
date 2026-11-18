@@ -97,8 +97,9 @@ eine Zeile, die schon eine andere Quelle hat. Sie fehlen deshalb in der JSON (si
 - **Saft geöffnet „wenige Tage“** (Verbraucherzentrale): keine Zahl.
 - **Geöffnete Konserven ca. 3 Tage**: nur aus Sekundärquellen und einem Flyer von 2012, der nicht
   abrufbar war.
-- **Frisches Schweinefleisch 2–3 Tage, Geflügel 5–6 Tage gekühlt**: betrifft ungeöffnete Ware (trägt
-  ein Verbrauchsdatum), nicht „nach dem Öffnen“.
+- **Frisches Schweinefleisch 2–3 Tage, Geflügel 5–6 Tage gekühlt**: als Wert „nach dem Öffnen“ zu lang;
+  für `meat` gilt stattdessen die kürzere Hackfleisch-Frist (siehe Auslegung 2). Die Geflügelangabe
+  bezieht sich auf ganze, frische Tiere ab Schlachtung, nicht auf eine geöffnete Packung.
 - **Längere Gefrierzeiten** (BZfE: Rind/Geflügel 9–12, Fisch/fettes Fleisch 6–9 Monate; BfR: Hähnchen
   4–6 Monate): bewusst die kürzere Spanne der Verbraucherzentrale genommen.
 - **Hartgekochte Eier 2–4 Wochen** (BZfE): passt auf keinen der vier Werte.
@@ -110,12 +111,19 @@ eine Zeile, die schon eine andere Quelle hat. Sie fehlen deshalb in der JSON (si
 
 1. **Rest bei Raumtemperatur = 0** (selber Tag), abgeleitet aus „nicht gekühlt lagerbare Lebensmittel
    noch am selben Tag verbrauchen“.
-2. **Fleisch geöffnet = 1 Tag** (Hackfleisch-Regel für die ganze Kategorie). Lose gekauftes Hack soll
-   laut BZfE innerhalb von 6–8 Stunden verbraucht werden → per Produkt-Überschreibung 0 setzen.
-3. **Fisch geöffnet = 0** (untere Grenze von „am Einkaufstag, notfalls nächster Tag“).
+2. **Fleisch geöffnet = 1 Tag.** Die Quellen nennen Fristen für frisch gekaufte Ware, nicht ausdrücklich
+   „nach dem Öffnen“. Der Entwurf nimmt die kürzeste belegte Frist der Kategorie (Hackfleisch: innerhalb
+   eines Tages) als Obergrenze nach dem Öffnen – eine geöffnete Packung hält nicht länger als frische
+   Ware. Lose gekauftes Hack soll laut BZfE innerhalb von 6–8 Stunden verbraucht werden → per
+   Produkt-Überschreibung 0 setzen.
+3. **Fisch geöffnet = 0**, mit derselben Begründung wie 2 (frischer Fisch: am Einkaufstag, notfalls am
+   nächsten Tag → untere Grenze).
 4. **Milchprodukte geöffnet = 3** gilt auch für Joghurt, Sahne, Butter (vorsichtig, oft kürzer als nötig).
 5. **Gefrierzeiten** sind Qualitätsgrenzen, kein Sicherheitsrisiko; trotzdem untere Grenze, damit das
    Verbrauchsdatum nie zu spät liegt.
+6. **Eier gefroren = 240 Tage** gilt laut Quelle nur für Eier **ohne Schale** (aufgeschlagen); ganze
+   Eier in der Schale friert man nicht ein. Die Regel greift trotzdem für jede gefrorene Charge der
+   Kategorie `eggs`.
 
 ## Freigabe – Ablauf
 

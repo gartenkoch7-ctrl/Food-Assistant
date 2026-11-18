@@ -120,6 +120,7 @@ else
         var parameters = new DialogParameters<ShelfLifeDaysDialog>
         {
             { d => d.Title, ShelfLifeFormat.Format(T, "DialogTitle", name, storage) },
+            { d => d.Hint, T["DialogHint"].Value },
             { d => d.Own, row.Override },
             { d => d.Inherited, row.Default },
             { d => d.Save, days => Client.SetCategoryOverrideAsync(HouseholdId, row.CategoryKey, row.StorageType, days, _cts.Token) },

@@ -26,6 +26,8 @@
   <data name="EditLabel" xml:space="preserve"><value>Edit: {0}, {1}</value></data>
   <data name="Reset" xml:space="preserve"><value>Reset to default</value></data>
   <data name="ResetLabel" xml:space="preserve"><value>Reset to default: {0}, {1}</value></data>
+  <data name="ResetToCategory" xml:space="preserve"><value>Reset to category values</value></data>
+  <data name="ResetToCategoryLabel" xml:space="preserve"><value>Reset to category values: {0}, {1}</value></data>
   <data name="ResetDone" xml:space="preserve"><value>Reset: {0}, {1}</value></data>
   <data name="SavedDone" xml:space="preserve"><value>Saved: {0}, {1}</value></data>
   <data name="SourcesHeading" xml:space="preserve"><value>Sources</value></data>
@@ -33,6 +35,7 @@
   <data name="SourcesEmpty" xml:space="preserve"><value>No default values are available yet. Until then, only your own values apply.</value></data>
   <data name="DialogTitle" xml:space="preserve"><value>{0}, {1}</value></data>
   <data name="DialogHint" xml:space="preserve"><value>Empty fields take the value from above. If all fields are empty, the default applies again.</value></data>
+  <data name="ProductDialogHint" xml:space="preserve"><value>Empty fields take the category's value. If all fields are empty, the category values apply again.</value></data>
   <data name="FieldInherited" xml:space="preserve"><value>Without own value: {0}</value></data>
   <data name="DaysUnit" xml:space="preserve"><value>days</value></data>
   <data name="FieldOutOfRange" xml:space="preserve"><value>Please enter a whole number from 0 to 3650.</value></data>

@@ -5,8 +5,9 @@
 <MudDialog>
     <TitleContent>@Title</TitleContent>
     <DialogContent>
-        <p id="shelf-life-dialog-hint">@T["DialogHint"]</p>
+        <p>@Hint</p>
         <ApiErrorAlert Error="_error" FeatureText="T" />
+        @* No Min/Max on the fields: MudBlazor would clamp 5000 silently to the maximum instead of reporting it. *@
         @for (var i = 0; i < Fields.Length; i++)
         {
             var index = i;
@@ -15,8 +16,6 @@
                              Label="@T[Fields[index].LabelKey]"
                              Value="_values[index]"
                              ValueChanged="value => SetValue(index, value)"
-                             Min="0"
-                             Max="ShelfLifeDaysDialogLimits.MaxDays"
                              Adornment="Adornment.End"
                              AdornmentText="@T["DaysUnit"]"
                              HelperText="@InheritedText(index)"
@@ -56,6 +55,10 @@
 
     [Parameter, EditorRequired]
     public string Title { get; set; } = string.Empty;
+
+    /// <summary>Explains where empty fields take their values from (default or category).</summary>
+    [Parameter, EditorRequired]
+    public string Hint { get; set; } = string.Empty;
 
     /// <summary>The own values at this level, or <see langword="null"/> without override.</summary>
     [Parameter]
@@ -102,6 +105,8 @@
 
         if (_fieldErrors.Any(e => e))
         {
+            // Same alert as a server-side validation failure, so the failed save is announced (role="alert").
+            _error = new ApiError(400, ShelfLifeErrorCodes.ValidationFailed, null, new Dictionary<string, string[]>(), null);
             return;
         }
 

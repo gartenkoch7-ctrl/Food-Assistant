@@ -91,6 +91,9 @@ public sealed class ShelfLifeRulesPageTests : UiTestContext
         Assert.Contains("reset fish/Chilled", _client.Calls);
         Assert.DoesNotContain("Eigen", cut.Find(".fa-shelf-life-row").TextContent, StringComparison.Ordinal);
         Assert.Empty(cut.FindAll("button[aria-label^='Auf Standard']"));
+
+        // Focus moves to the row's edit button instead of falling back to the page.
+        Assert.Contains(JSInterop.Invocations, i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

@@ -59,6 +59,7 @@ public sealed class DefaultShelfLifeRulesTests
     [InlineData("unknown category", """{ "version": 1, SOURCE, "rules": [ RULE_UNKNOWN_CATEGORY ] }""")]
     [InlineData("duplicate row", """{ "version": 1, SOURCE, "rules": [ RULE, RULE ] }""")]
     [InlineData("negative days", """{ "version": 1, SOURCE, "rules": [ RULE_NEGATIVE ] }""")]
+    [InlineData("more than ten years", """{ "version": 1, SOURCE, "rules": [ RULE_TOO_LONG ] }""")]
     [InlineData("missing source", """{ "version": 1, SOURCE, "rules": [ RULE_OTHER_SOURCE ] }""")]
     [InlineData("row without values", """{ "version": 1, SOURCE, "rules": [ RULE_EMPTY ] }""")]
     [InlineData("numeric storage type", """{ "version": 1, SOURCE, "rules": [ RULE_NUMERIC_TYPE ] }""")]
@@ -74,6 +75,7 @@ public sealed class DefaultShelfLifeRulesTests
             .Replace("SOURCE", Source, StringComparison.Ordinal)
             .Replace("RULE_UNKNOWN_CATEGORY", Rule("cake", "Chilled", opening: "3"), StringComparison.Ordinal)
             .Replace("RULE_NEGATIVE", Rule("dairy", "Chilled", opening: "-1"), StringComparison.Ordinal)
+            .Replace("RULE_TOO_LONG", Rule("dairy", "Chilled", opening: "3651"), StringComparison.Ordinal)
             .Replace("RULE_OTHER_SOURCE", Rule("dairy", "Chilled", opening: "3", source: "vz"), StringComparison.Ordinal)
             .Replace("RULE_EMPTY", Rule("dairy", "Chilled"), StringComparison.Ordinal)
             .Replace("RULE_NUMERIC_TYPE", Rule("dairy", "0", opening: "3", quoteType: false), StringComparison.Ordinal)

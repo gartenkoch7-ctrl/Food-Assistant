@@ -28,18 +28,20 @@
     @if (CanEdit)
     {
         <div class="fa-shelf-life-actions">
-            <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnEdit"
+            <MudButton @ref="_editButton" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnEdit"
                        aria-label="@ShelfLifeFormat.Format(T, "EditLabel", ContextName, StorageName)">@T["Edit"]</MudButton>
             @if (Row.Override is not null)
             {
-                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="OnReset"
-                           aria-label="@ShelfLifeFormat.Format(T, "ResetLabel", ContextName, StorageName)">@T["Reset"]</MudButton>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="ResetAsync"
+                           aria-label="@ShelfLifeFormat.Format(T, ResetLabelKey, ContextName, StorageName)">@T[ResetKey]</MudButton>
             }
         </div>
     }
 </div>
 
 @code {
+    private MudButton? _editButton;
+
     [Parameter, EditorRequired]
     public ShelfLifeRuleRowDto Row { get; set; } = default!;
 
@@ -67,6 +69,26 @@
 
     [Parameter]
     public EventCallback OnReset { get; set; }
+
+    /// <summary>Text of the reset button: <c>Reset</c> (to default) or <c>ResetToCategory</c> on a product page.</summary>
+    [Parameter]
+    public string ResetKey { get; set; } = "Reset";
+
+    /// <summary>Accessible name pattern of the reset button, matching <see cref="ResetKey"/>.</summary>
+    [Parameter]
+    public string ResetLabelKey { get; set; } = "ResetLabel";
+
+    private async Task ResetAsync()
+    {
+        await OnReset.InvokeAsync();
+
+        // The reset button disappears with the override; keep keyboard focus in the row (WCAG 2.4.3).
+        // After a failed reset the button stays, and focus on "Edit" next to it does no harm.
+        if (_editButton is not null)
+        {
+            await _editButton.FocusAsync();
+        }
+    }
 
     private string StorageName => ShelfLifeFormat.StorageName(T, Row.StorageType);
 

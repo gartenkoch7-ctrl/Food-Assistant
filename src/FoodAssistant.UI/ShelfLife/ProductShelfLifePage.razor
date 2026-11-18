@@ -35,7 +35,8 @@ else
         @foreach (var row in _product.Rows)
         {
             <ShelfLifeRowView Row="row" ContextName="@ContextName" IdPrefix="shelf-life-product"
-                              InheritedOriginKey="OriginCategory" SourceTitle="@SourceTitle(row.SourceKey)"
+                              InheritedOriginKey="OriginCategory" ResetKey="ResetToCategory" ResetLabelKey="ResetToCategoryLabel"
+                              SourceTitle="@SourceTitle(row.SourceKey)"
                               CanEdit="Session.CanEdit" OnEdit="() => EditAsync(row)" OnReset="() => ResetAsync(row)" />
         }
     </section>
@@ -87,6 +88,7 @@ else
         var parameters = new DialogParameters<ShelfLifeDaysDialog>
         {
             { d => d.Title, title },
+            { d => d.Hint, T["ProductDialogHint"].Value },
             { d => d.Own, row.Override },
             { d => d.Inherited, row.Default },
             { d => d.Save, days => Client.SetProductOverrideAsync(HouseholdId, ProductId, row.StorageType, days, _cts.Token) },

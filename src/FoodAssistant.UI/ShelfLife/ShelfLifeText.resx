@@ -27,6 +27,8 @@
   <data name="EditLabel" xml:space="preserve"><value>Bearbeiten: {0}, {1}</value></data>
   <data name="Reset" xml:space="preserve"><value>Auf Standard zurücksetzen</value></data>
   <data name="ResetLabel" xml:space="preserve"><value>Auf Standard zurücksetzen: {0}, {1}</value></data>
+  <data name="ResetToCategory" xml:space="preserve"><value>Auf Kategoriewerte zurücksetzen</value></data>
+  <data name="ResetToCategoryLabel" xml:space="preserve"><value>Auf Kategoriewerte zurücksetzen: {0}, {1}</value></data>
   <data name="ResetDone" xml:space="preserve"><value>Zurückgesetzt: {0}, {1}</value></data>
   <data name="SavedDone" xml:space="preserve"><value>Gespeichert: {0}, {1}</value></data>
   <data name="SourcesHeading" xml:space="preserve"><value>Quellen</value></data>
@@ -34,6 +36,7 @@
   <data name="SourcesEmpty" xml:space="preserve"><value>Es sind noch keine Standardwerte hinterlegt. Bis dahin gelten nur eure eigenen Werte.</value></data>
   <data name="DialogTitle" xml:space="preserve"><value>{0}, {1}</value></data>
   <data name="DialogHint" xml:space="preserve"><value>Leere Felder übernehmen den Wert darüber. Sind alle Felder leer, gilt wieder der Standard.</value></data>
+  <data name="ProductDialogHint" xml:space="preserve"><value>Leere Felder übernehmen den Wert der Kategorie. Sind alle Felder leer, gelten wieder die Kategoriewerte.</value></data>
   <data name="FieldInherited" xml:space="preserve"><value>Ohne eigenen Wert: {0}</value></data>
   <data name="DaysUnit" xml:space="preserve"><value>Tage</value></data>
   <data name="FieldOutOfRange" xml:space="preserve"><value>Bitte eine ganze Zahl von 0 bis 3650 eingeben.</value></data>

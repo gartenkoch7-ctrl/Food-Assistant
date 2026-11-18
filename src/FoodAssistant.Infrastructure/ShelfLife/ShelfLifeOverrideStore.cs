@@ -136,22 +136,25 @@ internal sealed class ShelfLifeOverrideStore(AppDbContext db) : IShelfLifeOverri
 
     private async Task DeleteAsync(Expression<Func<ShelfLifeOverride, bool>> key, CancellationToken cancellationToken)
     {
-        var entity = await db.Set<ShelfLifeOverride>().SingleOrDefaultAsync(key, cancellationToken).ConfigureAwait(false);
-        if (entity is null)
+        for (var attempt = 1; ; attempt++)
         {
-            return;
-        }
+            var entity = await db.Set<ShelfLifeOverride>().SingleOrDefaultAsync(key, cancellationToken).ConfigureAwait(false);
+            if (entity is null)
+            {
+                return;
+            }
 
-        db.Remove(entity);
-        try
-        {
-            await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            // Deleted or changed concurrently; a reset wants the row gone either way.
-            db.Entry(entity).State = EntityState.Detached;
-            await DeleteAsync(key, cancellationToken).ConfigureAwait(false);
+            db.Remove(entity);
+            try
+            {
+                await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                return;
+            }
+            catch (DbUpdateConcurrencyException) when (attempt < MaxWriteAttempts)
+            {
+                // Deleted or changed concurrently; a reset wants the row gone either way, so look again.
+                db.Entry(entity).State = EntityState.Detached;
+            }
         }
     }
 

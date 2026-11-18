@@ -27,6 +27,7 @@ public sealed class ShelfLifeDaysDialogTests : UiTestContext
         var parameters = new DialogParameters<ShelfLifeDaysDialog>
         {
             { d => d.Title, "Milchprodukte, Gekühlt" },
+            { d => d.Hint, "Hinweis" },
             { d => d.Own, own },
             { d => d.Inherited, new ShelfLifeDaysDto(3, null, null, null) },
             { d => d.Save, save },
@@ -86,6 +87,20 @@ public sealed class ShelfLifeDaysDialogTests : UiTestContext
         Assert.Equal("true", input.GetAttribute("aria-invalid"));
         Assert.Contains(message.Id!, input.GetAttribute("aria-describedby") ?? string.Empty, StringComparison.Ordinal);
         Assert.Equal(4, provider.FindAll("input").Count);
+    }
+
+    [Fact]
+    public void ValueAboveTheLimit_IsReportedAtTheField_NotClampedOrSaved()
+    {
+        var (provider, _) = Open(null, SaveAnswering(ApiResult<ShelfLifeRuleRowDto>.Success(Row())));
+
+        provider.FindAll("input")[0].Input("5000");
+        provider.FindAll("button").Single(b => b.TextContent.Trim() == "Speichern").Click();
+
+        Assert.Equal("5000", provider.FindAll("input")[0].GetAttribute("value"));
+        Assert.Equal("Bitte eine ganze Zahl von 0 bis 3650 eingeben.", provider.Find(".fa-shelf-life-field-error").TextContent);
+        Assert.Contains("Bitte prüfe die markierten Werte.", provider.Find(".fa-api-error").TextContent, StringComparison.Ordinal);
+        Assert.Empty(_saved);
     }
 
     [Fact]

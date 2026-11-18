@@ -1,6 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FoodAssistant.Application.ShelfLife;
+using FoodAssistant.Contracts.ShelfLife;
 using FoodAssistant.Domain.Catalog;
 using FoodAssistant.Domain.Inventory;
 
@@ -126,6 +127,13 @@ internal sealed class EmbeddedDefaultShelfLifeRules : IDefaultShelfLifeRules
         if (rule.DaysAfterOpening is null && rule.DaysFrozen is null && rule.DaysAfterThawing is null && rule.DaysAsLeftover is null)
         {
             throw new InvalidOperationException($"Shelf-life rule {name}: no value.");
+        }
+
+        int?[] days = [rule.DaysAfterOpening, rule.DaysFrozen, rule.DaysAfterThawing, rule.DaysAsLeftover];
+        if (days.Any(d => d > ShelfLifeLimits.MaxDays))
+        {
+            // Same range as user input: more than ten years is a typing error in the table.
+            throw new InvalidOperationException($"Shelf-life rule {name}: more than {ShelfLifeLimits.MaxDays} days.");
         }
 
         try

@@ -5,8 +5,8 @@ namespace FoodAssistant.Application.ShelfLife;
 /// <summary>Input rules for shelf-life overrides. Error values are stable codes the UI translates.</summary>
 public static class ShelfLifeValidation
 {
-    /// <summary>Largest accepted value: ten years is far beyond any food, so more is a typing error.</summary>
-    public const int MaxDays = 3650;
+    /// <summary>Largest accepted value (<see cref="ShelfLifeLimits.MaxDays"/>).</summary>
+    public const int MaxDays = ShelfLifeLimits.MaxDays;
 
     /// <summary>Error code of a value outside 0–<see cref="MaxDays"/>.</summary>
     public const string OutOfRange = "out_of_range";
