@@ -193,6 +193,43 @@ public sealed class StockBatch
         SetRuleDate(today, rule.DaysAfterThawing);
     }
 
+    /// <summary>
+    /// Corrects a typing error (F14): the amount always; the package date and kind only while
+    /// sealed, because later dates come from a rule and count as use-by (safety boundary).
+    /// </summary>
+    /// <exception cref="ArgumentException">The amount is zero, its unit does not convert, or date and kind do not match.</exception>
+    /// <exception cref="InvalidOperationException">The batch is not sealed and the date or kind differs.</exception>
+    public void Correct(Quantity quantity, DateOnly? packageExpiresOn, ExpiryKind packageExpiryKind)
+    {
+        if (quantity.Unit is null || quantity.IsZero || !quantity.CanConvertTo(Quantity.Unit))
+        {
+            throw new ArgumentException("The amount must be greater than zero and convert into the batch's unit.", nameof(quantity));
+        }
+
+        if (packageExpiresOn.HasValue == (packageExpiryKind == ExpiryKind.None))
+        {
+            throw new ArgumentException("An expiry kind is required exactly when a package date is given.", nameof(packageExpiryKind));
+        }
+
+        var dateChanged = packageExpiresOn != PackageExpiresOn || packageExpiryKind != PackageExpiryKind;
+        EnsureState(!dateChanged || State == BatchState.Sealed, "The date of a batch that is no longer sealed comes from a rule.");
+
+        Quantity = quantity;
+        if (State == BatchState.Sealed)
+        {
+            (PackageExpiresOn, PackageExpiryKind) = (packageExpiresOn, packageExpiryKind);
+            (ExpiresOn, ExpiryKind) = (packageExpiresOn, packageExpiryKind);
+        }
+    }
+
+    /// <summary>Moves the batch between non-freezer storage types; dates and state stay unchanged.</summary>
+    /// <exception cref="InvalidOperationException">The freezer is involved; use <see cref="Freeze"/> or <see cref="Thaw"/>.</exception>
+    internal void Relocate(StorageType target)
+    {
+        EnsureState(target != StorageType.Frozen && StorageType != StorageType.Frozen, "Moving into or out of the freezer freezes or thaws the batch.");
+        StorageType = target;
+    }
+
     /// <summary>Consumes part or all of the batch; dates and state stay unchanged.</summary>
     /// <param name="amount">Amount to take; must be greater than zero and convertible.</param>
     /// <exception cref="InvalidOperationException">
