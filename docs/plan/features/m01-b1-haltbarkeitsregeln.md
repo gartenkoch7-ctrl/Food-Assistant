@@ -15,6 +15,7 @@ Branch `feat/m01-b1-shelf-life` · Pakete: B1.2 → B1.3; B1.1 unabhängig (bloc
 
 ## Aufgaben
 - [ ] B1.1 Standardregel-Tabelle mit Quellen (Daten) – Freigabe durch den Nutzer
+  (Entwurf liegt vor: [m01-b1-standardwerte-entwurf.md](m01-b1-standardwerte-entwurf.md), Freigabe offen)
 - [x] B1.2 Regelquelle, Überschreibungen, `IShelfLifeRules`, Endpunkte
 - [x] B1.3 UI: Regelseite, Produkt-Überschreibung
 

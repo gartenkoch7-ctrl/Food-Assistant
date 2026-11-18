@@ -19,6 +19,30 @@ public sealed class DefaultShelfLifeRulesTests
     }
 
     [Fact]
+    public void ShippedTable_StaysEmptyUntilTheUserApprovesTheDraft()
+    {
+        // Decision F2 (docs/plan/m01-mvp.md): no default is active before the approval.
+        var table = EmbeddedDefaultShelfLifeRules.Load();
+
+        Assert.Empty(table.Rows);
+    }
+
+    [Fact]
+    public void DraftTable_IsValidAndCitesOnlyListedSources()
+    {
+        var draft = EmbeddedDefaultShelfLifeRules.Parse(
+            File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "ShelfLife", "standardwerte-entwurf.json")));
+
+        Assert.Equal(29, draft.Rows.Count);
+        Assert.Equal(
+            draft.Sources.Keys.Order(StringComparer.Ordinal),
+            draft.Rows.Select(r => r.SourceKey).Distinct().Order(StringComparer.Ordinal));
+
+        // Leftovers outside the fridge never last beyond the day (BZfE: use unrefrigerated food the same day).
+        Assert.All(draft.Rows.Where(r => r.StorageType == StorageType.Ambient), r => Assert.Equal(0, r.Rule.DaysAsLeftover));
+    }
+
+    [Fact]
     public void ValidTable_IsParsedAndFound()
     {
         var table = EmbeddedDefaultShelfLifeRules.Parse(Table(Rule("dairy", "Chilled", opening: "3")));
