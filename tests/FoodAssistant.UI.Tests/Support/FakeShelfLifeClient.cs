@@ -25,7 +25,12 @@ public sealed class FakeShelfLifeClient : IShelfLifeClient
         string category, StorageTypeDto type, ShelfLifeDaysDto? inherited = null, ShelfLifeDaysDto? own = null, string? source = null)
     {
         var baseValues = inherited ?? None;
-        return new ShelfLifeRuleRowDto(category, type, baseValues, own, Resolve(own, baseValues), source);
+        var sources = new ShelfLifeSourceKeysDto(
+            baseValues.DaysAfterOpening is null ? null : source,
+            baseValues.DaysFrozen is null ? null : source,
+            baseValues.DaysAfterThawing is null ? null : source,
+            baseValues.DaysAsLeftover is null ? null : source);
+        return new ShelfLifeRuleRowDto(category, type, baseValues, own, Resolve(own, baseValues), sources);
     }
 
     public Task<ApiResult<IReadOnlyList<ShelfLifeRuleRowDto>>> ListRulesAsync(Guid householdId, CancellationToken cancellationToken) =>

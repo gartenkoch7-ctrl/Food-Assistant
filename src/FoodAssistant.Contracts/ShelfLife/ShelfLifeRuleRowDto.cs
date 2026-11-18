@@ -11,11 +11,11 @@ namespace FoodAssistant.Contracts.ShelfLife;
 /// </param>
 /// <param name="Override">The household's own values at this level, or <see langword="null"/> without override.</param>
 /// <param name="Effective">Values that apply, resolved per value (override before default).</param>
-/// <param name="SourceKey">Key of the shipped default's source (see the sources list), or <see langword="null"/>.</param>
+/// <param name="DefaultSources">Source key per shipped value in <paramref name="Default"/>.</param>
 public sealed record ShelfLifeRuleRowDto(
     string CategoryKey,
     StorageTypeDto StorageType,
     ShelfLifeDaysDto Default,
     ShelfLifeDaysDto? Override,
     ShelfLifeDaysDto Effective,
-    string? SourceKey);
+    ShelfLifeSourceKeysDto DefaultSources);

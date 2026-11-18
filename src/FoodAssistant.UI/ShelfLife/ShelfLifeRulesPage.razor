@@ -51,7 +51,7 @@ else
                     @foreach (var row in group)
                     {
                         <ShelfLifeRowView Row="row" ContextName="@name" IdPrefix="@($"shelf-life-{key}")"
-                                          SourceTitle="@SourceTitle(row.SourceKey)" CanEdit="Session.CanEdit"
+                                          SourceTitles="@ShelfLifeFormat.SourceTitles(row.DefaultSources, _sources)" CanEdit="Session.CanEdit"
                                           OnEdit="() => EditAsync(row, name)" OnReset="() => ResetAsync(row, name)" />
                     }
                 </div>
@@ -103,8 +103,6 @@ else
         _sources = sources.Value ?? [];
         _rows = [.. rules.Value!];
     }
-
-    private string? SourceTitle(string? key) => key is null ? null : _sources.FirstOrDefault(s => s.Key == key)?.Title;
 
     private void Toggle(string key)
     {

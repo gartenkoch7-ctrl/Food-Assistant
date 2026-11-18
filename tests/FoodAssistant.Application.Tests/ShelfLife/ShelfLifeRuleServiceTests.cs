@@ -89,5 +89,5 @@ public sealed class ShelfLifeRuleServiceTests
     }
 
     private static FakeDefaultShelfLifeRules Defaults() =>
-        new(new DefaultShelfLifeRow(ProductCategories.Dairy, StorageType.Chilled, DairyDefault, "test"));
+        new(new DefaultShelfLifeRow(ProductCategories.Dairy, StorageType.Chilled, DairyDefault, new ShelfLifeRuleSources("test", "test", "test", "test")));
 }

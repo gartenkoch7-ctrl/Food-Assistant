@@ -23,6 +23,7 @@
   <data name="OriginOwn" xml:space="preserve"><value>Eigen</value></data>
   <data name="OriginCategory" xml:space="preserve"><value>Kategorie</value></data>
   <data name="SourceOfRow" xml:space="preserve"><value>Quelle: {0}</value></data>
+  <data name="SourcesOfRow" xml:space="preserve"><value>Quellen: {0}</value></data>
   <data name="Edit" xml:space="preserve"><value>Bearbeiten</value></data>
   <data name="EditLabel" xml:space="preserve"><value>Bearbeiten: {0}, {1}</value></data>
   <data name="Reset" xml:space="preserve"><value>Auf Standard zurücksetzen</value></data>

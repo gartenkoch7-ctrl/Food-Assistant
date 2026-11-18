@@ -36,7 +36,7 @@ else
         {
             <ShelfLifeRowView Row="row" ContextName="@ContextName" IdPrefix="shelf-life-product"
                               InheritedOriginKey="OriginCategory" ResetKey="ResetToCategory" ResetLabelKey="ResetToCategoryLabel"
-                              SourceTitle="@SourceTitle(row.SourceKey)"
+                              SourceTitles="@ShelfLifeFormat.SourceTitles(row.DefaultSources, _sources)"
                               CanEdit="Session.CanEdit" OnEdit="() => EditAsync(row)" OnReset="() => ResetAsync(row)" />
         }
     </section>
@@ -79,8 +79,6 @@ else
         _sources = (await Client.ListSourcesAsync(HouseholdId, _cts.Token)).Value ?? [];
         _product = rules.Value;
     }
-
-    private string? SourceTitle(string? key) => key is null ? null : _sources.FirstOrDefault(s => s.Key == key)?.Title;
 
     private async Task EditAsync(ShelfLifeRuleRowDto row)
     {

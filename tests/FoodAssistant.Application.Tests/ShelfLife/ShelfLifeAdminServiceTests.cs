@@ -22,7 +22,7 @@ public sealed class ShelfLifeAdminServiceTests
         ProductCategories.Dairy,
         StorageType.Chilled,
         new ShelfLifeRule { DaysAfterOpening = 3, DaysAsLeftover = 2 },
-        "test"));
+        new ShelfLifeRuleSources("test", null, null, "test")));
 
     public ShelfLifeAdminServiceTests() => _store.ProductCategories[Milk] = ProductCategories.Dairy;
 
@@ -39,9 +39,9 @@ public sealed class ShelfLifeAdminServiceTests
         Assert.Equal(new ShelfLifeDaysDto(3, null, null, 2), dairy.Default);
         Assert.Equal(new ShelfLifeDaysDto(1, null, null, null), dairy.Override);
         Assert.Equal(new ShelfLifeDaysDto(1, null, null, 2), dairy.Effective);
-        Assert.Equal("test", dairy.SourceKey);
+        Assert.Equal(new ShelfLifeSourceKeysDto("test", null, null, "test"), dairy.DefaultSources);
         var frozen = Assert.Single(rows, r => r.CategoryKey == ProductCategories.Dairy && r.StorageType == StorageTypeDto.Frozen);
-        Assert.Null(frozen.SourceKey);
+        Assert.Equal(new ShelfLifeSourceKeysDto(null, null, null, null), frozen.DefaultSources);
         Assert.Equal(ProductCategories.All, rows.Select(r => r.CategoryKey).Distinct());
     }
 
@@ -63,7 +63,9 @@ public sealed class ShelfLifeAdminServiceTests
         Assert.Equal(OperationStatus.Ok, result.Status);
         Assert.Equal(new ShelfLifeDaysDto(1, null, null, 2), result.Value!.Default);
         Assert.Equal(new ShelfLifeDaysDto(1, null, null, 4), result.Value.Effective);
-        Assert.Equal("test", result.Value.SourceKey);
+
+        // The opening value now comes from the household's category override, so only the leftover cites the source.
+        Assert.Equal(new ShelfLifeSourceKeysDto(null, null, null, "test"), result.Value.DefaultSources);
     }
 
     [Fact]

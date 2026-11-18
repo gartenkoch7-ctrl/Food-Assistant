@@ -14,8 +14,8 @@ Branch `feat/m01-b1-shelf-life` · Pakete: B1.2 → B1.3; B1.1 unabhängig (bloc
 - Rest anlegen: Zeile (Kategorie, Lagertyp des Ziel-Lagerorts) → `DaysAsLeftover`.
 
 ## Aufgaben
-- [ ] B1.1 Standardregel-Tabelle mit Quellen (Daten) – Freigabe durch den Nutzer
-  (Entwurf liegt vor: [m01-b1-standardwerte-entwurf.md](m01-b1-standardwerte-entwurf.md), Freigabe offen)
+- [x] B1.1 Standardregel-Tabelle mit Quellen (Daten) – Freigabe durch den Nutzer
+  (freigegeben 2026-11-18 mit Format Version 2, Quelle je Wert: [haltbarkeitsregeln.md](../../kb/haltbarkeitsregeln.md))
 - [x] B1.2 Regelquelle, Überschreibungen, `IShelfLifeRules`, Endpunkte
 - [x] B1.3 UI: Regelseite, Produkt-Überschreibung
 
@@ -37,12 +37,17 @@ Branch `feat/m01-b1-shelf-life` · Pakete: B1.2 → B1.3; B1.1 unabhängig (bloc
 
 ### Paket B1.2 – Regelquelle, Überschreibungen, Endpunkte
 
+> **Stand 2026-11-18:** Leere Tabelle und `string SourceKey` unten sind überholt: Format Version 2
+> (Quelle je Wert, `ShelfLifeRuleRowDto.DefaultSources`) und freigegebene Werte, siehe
+> [haltbarkeitsregeln.md](../../kb/haltbarkeitsregeln.md).
+
 - **Stufe / Modell / Effort:** 2 / Sonnet / medium
 - **Wartet auf:** Schritt 0 · **Blockiert durch:** –
 - **Muster:** wie A1 (`docs/plan/features/m01-a-katalog.md`); eingebettete Ressource wie übliches
   `<EmbeddedResource Include="ShelfLife/default-shelf-life-rules.json" />` im Infrastructure-csproj.
 
-JSON-Format (Version 1):
+JSON-Format (Version 1, ersetzt am 2026-11-18 durch Version 2 mit Quelle je Wert, siehe
+[haltbarkeitsregeln.md](../../kb/haltbarkeitsregeln.md)):
 ```json
 { "version": 1,
   "sources": { "bzfe": { "title": "…", "url": "https://…", "retrieved": "2026-11-20" } },
