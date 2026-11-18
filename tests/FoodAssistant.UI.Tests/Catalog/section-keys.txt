@@ -1,0 +1,11 @@
+produce
+bakery
+dairy_chilled
+meat_fish
+frozen
+pantry
+spices_baking
+sweets_snacks
+beverages
+household
+other

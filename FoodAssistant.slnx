@@ -12,6 +12,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/FoodAssistant.Application.Tests/FoodAssistant.Application.Tests.csproj" />
     <Project Path="tests/FoodAssistant.Architecture.Tests/FoodAssistant.Architecture.Tests.csproj" />
+    <Project Path="tests/FoodAssistant.Client.Tests/FoodAssistant.Client.Tests.csproj" />
     <Project Path="tests/FoodAssistant.Domain.Tests/FoodAssistant.Domain.Tests.csproj" />
     <Project Path="tests/FoodAssistant.Infrastructure.Tests/FoodAssistant.Infrastructure.Tests.csproj" />
     <Project Path="tests/FoodAssistant.Server.Tests/FoodAssistant.Server.Tests.csproj" />

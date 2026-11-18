@@ -1,0 +1,47 @@
+@using FoodAssistant.Contracts.Common
+@inject IStringLocalizer<CommonText> T
+
+@* A quantity always carries its unit (AGENTS.md 2.4): number and unit are one field group. *@
+<div class="fa-quantity-input" role="group" aria-label="@Label">
+    <MudNumericField T="decimal?" Label="@Label" Required="Required" Min="0m"
+                     Value="Value?.Value" ValueChanged="OnAmountChanged" Variant="Variant.Outlined" />
+    <MudSelect T="string" Label="@T["UnitLabel"]" Required="Required"
+               Value="CurrentUnit" ValueChanged="OnUnitChanged" Variant="Variant.Outlined">
+        @foreach (var unit in UnitCodes.All)
+        {
+            <MudSelectItem T="string" Value="@unit">@T["Unit." + unit]</MudSelectItem>
+        }
+    </MudSelect>
+</div>
+
+@code {
+    [Parameter]
+    public QuantityDto? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<QuantityDto?> ValueChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool Required { get; set; }
+
+    /// <summary>Unit offered while no quantity is set yet (e.g. the product's default unit).</summary>
+    [Parameter]
+    public string DefaultUnit { get; set; } = UnitCodes.Piece;
+
+    // Remembered so choosing a unit before typing a number does not lose the choice.
+    private string? _pendingUnit;
+
+    private string CurrentUnit => Value?.Unit ?? _pendingUnit ?? DefaultUnit;
+
+    private Task OnAmountChanged(decimal? amount) =>
+        ValueChanged.InvokeAsync(amount is null ? null : new QuantityDto(amount.Value, CurrentUnit));
+
+    private Task OnUnitChanged(string unit)
+    {
+        _pendingUnit = unit;
+        return ValueChanged.InvokeAsync(Value is null ? null : Value with { Unit = unit });
+    }
+}

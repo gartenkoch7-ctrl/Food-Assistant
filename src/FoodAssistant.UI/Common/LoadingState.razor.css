@@ -1,0 +1,8 @@
+.fa-loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--fa-space-3);
+    padding: var(--fa-space-8) var(--fa-space-4);
+    color: var(--fa-text-muted, inherit);
+}

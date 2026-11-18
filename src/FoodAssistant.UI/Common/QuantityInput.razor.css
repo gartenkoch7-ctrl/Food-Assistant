@@ -1,0 +1,9 @@
+.fa-quantity-input {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fa-space-3);
+}
+
+.fa-quantity-input ::deep .mud-input-control {
+    flex: 1 1 8rem;
+}

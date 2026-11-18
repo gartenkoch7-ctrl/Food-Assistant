@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- German is the neutral language of the project. Keys are the store section keys of the fixed list (StoreSections). -->
+  <data name="produce" xml:space="preserve"><value>Obst &amp; Gemüse</value></data>
+  <data name="bakery" xml:space="preserve"><value>Brot &amp; Backwaren</value></data>
+  <data name="dairy_chilled" xml:space="preserve"><value>Kühlregal</value></data>
+  <data name="meat_fish" xml:space="preserve"><value>Fleisch, Wurst &amp; Fisch</value></data>
+  <data name="frozen" xml:space="preserve"><value>Tiefkühl</value></data>
+  <data name="pantry" xml:space="preserve"><value>Grundnahrungsmittel &amp; Konserven</value></data>
+  <data name="spices_baking" xml:space="preserve"><value>Gewürze &amp; Backen</value></data>
+  <data name="sweets_snacks" xml:space="preserve"><value>Süßes &amp; Snacks</value></data>
+  <data name="beverages" xml:space="preserve"><value>Getränke</value></data>
+  <data name="household" xml:space="preserve"><value>Drogerie &amp; Haushalt</value></data>
+  <data name="other" xml:space="preserve"><value>Sonstiges</value></data>
+</root>

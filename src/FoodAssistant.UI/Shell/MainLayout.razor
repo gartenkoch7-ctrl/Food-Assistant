@@ -11,9 +11,10 @@
             <AppNav />
         </div>
         <main id="main-content" class="fa-main" tabindex="-1">
-            @Body
+            <SessionGate>@Body</SessionGate>
         </main>
     </div>
+    <LiveRegion />
 </ThemeHost>
 
 @* Shown by the Blazor runtime on an unhandled exception. *@

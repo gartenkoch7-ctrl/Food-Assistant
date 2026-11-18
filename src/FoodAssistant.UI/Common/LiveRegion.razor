@@ -1,0 +1,13 @@
+@implements IDisposable
+@inject ILiveAnnouncer Announcer
+
+@* Visually hidden, but always in the DOM: a region that appears together with its text is not announced. *@
+<div class="fa-visually-hidden" role="status" aria-live="polite" aria-atomic="true">@Announcer.Message</div>
+
+@code {
+    protected override void OnInitialized() => Announcer.Changed += OnChanged;
+
+    private void OnChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Announcer.Changed -= OnChanged;
+}

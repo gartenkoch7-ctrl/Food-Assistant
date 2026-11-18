@@ -1,0 +1,36 @@
+@inject IStringLocalizer<CommonText> T
+
+@* Expiry dates are plain calendar dates without time (AGENTS.md 2.4); MudBlazor works with DateTime, so the conversion lives here only. *@
+<div class="fa-date-field">
+    <MudDatePicker Label="@Label" Date="_date" DateChanged="OnDateChanged" Required="Required"
+                   Variant="Variant.Outlined" Editable="true" />
+    @if (Value is not null)
+    {
+        <MudIconButton Icon="@Icons.Material.Rounded.Clear" aria-label="@T["DateClear"]" Size="Size.Small"
+                       OnClick="ClearAsync" />
+    }
+</div>
+
+@code {
+    private DateTime? _date;
+
+    [Parameter]
+    public DateOnly? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<DateOnly?> ValueChanged { get; set; }
+
+    [Parameter, EditorRequired]
+    public string Label { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool Required { get; set; }
+
+    protected override void OnParametersSet() =>
+        _date = Value is { } day ? day.ToDateTime(TimeOnly.MinValue) : null;
+
+    private Task OnDateChanged(DateTime? date) =>
+        ValueChanged.InvokeAsync(date is { } value ? DateOnly.FromDateTime(value) : null);
+
+    private Task ClearAsync() => ValueChanged.InvokeAsync(null);
+}

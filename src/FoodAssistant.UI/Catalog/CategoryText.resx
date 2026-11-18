@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- German is the neutral language of the project. Keys are the category keys of the fixed list (ProductCategories). -->
+  <data name="dairy" xml:space="preserve"><value>Milchprodukte</value></data>
+  <data name="cheese" xml:space="preserve"><value>Käse</value></data>
+  <data name="eggs" xml:space="preserve"><value>Eier</value></data>
+  <data name="meat" xml:space="preserve"><value>Fleisch</value></data>
+  <data name="poultry" xml:space="preserve"><value>Geflügel</value></data>
+  <data name="fish" xml:space="preserve"><value>Fisch &amp; Meeresfrüchte</value></data>
+  <data name="sausage" xml:space="preserve"><value>Wurst &amp; Aufschnitt</value></data>
+  <data name="fruit" xml:space="preserve"><value>Obst</value></data>
+  <data name="vegetables" xml:space="preserve"><value>Gemüse</value></data>
+  <data name="herbs" xml:space="preserve"><value>Kräuter</value></data>
+  <data name="bread" xml:space="preserve"><value>Brot &amp; Backwaren</value></data>
+  <data name="grains" xml:space="preserve"><value>Nudeln, Reis &amp; Getreide</value></data>
+  <data name="legumes" xml:space="preserve"><value>Hülsenfrüchte</value></data>
+  <data name="canned" xml:space="preserve"><value>Konserven</value></data>
+  <data name="frozen" xml:space="preserve"><value>Tiefkühlkost</value></data>
+  <data name="ready_meals" xml:space="preserve"><value>Fertiggerichte (gekühlt)</value></data>
+  <data name="sauces" xml:space="preserve"><value>Saucen &amp; Würzmittel</value></data>
+  <data name="spices" xml:space="preserve"><value>Gewürze</value></data>
+  <data name="oils" xml:space="preserve"><value>Öle &amp; Fette</value></data>
+  <data name="baking" xml:space="preserve"><value>Backzutaten</value></data>
+  <data name="sweets" xml:space="preserve"><value>Süßes &amp; Snacks</value></data>
+  <data name="beverages" xml:space="preserve"><value>Getränke</value></data>
+  <data name="plant_based" xml:space="preserve"><value>Pflanzliche Alternativen</value></data>
+  <data name="other" xml:space="preserve"><value>Sonstiges</value></data>
+</root>

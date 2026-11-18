@@ -81,6 +81,26 @@ public sealed class MainLayoutTests : UiTestContext
     }
 
     [Fact]
+    public void Layout_HasOneLiveRegion_OutsideTheMainContent()
+    {
+        var cut = RenderLayout();
+
+        var region = Assert.Single(cut.FindAll("[role=status][aria-live=polite]"));
+        Assert.Null(region.Closest("main"));
+    }
+
+    [Fact]
+    public void Layout_SendsAnonymousVisitorsToTheLoginPage()
+    {
+        Accounts.Me = null;
+        ReloadSession();
+
+        RenderLayout();
+
+        Assert.Contains("/login?returnUrl=", Services.GetRequiredService<BunitNavigationManager>().Uri, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void Layout_ShowsTheWordmark()
     {
         var cut = RenderLayout();

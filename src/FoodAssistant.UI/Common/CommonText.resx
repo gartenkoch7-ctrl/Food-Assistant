@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- German is the neutral language of the project; CommonText.en.resx holds the English texts. -->
+  <data name="Unit.g" xml:space="preserve"><value>g</value></data>
+  <data name="Unit.kg" xml:space="preserve"><value>kg</value></data>
+  <data name="Unit.ml" xml:space="preserve"><value>ml</value></data>
+  <data name="Unit.l" xml:space="preserve"><value>l</value></data>
+  <data name="Unit.piece" xml:space="preserve"><value>Stück</value></data>
+  <data name="Unit.tbsp" xml:space="preserve"><value>EL</value></data>
+  <data name="Unit.tsp" xml:space="preserve"><value>TL</value></data>
+  <data name="Unit.pinch" xml:space="preserve"><value>Prise</value></data>
+  <data name="Unit.bunch" xml:space="preserve"><value>Bund</value></data>
+  <data name="Unit.package" xml:space="preserve"><value>Packung</value></data>
+  <data name="Unit.can" xml:space="preserve"><value>Dose</value></data>
+  <data name="UnitLabel" xml:space="preserve"><value>Einheit</value></data>
+  <data name="StorageType.Chilled" xml:space="preserve"><value>Kühlschrank</value></data>
+  <data name="StorageType.Frozen" xml:space="preserve"><value>Tiefkühler</value></data>
+  <data name="StorageType.Ambient" xml:space="preserve"><value>Vorratsschrank</value></data>
+  <data name="Error.Generic" xml:space="preserve"><value>Das hat nicht geklappt. Bitte versuche es noch einmal.</value></data>
+  <data name="Error.Offline" xml:space="preserve"><value>Du bist offline. Diese Aktion braucht eine Verbindung zum Server.</value></data>
+  <data name="Error.Network" xml:space="preserve"><value>Der Server ist nicht erreichbar. Prüfe deine Verbindung und versuche es noch einmal.</value></data>
+  <data name="Error.Conflict" xml:space="preserve"><value>Inzwischen geändert – neu geladen. Bitte prüfe deine Eingabe und speichere erneut.</value></data>
+  <data name="Loading" xml:space="preserve"><value>Wird geladen …</value></data>
+  <data name="Save" xml:space="preserve"><value>Speichern</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Abbrechen</value></data>
+  <data name="Delete" xml:space="preserve"><value>Löschen</value></data>
+  <data name="Undo" xml:space="preserve"><value>Rückgängig</value></data>
+  <data name="DateClear" xml:space="preserve"><value>Datum entfernen</value></data>
+</root>

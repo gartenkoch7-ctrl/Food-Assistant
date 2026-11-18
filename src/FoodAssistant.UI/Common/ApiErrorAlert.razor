@@ -1,0 +1,37 @@
+@using FoodAssistant.Client.Http
+@inject IStringLocalizer<CommonText> Common
+
+@if (Error is not null)
+{
+    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="fa-api-error" role="alert">@Message</MudAlert>
+}
+
+@code {
+    /// <summary>The failed call; <c>null</c> renders nothing. Field errors are not shown here but at the field.</summary>
+    [Parameter]
+    public ApiError? Error { get; set; }
+
+    /// <summary>Texts of the feature; the key <c>Error.&lt;errorCode&gt;</c> there wins over the generic texts.</summary>
+    [Parameter]
+    public IStringLocalizer? FeatureText { get; set; }
+
+    private string Message
+    {
+        get
+        {
+            var specific = FeatureText?["Error." + Error!.ErrorCode];
+            if (specific is { ResourceNotFound: false })
+            {
+                return specific.Value;
+            }
+
+            return Error!.ErrorCode switch
+            {
+                ClientErrorCodes.Network => Common["Error.Network"],
+                ClientErrorCodes.Offline => Common["Error.Offline"],
+                _ when Error.Status == 412 => Common["Error.Conflict"],
+                _ => Common["Error.Generic"],
+            };
+        }
+    }
+}

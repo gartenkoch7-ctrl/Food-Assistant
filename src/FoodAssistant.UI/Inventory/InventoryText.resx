@@ -9,11 +9,6 @@
   <data name="InventoryEmptyHeading" xml:space="preserve"><value>Dein Vorrat ist noch leer</value></data>
   <data name="InventoryEmptyText" xml:space="preserve"><value>Sobald du Lebensmittel hinzufügst, siehst du hier auf einen Blick, was bald abläuft.</value></data>
   <data name="InventoryEmptyAction" xml:space="preserve"><value>Artikel scannen</value></data>
-  <data name="ScanTitle" xml:space="preserve"><value>Scannen</value></data>
-  <data name="ScanComingSoonHeading" xml:space="preserve"><value>Der Barcode-Scan kommt in M1</value></data>
-  <data name="ScanComingSoonText" xml:space="preserve"><value>Bald scannst du Barcodes mit der Kamera. Bis dahin kannst du Artikel von Hand eingeben.</value></data>
-  <data name="ScanManualAction" xml:space="preserve"><value>Manuell eingeben</value></data>
-  <data name="ScanManualHint" xml:space="preserve"><value>Die manuelle Eingabe folgt zusammen mit dem Vorrat in M1.</value></data>
   <data name="StatusExpired" xml:space="preserve"><value>Abgelaufen</value></data>
   <data name="StatusSoon" xml:space="preserve"><value>Läuft bald ab</value></data>
   <data name="StatusOk" xml:space="preserve"><value>Haltbar</value></data>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="dairy" xml:space="preserve"><value>Dairy</value></data>
+  <data name="cheese" xml:space="preserve"><value>Cheese</value></data>
+  <data name="eggs" xml:space="preserve"><value>Eggs</value></data>
+  <data name="meat" xml:space="preserve"><value>Meat</value></data>
+  <data name="poultry" xml:space="preserve"><value>Poultry</value></data>
+  <data name="fish" xml:space="preserve"><value>Fish &amp; seafood</value></data>
+  <data name="sausage" xml:space="preserve"><value>Sausage &amp; cold cuts</value></data>
+  <data name="fruit" xml:space="preserve"><value>Fruit</value></data>
+  <data name="vegetables" xml:space="preserve"><value>Vegetables</value></data>
+  <data name="herbs" xml:space="preserve"><value>Herbs</value></data>
+  <data name="bread" xml:space="preserve"><value>Bread &amp; bakery</value></data>
+  <data name="grains" xml:space="preserve"><value>Pasta, rice &amp; grains</value></data>
+  <data name="legumes" xml:space="preserve"><value>Legumes</value></data>
+  <data name="canned" xml:space="preserve"><value>Canned food</value></data>
+  <data name="frozen" xml:space="preserve"><value>Frozen food</value></data>
+  <data name="ready_meals" xml:space="preserve"><value>Ready meals (chilled)</value></data>
+  <data name="sauces" xml:space="preserve"><value>Sauces &amp; condiments</value></data>
+  <data name="spices" xml:space="preserve"><value>Spices</value></data>
+  <data name="oils" xml:space="preserve"><value>Oils &amp; fats</value></data>
+  <data name="baking" xml:space="preserve"><value>Baking</value></data>
+  <data name="sweets" xml:space="preserve"><value>Sweets &amp; snacks</value></data>
+  <data name="beverages" xml:space="preserve"><value>Beverages</value></data>
+  <data name="plant_based" xml:space="preserve"><value>Plant-based alternatives</value></data>
+  <data name="other" xml:space="preserve"><value>Other</value></data>
+</root>

@@ -1,0 +1,96 @@
+@implements IDisposable
+@inject SessionState Session
+@inject NavigationManager Navigation
+@inject IStringLocalizer<SessionText> T
+
+@if (IsPublicPath)
+{
+    @ChildContent
+}
+else
+{
+    switch (Session.Status)
+    {
+        case SessionStatus.Ready:
+            @ChildContent
+            break;
+        case SessionStatus.NoHousehold:
+            <EmptyState Icon="@Icons.Material.Rounded.House" Heading="@T["NoHouseholdHeading"]" Text="@T["NoHouseholdText"]">
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" OnClick="() => Session.SignOutAsync()">@T["SignOut"]</MudButton>
+            </EmptyState>
+            break;
+        default:
+            @* Loading, or a redirect to the login/setup page is under way. *@
+            <LoadingState />
+            break;
+    }
+}
+
+@code {
+    private static readonly string[] PublicPrefixes = ["login", "setup", "invite"];
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private bool IsPublicPath
+    {
+        get
+        {
+            var path = PathOnly(Navigation.ToBaseRelativePath(Navigation.Uri));
+            return PublicPrefixes.Any(p => path.Equals(p, StringComparison.OrdinalIgnoreCase)
+                || path.StartsWith(p + "/", StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Session.Changed += OnSessionChanged;
+        Navigation.LocationChanged += OnLocationChanged;
+        await Session.EnsureLoadedAsync();
+        Redirect();
+    }
+
+    private static string PathOnly(string relative)
+    {
+        var end = relative.IndexOfAny(['?', '#']);
+        return end < 0 ? relative : relative[..end];
+    }
+
+    // The target is built from the app's own address, so it is always a local path (no open redirect).
+    private void Redirect()
+    {
+        if (IsPublicPath)
+        {
+            return;
+        }
+
+        switch (Session.Status)
+        {
+            case SessionStatus.NeedsSetup:
+                Navigation.NavigateTo("/setup", replace: true);
+                break;
+            case SessionStatus.SignedOut:
+                var returnUrl = "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+                Navigation.NavigateTo("/login?returnUrl=" + Uri.EscapeDataString(returnUrl), replace: true);
+                break;
+        }
+    }
+
+    private void OnSessionChanged() => _ = InvokeAsync(() =>
+    {
+        Redirect();
+        StateHasChanged();
+    });
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e) => _ = InvokeAsync(() =>
+    {
+        Redirect();
+        StateHasChanged();
+    });
+
+    public void Dispose()
+    {
+        Session.Changed -= OnSessionChanged;
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+}
