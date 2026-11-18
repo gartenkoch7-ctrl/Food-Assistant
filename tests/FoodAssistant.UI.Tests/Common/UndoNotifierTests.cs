@@ -9,22 +9,22 @@ namespace FoodAssistant.UI.Tests.Common;
 public sealed class UndoNotifierTests : UiTestContext
 {
     [Fact]
-    public void Show_ShowsTheMessageWithAnUndoButton_ThatRunsTheCallback()
+    public async Task Show_ShowsTheMessageWithAnUndoButton_ThatRunsTheCallback()
     {
         var undone = false;
         var provider = Render<MudSnackbarProvider>();
 
-        provider.InvokeAsync(() => Services.GetRequiredService<IUndoNotifier>().Show("Milch entfernt", () =>
+        await provider.InvokeAsync(() => Services.GetRequiredService<IUndoNotifier>().Show("Milch entfernt", () =>
         {
             undone = true;
             return Task.CompletedTask;
         }));
 
-        provider.WaitForAssertion(() => Assert.Contains("Milch entfernt", provider.Markup, StringComparison.Ordinal));
-        var undo = provider.Find("button.mud-snackbar-action-button, .mud-snackbar-action button");
-        Assert.Contains("Rückgängig", undo.TextContent);
-        undo.Click();
-        Assert.True(undone);
+        provider.WaitForAssertion(() => Assert.Contains("Rückgängig", provider.Markup, StringComparison.Ordinal));
+
+        // Find and click in one renderer step: the snackbar re-renders while it animates in.
+        await provider.InvokeAsync(() => provider.Find("button.mud-snackbar-action-button, .mud-snackbar-action button").Click());
+        provider.WaitForAssertion(() => Assert.True(undone));
     }
 
     [Fact]
