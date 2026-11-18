@@ -1,13 +1,16 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FoodAssistant.Client.Restock;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace FoodAssistant.Client.Composition;
 
-/// <summary>Registers the Restock client services. Empty until the owning track fills it (plan M1, S0.3 hook).</summary>
+/// <summary>Registers the Restock client (recurring shopping rules, track G).</summary>
 public static class RestockClientRegistration
 {
     public static IServiceCollection AddRestockClient(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        services.TryAddScoped<IRestockClient, RestockClient>();
         return services;
     }
 }

@@ -79,11 +79,43 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
   markiert „automatisch“.
 - Wird der Eintrag entfernt, kommt er erst beim **nächsten** Unterschreiten wieder.
 - Steht das Produkt schon auf einer Liste, wird nichts doppelt angelegt.
+- **Regel** (`RestockDecision`, nach jeder Bestandsänderung und jeder Mindestbestand-Änderung über
+  `IStockChangedHandler`): `Product.MinimumStockTriggered` ist der Merker „schon auf der Liste“.
+  Unter Minimum und Merker aus: kein offener Eintrag → `AddToList` (Eintrag, Merker an); schon ein offener
+  Eintrag (auch manuell) → nur `Arm` (Merker an, nichts doppelt). Merker an → nichts. Bestand ≥ Minimum oder
+  Minimum entfernt, Merker an → `Disarm`. Ein gelöschter Eintrag setzt den Merker nicht zurück: erst
+  ausreichender Bestand (z. B. nach „Einkauf abschließen“) macht wieder scharf.
+- **Menge:** `Minimum − Bestand` in der Einheit des Mindestbestands; `piece`/`package`/`can` auf ganze Zahlen
+  aufgerundet, sonst auf drei Nachkommastellen aufgerundet. Chargen in nicht umrechenbarer Einheit zählen nicht mit.
+- Der Merker wird vor dem Anlegen gesetzt („Claim“): von zwei gleichzeitigen Prüfungen legt nur eine den Eintrag
+  an; scheitert das Anlegen, wird er zurückgenommen. Das Setzen ändert die Version (`xmin`) des Produkts;
+  Anlegen und Ändern eines Produkts liefern deshalb die Version **nach** den Handlern zurück.
 
 ## Wiederkehrende Artikel
 - Regel: täglich, wöchentlich (Wochentag), monatlich (Tag); Ziel-Liste; Menge.
 - Ein Hintergrunddienst legt den Eintrag zum Termin an (Zeitzone des Haushalts), nicht doppelt,
   wenn er noch offen ist.
+- **API:** `GET/POST /shopping/recurring`, `PUT/DELETE /shopping/recurring/{ruleId}` (Lesen jede Rolle, Schreiben
+  Mitglied, `If-Match` Pflicht bei PUT/DELETE). Unbekannte oder fremde Liste → 404 `shopping.list_not_found`,
+  unbekanntes Produkt → 404 `catalog.product_not_found`, unbekannte Regel → 404 `restock.rule_not_found`.
+  Eine Regel mit Produkt speichert dessen Namen als `text`; der Eintrag nutzt beim Lauf Name und Bereich des
+  Produkts (archiviert → Freitext der Regel, Bereich `other`).
+- **Termine** (`RecurrenceSchedule`, Haushaltsdaten): täglich = morgen; wöchentlich = nächster Wochentag **nach**
+  dem Bezugstag; monatlich = nächster Tag `dom` nach dem Bezugstag, in kürzeren Monaten der letzte Tag. Erster
+  Termin beim Anlegen/Ändern des Plans: `NextDue(…, gestern)`, also heute, wenn er passt. Ändern von Text, Menge
+  oder Liste lässt den Termin unberührt. Wer den Plan an dem Tag ändert, an dem die Regel schon lief, kann
+  für heute einen zweiten Eintrag bekommen (bewusst einfach gehalten).
+- **Robustheit:** Der Eintrag eines Termins hat eine feste Id (Hash aus Regel-Id und Termin), ein Neustart
+  zwischen Anlegen und Markieren legt ihn also nicht doppelt an. Eine Regel, die scheitert (Log 3556), rückt auf
+  den nächsten Termin und stoppt die übrigen nicht; wurde sie während des Laufs bearbeitet, bleibt der Plan des
+  Bearbeiters (Versionsvergleich).
+- **Lauf** (`RecurringItemsJob`, alle 15 min, erster Lauf 30 s nach dem Start; je Haushalt ein Scope über
+  `IHouseholdScopeFactory`, Fehler je Haushalt geloggt): Regeln mit `NextDueOn ≤ heute`; ist der zuletzt
+  erzeugte Eintrag (`LastCreatedItemId`) noch offen (nicht abgehakt, nicht gelöscht), wird übersprungen, sonst
+  ein Eintrag mit Herkunft „wiederkehrend“ angelegt. In beiden Fällen rückt `NextDueOn` auf den nächsten Termin
+  nach heute (ein langer Ausfall legt also keine Einträge nach).
+- **Oberfläche:** `/shopping/recurring` (Link auf „Mehr“), Anlegen/Bearbeiten/Löschen ab Mitglied; Produkt über
+  `ProductPicker` oder Freitext.
 
 ## Import von Listen
 - MVP: Grocy (Einkaufslisten), CSV.

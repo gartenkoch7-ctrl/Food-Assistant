@@ -1,0 +1,188 @@
+@using System.Globalization
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Restock
+@using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Common
+@using FoodAssistant.Contracts.Restock
+@using FoodAssistant.Contracts.Shopping
+@inject IRestockClient Restock
+@inject SessionState Session
+@inject IStringLocalizer<RestockText> T
+@inject IStringLocalizer<CommonText> Common
+
+@* Creates or changes a recurring rule. Closes with DialogResult.Ok(RecurringRuleDto) after saving. *@
+<MudDialog>
+    <TitleContent>@(Rule is null ? T["RuleDialogNew"] : T["RuleDialogEdit"])</TitleContent>
+    <DialogContent>
+        <ApiErrorAlert Error="_error" FeatureText="T" />
+
+        <div class="fa-dialog-fields">
+            @if (_productId is null)
+            {
+                <ProductPicker Label="@T["FieldProduct"]" AllowCreate="false" ProductSelected="OnProductAsync" />
+            }
+
+            <MudTextField T="string" @bind-Value="_text" Label="@T["FieldText"]" Required="true" RequiredError="@T["FieldError.required"]"
+                          MaxLength="200" Variant="Variant.Outlined" ReadOnly="@(_productId is not null)"
+                          Error="_textInvalid" ErrorText="@T["FieldError.required"]" />
+            @if (_productId is not null)
+            {
+                <MudButton Variant="Variant.Text" OnClick="ClearProduct">@T["ClearProduct"]</MudButton>
+            }
+
+            <QuantityInput @bind-Value="_quantity" Label="@T["FieldQuantity"]" DefaultUnit="@_defaultUnit" />
+
+            <MudSelect T="Guid" @bind-Value="_listId" Label="@T["FieldList"]" Variant="Variant.Outlined">
+                @foreach (var list in Lists)
+                {
+                    <MudSelectItem T="Guid" Value="@list.Id">@(string.IsNullOrWhiteSpace(list.Name) ? T["DefaultListName"].Value : list.Name)</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudSelect T="RecurrenceFrequencyDto" @bind-Value="_frequency" Label="@T["FieldFrequency"]" Variant="Variant.Outlined">
+                @foreach (var frequency in Enum.GetValues<RecurrenceFrequencyDto>())
+                {
+                    <MudSelectItem T="RecurrenceFrequencyDto" Value="@frequency">@T["Frequency." + frequency]</MudSelectItem>
+                }
+            </MudSelect>
+
+            @if (_frequency == RecurrenceFrequencyDto.Weekly)
+            {
+                <MudSelect T="DayOfWeek" @bind-Value="_dayOfWeek" Label="@T["FieldDayOfWeek"]" Variant="Variant.Outlined">
+                    @foreach (var day in WeekDays)
+                    {
+                        <MudSelectItem T="DayOfWeek" Value="@day">@CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(day)</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            else if (_frequency == RecurrenceFrequencyDto.Monthly)
+            {
+                <MudNumericField T="int?" @bind-Value="_dayOfMonth" Label="@T["FieldDayOfMonth"]" Min="1" Max="31" Variant="Variant.Outlined"
+                                 Required="true" Error="_dayInvalid" ErrorText="@T["FieldError.dayOfMonth"]" HelperText="@T["DayOfMonthHint"]" />
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="_saving" OnClick="() => MudDialog.Cancel()">@Common["Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_saving" OnClick="() => SaveAsync()">@Common["Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    // Monday first, as in the German week; the names follow the culture.
+    private static readonly DayOfWeek[] WeekDays =
+        [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday];
+
+    private ApiError? _error;
+    private string _text = string.Empty;
+    private Guid? _productId;
+    private QuantityDto? _quantity;
+    private string _defaultUnit = UnitCodes.Piece;
+    private Guid _listId;
+    private RecurrenceFrequencyDto _frequency = RecurrenceFrequencyDto.Weekly;
+    private DayOfWeek _dayOfWeek = DayOfWeek.Monday;
+    private int? _dayOfMonth = 1;
+    private Guid? _createId;
+    private long _version;
+    private bool _textInvalid;
+    private bool _dayInvalid;
+    private bool _saving;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>The rule to change; <see langword="null"/> creates a new one.</summary>
+    [Parameter]
+    public RecurringRuleDto? Rule { get; set; }
+
+    /// <summary>All lists of the household; the default list is preselected for a new rule.</summary>
+    [Parameter]
+    public IReadOnlyList<ShoppingListDto> Lists { get; set; } = [];
+
+    protected override void OnInitialized()
+    {
+        _listId = Rule?.ListId ?? (Lists.FirstOrDefault(l => l.IsDefault) ?? Lists.FirstOrDefault())?.Id ?? Guid.Empty;
+        if (Rule is null)
+        {
+            return;
+        }
+
+        _version = Rule.Version;
+        _text = Rule.Text;
+        _productId = Rule.ProductId;
+        _quantity = Rule.Quantity;
+        _frequency = Rule.Frequency;
+        _dayOfWeek = Rule.DayOfWeek ?? DayOfWeek.Monday;
+        _dayOfMonth = Rule.DayOfMonth ?? 1;
+    }
+
+    private Task OnProductAsync(ProductSummaryDto product)
+    {
+        _productId = product.Id;
+        _text = product.Name;
+        _defaultUnit = product.DefaultUnit;
+        return Task.CompletedTask;
+    }
+
+    private void ClearProduct() => _productId = null;
+
+    private async Task SaveAsync(bool retried = false)
+    {
+        _textInvalid = string.IsNullOrWhiteSpace(_text);
+        _dayInvalid = _frequency == RecurrenceFrequencyDto.Monthly && _dayOfMonth is not (>= 1 and <= 31);
+        if (_textInvalid || _dayInvalid || Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        _saving = true;
+        _error = null;
+
+        // A client id, kept for retries: a repeated create after a lost response then finds the rule instead of adding another.
+        _createId ??= Guid.CreateVersion7();
+        var request = new RecurringRuleRequest(
+            Rule is null ? _createId : null,
+            _listId,
+            _productId,
+            _text.Trim(),
+            _quantity,
+            _frequency,
+            _frequency == RecurrenceFrequencyDto.Weekly ? _dayOfWeek : null,
+            _frequency == RecurrenceFrequencyDto.Monthly ? _dayOfMonth : null);
+        var result = Rule is null
+            ? await Restock.CreateRuleAsync(household, request, CancellationToken.None)
+            : await Restock.UpdateRuleAsync(household, Rule.Id, request, $"\"{_version}\"", CancellationToken.None);
+        _saving = false;
+
+        if (result.IsSuccess)
+        {
+            MudDialog.Close(DialogResult.Ok(result.Value!));
+            return;
+        }
+
+        // 409 on a create: the id is taken, so an earlier attempt of this dialog (lost response) created the rule.
+        // 412 on a change: the rule changed meanwhile (the job moves its due date); the next save is based on the current version.
+        if ((result.Error!.Status == 409 && Rule is null) || (result.Error.Status == 412 && Rule is not null && !retried))
+        {
+            var rules = await Restock.ListRulesAsync(household, CancellationToken.None);
+            var current = rules.Value?.FirstOrDefault(r => r.Id == (Rule?.Id ?? _createId));
+            if (current is not null && Rule is null)
+            {
+                MudDialog.Close(DialogResult.Ok(current));
+                return;
+            }
+
+            // Retry only if the job merely moved the due date; someone else's edit must not be overwritten (If-Match).
+            if (current is not null && Rule is not null
+                && current with { NextDueOn = Rule.NextDueOn, Version = Rule.Version } == Rule)
+            {
+                _version = current.Version;
+                _error = null;
+                await SaveAsync(retried: true);
+                return;
+            }
+        }
+
+        _error = result.Error;
+    }
+}

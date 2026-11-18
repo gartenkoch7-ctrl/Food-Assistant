@@ -1,0 +1,159 @@
+@page "/shopping/recurring"
+@using System.Globalization
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Restock
+@using FoodAssistant.Client.Shopping
+@using FoodAssistant.Contracts.Restock
+@using FoodAssistant.Contracts.Shopping
+@using FoodAssistant.UI.Inventory
+@inject IRestockClient Restock
+@inject IShoppingClient Shopping
+@inject SessionState Session
+@inject IDialogService Dialogs
+@inject IStringLocalizer<RestockText> T
+@inject IStringLocalizer<CommonText> Common
+
+<PageTitle>@T["RecurringTitle"] – @AppInfo.Name</PageTitle>
+
+<h1>@T["RecurringTitle"]</h1>
+<p>@T["RecurringIntro"]</p>
+
+<ApiErrorAlert Error="_error" FeatureText="T" />
+
+@if (_loading)
+{
+    <LoadingState />
+}
+else if (_rules.Count == 0 && _error is null)
+{
+    <EmptyState Icon="@Icons.Material.Rounded.Repeat" Heading="@T["RecurringEmptyHeading"]" Text="@T["RecurringEmptyText"]">
+        @if (Session.CanEdit)
+        {
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="() => OpenAsync(null)">@T["RecurringCreate"]</MudButton>
+        }
+    </EmptyState>
+}
+else
+{
+    <ul class="fa-list" aria-label="@T["RecurringListLabel"]">
+        @foreach (var rule in _rules)
+        {
+            <ListRow @key="rule.Id" Icon="@Icons.Material.Rounded.Repeat" Name="@NameOf(rule)" Secondary="@SummaryOf(rule)">
+                <End>
+                    @if (Session.CanEdit)
+                    {
+                        <MudIconButton Icon="@Icons.Material.Rounded.Edit"
+                                       aria-label="@string.Format(CultureInfo.CurrentCulture, T["RuleEdit"].Value, rule.Text)"
+                                       OnClick="() => OpenAsync(rule)" />
+                        <MudIconButton Icon="@Icons.Material.Rounded.Delete"
+                                       aria-label="@string.Format(CultureInfo.CurrentCulture, T["RuleDelete"].Value, rule.Text)"
+                                       OnClick="() => DeleteAsync(rule)" />
+                    }
+                </End>
+            </ListRow>
+        }
+    </ul>
+    @if (Session.CanEdit)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add"
+                   OnClick="() => OpenAsync(null)">@T["RecurringCreate"]</MudButton>
+    }
+}
+
+@code {
+    private IReadOnlyList<RecurringRuleDto> _rules = [];
+    private IReadOnlyList<ShoppingListDto> _lists = [];
+    private ApiError? _error;
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            _loading = false;
+            return;
+        }
+
+        // Both calls run before the first render: the rows name the list, so they need it.
+        var rules = Restock.ListRulesAsync(household, CancellationToken.None);
+        var lists = Shopping.ListListsAsync(household, CancellationToken.None);
+        await Task.WhenAll(rules, lists);
+        Apply(rules.Result, lists.Result);
+        _loading = false;
+    }
+
+    private void Apply(ApiResult<IReadOnlyList<RecurringRuleDto>> rules, ApiResult<IReadOnlyList<ShoppingListDto>> lists)
+    {
+        _error = rules.Error ?? lists.Error;
+        _rules = rules.Value ?? _rules;
+        _lists = lists.Value ?? _lists;
+    }
+
+    private async Task ReloadAsync()
+    {
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        var rules = await Restock.ListRulesAsync(household, CancellationToken.None);
+        _error = rules.Error;
+        _rules = rules.Value ?? _rules;
+    }
+
+    private string NameOf(RecurringRuleDto rule) =>
+        rule.Quantity is { } quantity
+            ? $"{rule.Text} ({InventoryFields.Quantity(quantity, Common, CultureInfo.CurrentCulture)})"
+            : rule.Text;
+
+    // "Milch · wöchentlich, Montag · Einkaufsliste · nächster Termin 24.11.2026"
+    private string SummaryOf(RecurringRuleDto rule)
+    {
+        var culture = CultureInfo.CurrentCulture;
+        var schedule = rule.Frequency switch
+        {
+            RecurrenceFrequencyDto.Weekly => string.Format(culture, T["SummaryWeekly"].Value, DayName(rule.DayOfWeek)),
+            RecurrenceFrequencyDto.Monthly => string.Format(culture, T["SummaryMonthly"].Value, rule.DayOfMonth),
+            _ => T["SummaryDaily"].Value,
+        };
+        var list = _lists.FirstOrDefault(l => l.Id == rule.ListId);
+        var listName = list is null || string.IsNullOrWhiteSpace(list.Name) ? T["DefaultListName"].Value : list.Name;
+        return string.Format(culture, T["RuleSummary"].Value, schedule, listName, rule.NextDueOn.ToString("d", culture));
+    }
+
+    private static string DayName(DayOfWeek? day) =>
+        day is { } d ? CultureInfo.CurrentCulture.DateTimeFormat.GetDayName(d) : string.Empty;
+
+    private async Task OpenAsync(RecurringRuleDto? rule)
+    {
+        var parameters = new DialogParameters<RecurringRuleDialog> { { d => d.Rule, rule }, { d => d.Lists, _lists } };
+        var title = rule is null ? T["RuleDialogNew"].Value : T["RuleDialogEdit"].Value;
+        var dialog = await Dialogs.ShowAsync<RecurringRuleDialog>(title, parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        if (await dialog.Result is { Canceled: false })
+        {
+            await ReloadAsync();
+        }
+    }
+
+    private async Task DeleteAsync(RecurringRuleDto rule)
+    {
+        if (Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        var confirmed = await Dialogs.ShowMessageBoxAsync(
+            T["RuleDeleteTitle"],
+            string.Format(CultureInfo.CurrentCulture, T["RuleDeleteText"].Value, rule.Text),
+            yesText: Common["Delete"],
+            cancelText: Common["Cancel"]);
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        var result = await Restock.DeleteRuleAsync(household, rule.Id, $"\"{rule.Version}\"", CancellationToken.None);
+        await ReloadAsync();
+        _error = result.Error ?? _error;
+    }
+}

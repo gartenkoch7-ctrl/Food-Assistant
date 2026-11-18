@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- German is the neutral language of the project; RestockText.en.resx holds the English texts. -->
+  <data name="RecurringTitle" xml:space="preserve"><value>Wiederkehrende Artikel</value></data>
+  <data name="RecurringIntro" xml:space="preserve"><value>Diese Artikel kommen automatisch auf die Einkaufsliste, solange der letzte Eintrag nicht gekauft oder gelöscht ist.</value></data>
+  <data name="RecurringEmptyHeading" xml:space="preserve"><value>Noch keine wiederkehrenden Artikel</value></data>
+  <data name="RecurringEmptyText" xml:space="preserve"><value>Lege fest, was regelmäßig gekauft wird, zum Beispiel Milch jede Woche. Der Eintrag erscheint dann zum Termin auf der Liste.</value></data>
+  <data name="RecurringCreate" xml:space="preserve"><value>Regel anlegen</value></data>
+  <data name="RecurringListLabel" xml:space="preserve"><value>Wiederkehrende Artikel</value></data>
+  <data name="RuleEdit" xml:space="preserve"><value>{0} bearbeiten</value></data>
+  <data name="RuleDelete" xml:space="preserve"><value>{0} löschen</value></data>
+  <data name="RuleDeleteTitle" xml:space="preserve"><value>Regel löschen?</value></data>
+  <data name="RuleDeleteText" xml:space="preserve"><value>„{0}“ kommt danach nicht mehr automatisch auf die Liste. Bereits angelegte Einträge bleiben bestehen.</value></data>
+  <data name="RuleDialogNew" xml:space="preserve"><value>Neue Regel</value></data>
+  <data name="RuleDialogEdit" xml:space="preserve"><value>Regel bearbeiten</value></data>
+  <data name="RuleSummary" xml:space="preserve"><value>{0} · {1} · nächster Termin {2}</value></data>
+  <data name="SummaryDaily" xml:space="preserve"><value>täglich</value></data>
+  <data name="SummaryWeekly" xml:space="preserve"><value>wöchentlich, {0}</value></data>
+  <data name="SummaryMonthly" xml:space="preserve"><value>monatlich, am {0}.</value></data>
+  <data name="DefaultListName" xml:space="preserve"><value>Einkaufsliste</value></data>
+  <data name="FieldProduct" xml:space="preserve"><value>Produkt aus dem Katalog (optional)</value></data>
+  <data name="FieldText" xml:space="preserve"><value>Artikel</value></data>
+  <data name="FieldQuantity" xml:space="preserve"><value>Menge</value></data>
+  <data name="FieldList" xml:space="preserve"><value>Einkaufsliste</value></data>
+  <data name="FieldFrequency" xml:space="preserve"><value>Häufigkeit</value></data>
+  <data name="FieldDayOfWeek" xml:space="preserve"><value>Wochentag</value></data>
+  <data name="FieldDayOfMonth" xml:space="preserve"><value>Tag des Monats</value></data>
+  <data name="ClearProduct" xml:space="preserve"><value>Produkt entfernen</value></data>
+  <data name="Frequency.Daily" xml:space="preserve"><value>Täglich</value></data>
+  <data name="Frequency.Weekly" xml:space="preserve"><value>Wöchentlich</value></data>
+  <data name="Frequency.Monthly" xml:space="preserve"><value>Monatlich</value></data>
+  <data name="DayOfMonthHint" xml:space="preserve"><value>In kürzeren Monaten gilt der letzte Tag des Monats.</value></data>
+  <data name="FieldError.required" xml:space="preserve"><value>Pflichtfeld</value></data>
+  <data name="FieldError.dayOfMonth" xml:space="preserve"><value>Bitte einen Tag von 1 bis 31 angeben.</value></data>
+  <data name="Error.restock.rule_not_found" xml:space="preserve"><value>Diese Regel gibt es nicht mehr.</value></data>
+  <data name="Error.restock.validation_failed" xml:space="preserve"><value>Bitte prüfe deine Eingabe.</value></data>
+  <data name="Error.shopping.list_not_found" xml:space="preserve"><value>Diese Einkaufsliste gibt es nicht mehr.</value></data>
+  <data name="Error.catalog.product_not_found" xml:space="preserve"><value>Dieses Produkt gibt es nicht mehr.</value></data>
+</root>

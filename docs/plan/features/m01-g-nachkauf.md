@@ -8,8 +8,8 @@ nicht doppelt, solange der letzte noch offen ist. KB: [einkauf](../../kb/einkauf
 Branch `feat/m01-g-restock` · Welle 2 · Pakete: G1 → G2.
 
 ## Aufgaben
-- [ ] G1 Mindestbestand (Handler auf `IStockChangedHandler`)
-- [ ] G2 Wiederkehrende Artikel (Regeln, Hintergrunddienst, UI)
+- [x] G1 Mindestbestand (Handler auf `IStockChangedHandler`)
+- [x] G2 Wiederkehrende Artikel (Regeln, Hintergrunddienst, UI)
 
 ## Detailplan
 

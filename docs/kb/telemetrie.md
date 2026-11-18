@@ -130,6 +130,13 @@ Rest frei für weitere API-Konventionen.
 | `ShoppingListCreated` / 3401 | Log, Information | Einkauf | Einkaufsliste angelegt | `ListId` |
 | `ShoppingListDeleted` / 3402 | Log, Information | Einkauf | Einkaufsliste samt Einträgen gelöscht | `ListId` |
 | `RestrictedChangeDenied` / 3403 | Log, Information | Einkauf | Eingeschränktes Mitglied wollte mehr als abhaken → 403 `shopping.restricted_change` | – |
+| `RestockItemAdded` / 3550 | Log, Information | Nachkauf | Produkt unter Mindestbestand: automatischer Eintrag auf der Standardliste | `ProductId`, `ListId` |
+| `RecurringItemAdded` / 3551 | Log, Information | Nachkauf | Wiederkehrende Regel hat ihren Eintrag angelegt | `RuleId`, `ListId` |
+| `RecurringItemSkipped` / 3552 | Log, Information | Nachkauf | Wiederkehrende Regel übersprungen, weil ihr letzter Eintrag noch offen ist | `RuleId` |
+| `MinimumStockCheckFailed` / 3554 | Log, Warning | Nachkauf | Mindestbestand-Prüfung eines Produkts gescheitert; die übrigen Produkte werden weiter geprüft | `ProductId`, Exception |
+| `RecurringJobFailed` / 3555 | Log, Warning | Nachkauf | Durchlauf des Hintergrunddiensts über alle Haushalte gescheitert (z. B. Datenbank nicht erreichbar); der nächste Durchlauf läuft planmäßig | Exception |
+| `RecurringRuleFailed` / 3556 | Log, Warning | Nachkauf | Eine wiederkehrende Regel ist gescheitert; sie rückt auf den nächsten Termin, die übrigen Regeln laufen weiter | `RuleId`, Exception |
+| `RecurringRunFailed` / 3553 | Log, Warning | Nachkauf | Lauf der wiederkehrenden Einträge für einen Haushalt gescheitert; die übrigen Haushalte laufen weiter | `HouseholdId`, Exception |
 | `StoreCreated` / 3450 | Log, Information | Läden | Laden angelegt | `StoreId` |
 | `StoreDeleted` / 3451 | Log, Information | Läden | Laden gelöscht (Listen verlieren den Laden) | `StoreId` |
 | `SectionOrderSet` / 3452 | Log, Information | Läden | Eigene Bereichsreihenfolge gespeichert | `StoreId` |
@@ -178,6 +185,11 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.inventory.undo` | Vorrat | Aktion rückgängig machen | `foodassistant.outcome`, `foodassistant.batches` |
 | `foodassistant.households.update_settings` | Haushalte | Haushaltseinstellungen ändern | `foodassistant.outcome` |
 | `foodassistant.persistence.migrate` | Persistenz | Datenbank-Migration | `foodassistant.migrations.pending` |
+| `foodassistant.restock.create_rule` | Nachkauf | Wiederkehrende Regel anlegen | `foodassistant.outcome` |
+| `foodassistant.restock.delete_rule` | Nachkauf | Wiederkehrende Regel löschen | `foodassistant.outcome` |
+| `foodassistant.restock.minimum_stock` | Nachkauf | Mindestbestand eines Produkts nach einer Bestandsänderung prüfen | `foodassistant.outcome` (`None`, `AddToList`, `Arm`, `Disarm`, `product_gone`) |
+| `foodassistant.restock.recurring_run` | Nachkauf | Lauf der wiederkehrenden Einträge für einen Haushalt | `foodassistant.items` (angelegte Einträge) |
+| `foodassistant.restock.update_rule` | Nachkauf | Wiederkehrende Regel ändern | `foodassistant.outcome` |
 | `foodassistant.shelf_life.reset_override` | Haltbarkeit | Eigene Haltbarkeitswerte zurücksetzen | `foodassistant.scope` (`category`/`product`), `foodassistant.outcome` (`ok`, `not_found`) |
 | `foodassistant.shelf_life.set_override` | Haltbarkeit | Eigene Haltbarkeitswerte speichern | `foodassistant.scope`, `foodassistant.outcome` (`ok`, `invalid`, `not_found`) |
 | `foodassistant.shopping.add_item` | Einkauf | Eintrag anlegen (auch intern: Mindestbestand, wiederkehrend) | `foodassistant.outcome` |
@@ -207,3 +219,4 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.food_facts.fetch.duration` | Histogramm `s` | Open Food Facts | Dauer der Aufrufe bei Open Food Facts | `outcome` wie beim Ablauf `fetch` |
 | `foodassistant.shopping.conflicts` | Counter `{conflict}` | Einkauf | Nach ADR-0005 aufgelöste Konflikte von Einträgen | `outcome`: `CheckedWins`, `ChangeWinsOverDelete`, `CheckedWinsOverDelete`, `BothDeleted`, `LastWriteWins` |
 | `foodassistant.shopping.items.checked` | Counter `{item}` | Einkauf | Abgehakte Einträge (Übergang offen → abgehakt) | – |
+| `foodassistant.restock.items_added` | Counter `{item}` | Nachkauf | Automatisch angelegte Einträge | `origin`: `minimum_stock`, `recurring` |

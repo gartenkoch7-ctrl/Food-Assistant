@@ -133,6 +133,7 @@ public sealed class ProductService(
             if (product.MinimumStock is not null)
             {
                 await NotifyHandlersAsync(householdId, product.Id, cancellationToken).ConfigureAwait(false);
+                result = await CurrentAsync(result, product.Id, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -186,9 +187,28 @@ public sealed class ProductService(
         if (result.Status == OperationStatus.Ok && !Equals(before.MinimumStock, request.MinimumStock))
         {
             await NotifyHandlersAsync(householdId, productId, cancellationToken).ConfigureAwait(false);
+            result = await CurrentAsync(result, productId, cancellationToken).ConfigureAwait(false);
         }
 
         return Finish(activity, result);
+    }
+
+    // A handler (minimum stock) may have changed the product row since the save, which moves its
+    // version (xmin). The client must get the version that is stored now, not a stale ETag.
+    private async Task<OperationResult<ProductDto>> CurrentAsync(
+        OperationResult<ProductDto> saved,
+        Guid productId,
+        CancellationToken cancellationToken)
+    {
+        var current = await store.GetProductAsync(productId, cancellationToken).ConfigureAwait(false);
+        if (current is null || current.Version == saved.Value?.Version)
+        {
+            return saved;
+        }
+
+        return saved.Status == OperationStatus.Created
+            ? OperationResult<ProductDto>.Created(current)
+            : OperationResult<ProductDto>.Ok(current);
     }
 
     public async Task<OperationResult<ProductDto>> ArchiveAsync(
