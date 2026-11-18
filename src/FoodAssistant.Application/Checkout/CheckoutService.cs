@@ -121,7 +121,9 @@ public sealed class CheckoutService(
         var batches = stored.Applied.Select(l => l.Batch).OfType<CheckoutBatch>().ToList();
         var stale = plan.StaleItemIds.Concat(stored.StaleItemIds).ToList();
         Report(listId, stored, batches, stale.Count);
-        await NotifyStockChangedAsync([.. batches.Select(b => b.ProductId).Distinct()], cancellationToken).ConfigureAwait(false);
+        // Not the request's token: the checkout is committed, and an aborted request (bad reception in the
+        // shop) must still return its result, so a retry with the same Idempotency-Key replays it.
+        await NotifyStockChangedAsync([.. batches.Select(b => b.ProductId).Distinct()], CancellationToken.None).ConfigureAwait(false);
         return OperationResult<CheckoutResultDto>.Ok(new CheckoutResultDto(
             batches.Count, stored.Applied.Count, [.. batches.Select(b => b.Batch.Id)], stale));
     }
