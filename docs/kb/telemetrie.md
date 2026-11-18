@@ -89,6 +89,8 @@ Rest frei für weitere API-Konventionen.
 | `HttpsRequired` / 1115 | Log, Warning | Anmeldung | Antiforgery-Token über einfaches HTTP angefragt; Web-Anmeldung braucht HTTPS (Antwort 400 `accounts.https_required`) | – |
 | `HubJoinDenied` / 1300 | Log, Information | Sync | Beitritt zur Live-Gruppe eines Haushalts abgelehnt: kein Mitglied (unbekannt oder fremd) | – |
 | `HubJoined` / 1301 | Log, Debug | Sync | Verbindung empfängt Live-Updates eines Haushalts | `HouseholdId` |
+| `ConnectionRevoked` / 1302 | Log, Information | Sync | Verbindung eines entfernten Mitglieds aus der Live-Gruppe des Haushalts genommen | `HouseholdId` |
+| `RevocationFailed` / 1303 | Log, Warning | Sync | Verbindung eines entfernten Mitglieds konnte nicht aus der Gruppe genommen werden; die Entfernung bleibt gültig | `HouseholdId`, Exception |
 | `DatabaseUpToDate` / 2000 | Log, Information | Persistenz | Datenbankschema ist aktuell | – |
 | `MigrationsStarting` / 2001 | Log, Information | Persistenz | Migrationen beginnen | `Count` |
 | `MigrationsApplied` / 2002 | Log, Information | Persistenz | Migrationen angewendet | `Count`, `ElapsedMilliseconds` |
@@ -125,6 +127,11 @@ Rest frei für weitere API-Konventionen.
 | `BrowserCallUnavailable` / 4000 | Log, Debug | UI | Browser-Aufruf nicht verfügbar; nur Operationsname | `Operation`, Exception |
 | `NetworkError` / 4010 | Log, Debug | Client | API-Aufruf ohne Antwort fehlgeschlagen (auch Zeitüberschreitung des HttpClient); nur HTTP-Methode, nie Pfad/Query | `Method`, Exception |
 | `InvalidResponse` / 4011 | Log, Warning | Client | Erfolgsantwort der API mit unlesbarem JSON-Körper (z. B. HTML eines Proxys); nur HTTP-Methode, ohne Exception (Meldung kann Teile des Körpers zitieren) | `Method` |
+| `LiveConnectionLost` / 4100 | Log, Information | Client – Sync | Live-Verbindung abgebrochen, Wiederverbindung läuft | – |
+| `LiveReconnected` / 4101 | Log, Information | Client – Sync | Live-Verbindung wiederhergestellt, Haushalt neu beigetreten | – |
+| `LiveJoinFailed` / 4102 | Log, Warning | Client – Sync | Beitritt zu den Live-Updates abgelehnt (kein Mitglied); kein Wiederholen | `ErrorCode` |
+| `LiveConnectFailed` / 4103 | Log, Debug | Client – Sync | Verbindungsversuch fehlgeschlagen, neuer Versuch nach 30 s | Exception |
+| `LiveHandlerFailed` / 4104 | Log, Warning | Client – Sync | Ein Seiten-Handler von `Changed`/`Resynced`/`StateChanged` hat geworfen | Exception |
 | `ExpiryReloadFailed` / 4200 | Log, Warning | UI – Sitzung | Neuladen der Sitzung nach einer 401-Antwort eines Datenaufrufs ist mit einer Exception gescheitert (das Neuladen läuft ohne Aufrufer; höchstens einmal je 30 s) | Exception |
 
 ## Abläufe (Activities)

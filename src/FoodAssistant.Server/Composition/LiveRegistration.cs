@@ -20,6 +20,10 @@ public static class LiveRegistration
         // Replaces the NullHouseholdChangeNotifier default of the application layer (last registration wins).
         services.AddSingleton<IHouseholdChangeNotifier, SignalRHouseholdChangeNotifier>();
 
+        // A removed member's connections leave the household's group at once.
+        services.AddSingleton<HouseholdConnectionRegistry>();
+        services.AddSingleton<IMembershipRevocationNotifier, SignalRMembershipRevocationNotifier>();
+
         // Singleton (it only needs IServiceScopeFactory), so hosted services can depend on it.
         services.AddSingleton<IHouseholdScopeFactory, HouseholdScopeFactory>();
         return builder;

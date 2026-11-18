@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\FoodAssistant.Server\FoodAssistant.Server.csproj" />
+    <ProjectReference Include="..\..\src\FoodAssistant.Client\FoodAssistant.Client.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="xunit.v3" />

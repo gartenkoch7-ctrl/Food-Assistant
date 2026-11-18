@@ -1,0 +1,58 @@
+@using FoodAssistant.Client.Sync
+@implements IDisposable
+@inject ILiveUpdates Live
+@inject SessionState Session
+@inject ILiveAnnouncer Announcer
+@inject IStringLocalizer<LiveText> T
+
+@* Only shown while the live feed is down: the page may be stale then. Symbol and text, never colour alone. *@
+@if (IsVisible)
+{
+    <span class="fa-live-status" role="status">
+        <MudIcon Icon="@Icons.Material.Rounded.CloudOff" Size="Size.Small" />
+        <span>@T["ConnectionLost"]</span>
+    </span>
+}
+
+@code {
+    private bool _lost;
+
+    private bool IsVisible => Session.Status == SessionStatus.Ready && IsDown(Live.State);
+
+    protected override void OnInitialized()
+    {
+        _lost = IsVisible;
+        Live.StateChanged += OnChanged;
+        Session.Changed += OnChanged;
+    }
+
+    private static bool IsDown(LiveConnectionState state) =>
+        state is LiveConnectionState.Reconnecting or LiveConnectionState.Disconnected;
+
+    private void OnChanged() => _ = InvokeAsync(() =>
+    {
+        // Announce the change only, not every repeat of the same state.
+        var down = IsVisible;
+        if (down != _lost)
+        {
+            if (down)
+            {
+                Announcer.Announce(T["ConnectionLost"]);
+            }
+            else if (Live.State == LiveConnectionState.Connected)
+            {
+                Announcer.Announce(T["ConnectionRestored"]);
+            }
+
+            _lost = down;
+        }
+
+        StateHasChanged();
+    });
+
+    public void Dispose()
+    {
+        Live.StateChanged -= OnChanged;
+        Session.Changed -= OnChanged;
+    }
+}
