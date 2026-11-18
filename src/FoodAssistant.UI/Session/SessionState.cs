@@ -4,6 +4,7 @@ using FoodAssistant.Client.Sync;
 using FoodAssistant.Contracts.Accounts;
 using FoodAssistant.Contracts.Households;
 using FoodAssistant.UI.Common;
+using Microsoft.Extensions.Logging;
 
 namespace FoodAssistant.UI.Session;
 
@@ -16,20 +17,39 @@ public sealed class SessionState : IDisposable
     /// <summary>Local storage key of the last chosen household.</summary>
     public const string HouseholdStorageKey = "foodassistant.household";
 
+    /// <summary>A 401 from a data call reloads the session at most once in this window.</summary>
+    public static readonly TimeSpan ExpiryReloadInterval = TimeSpan.FromSeconds(30);
+
     private readonly IAccountClient _accounts;
     private readonly IBrowserInterop _browser;
     private readonly ILiveUpdates _live;
     private readonly SessionExpiry _expiry;
+    private readonly TimeProvider _time;
+    private readonly ILogger<SessionState> _logger;
+
+    // State changes (live connection + status) run one at a time; each load or sign-out gets a new
+    // generation, and a change of an older generation is dropped (e.g. a reload that ends after sign-out).
+    private readonly SemaphoreSlim _transition = new(1, 1);
+    private int _generation;
     private bool _loadRequested;
     private Task? _expiryReload;
+    private DateTimeOffset? _lastExpiryReload;
 
-    public SessionState(IAccountClient accounts, IBrowserInterop browser, ILiveUpdates live, SessionExpiry expiry)
+    public SessionState(
+        IAccountClient accounts,
+        IBrowserInterop browser,
+        ILiveUpdates live,
+        SessionExpiry expiry,
+        TimeProvider time,
+        ILogger<SessionState> logger)
     {
         ArgumentNullException.ThrowIfNull(expiry);
         _accounts = accounts;
         _browser = browser;
         _live = live;
         _expiry = expiry;
+        _time = time;
+        _logger = logger;
         expiry.Expired += OnSessionExpired;
     }
 
@@ -55,37 +75,46 @@ public sealed class SessionState : IDisposable
     public async Task LoadAsync(CancellationToken cancellationToken = default)
     {
         _loadRequested = true;
+        var generation = Interlocked.Increment(ref _generation);
         var result = await _accounts.GetMeAsync(cancellationToken).ConfigureAwait(false);
         if (!result.IsSuccess)
         {
-            await SetSignedOutAsync(result.Error!.Status, cancellationToken).ConfigureAwait(false);
+            var needsSetup = await NeedsSetupAsync(result.Error!.Status, cancellationToken).ConfigureAwait(false);
+            await TransitionAsync(generation, () => SignedOutAsync(needsSetup ? SessionStatus.NeedsSetup : SessionStatus.SignedOut))
+                .ConfigureAwait(false);
             return;
         }
 
-        Me = result.Value;
-        if (Me!.Households.Count == 0)
+        var me = result.Value!;
+        if (me.Households.Count == 0)
         {
-            ActiveHousehold = null;
-            await _live.StopAsync().ConfigureAwait(false);
-            SetStatus(SessionStatus.NoHousehold);
+            await TransitionAsync(generation, async () =>
+            {
+                await _live.StopAsync().ConfigureAwait(false);
+                Me = me;
+                ActiveHousehold = null;
+                return SessionStatus.NoHousehold;
+            }).ConfigureAwait(false);
             return;
         }
 
         var stored = await _browser.GetItemAsync(HouseholdStorageKey, cancellationToken).ConfigureAwait(false);
-        var chosen = Me.Households.FirstOrDefault(h => h.Id.ToString() == stored) ?? Me.Households[0];
-        await ActivateAsync(chosen, cancellationToken).ConfigureAwait(false);
+        var chosen = me.Households.FirstOrDefault(h => h.Id.ToString() == stored) ?? me.Households[0];
+        await TransitionAsync(generation, () => ActivateAsync(me, chosen, cancellationToken)).ConfigureAwait(false);
     }
 
     public async Task SelectHouseholdAsync(Guid householdId, CancellationToken cancellationToken = default)
     {
-        var household = Me?.Households.FirstOrDefault(h => h.Id == householdId);
+        var generation = Volatile.Read(ref _generation);
+        var me = Me;
+        var household = me?.Households.FirstOrDefault(h => h.Id == householdId);
         if (household is null)
         {
             return;
         }
 
         await _browser.SetItemAsync(HouseholdStorageKey, householdId.ToString(), cancellationToken).ConfigureAwait(false);
-        await ActivateAsync(household, cancellationToken).ConfigureAwait(false);
+        await TransitionAsync(generation, () => ActivateAsync(me!, household, cancellationToken)).ConfigureAwait(false);
     }
 
     /// <summary>Ends the session on the server, then here.</summary>
@@ -103,54 +132,97 @@ public sealed class SessionState : IDisposable
             return result.Error;
         }
 
-        await _live.StopAsync().ConfigureAwait(false);
-        Me = null;
-        ActiveHousehold = null;
-        SetStatus(SessionStatus.SignedOut);
+        // A reload still in flight belongs to the old session and must not sign anyone back in.
+        var generation = Interlocked.Increment(ref _generation);
+        await TransitionAsync(generation, () => SignedOutAsync(SessionStatus.SignedOut)).ConfigureAwait(false);
         return null;
     }
 
+    // _transition is not disposed: a load still in flight when the scope ends must be able to release it,
+    // and a SemaphoreSlim without AvailableWaitHandle holds no native resource.
     public void Dispose() => _expiry.Expired -= OnSessionExpired;
 
     // A data call was answered with 401: ask the server again; "signed out" sends the gate to the login page.
-    // Several calls failing at once trigger one reload only.
+    // Several calls failing at once trigger one reload only, and a data endpoint that keeps answering 401
+    // while /me answers 200 must not cause a reload loop, hence at most one reload per interval.
     private void OnSessionExpired()
     {
-        if (Status is (SessionStatus.Ready or SessionStatus.NoHousehold) && _expiryReload is not { IsCompleted: false })
+        if (Status is not (SessionStatus.Ready or SessionStatus.NoHousehold) || _expiryReload is { IsCompleted: false })
         {
-            _expiryReload = LoadAsync();
+            return;
+        }
+
+        var now = _time.GetUtcNow();
+        if (_lastExpiryReload is { } last && now - last < ExpiryReloadInterval)
+        {
+            return;
+        }
+
+        _lastExpiryReload = now;
+        _expiryReload = ReloadAfterExpiryAsync();
+    }
+
+    // Nobody awaits this reload, so its failure is logged here instead of getting lost.
+    private async Task ReloadAfterExpiryAsync()
+    {
+        try
+        {
+            await LoadAsync().ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            SessionLog.ExpiryReloadFailed(_logger, exception);
         }
     }
 
-    private async Task ActivateAsync(MeHouseholdResponse household, CancellationToken cancellationToken)
+    private async Task<SessionStatus> ActivateAsync(MeResponse me, MeHouseholdResponse household, CancellationToken cancellationToken)
     {
         await _live.StopAsync().ConfigureAwait(false);
+        Me = me;
         ActiveHousehold = household;
         await _live.StartAsync(household.Id, cancellationToken).ConfigureAwait(false);
-        SetStatus(SessionStatus.Ready);
+        return SessionStatus.Ready;
     }
 
-    private async Task SetSignedOutAsync(int status, CancellationToken cancellationToken)
+    private async Task<SessionStatus> SignedOutAsync(SessionStatus status)
     {
         Me = null;
         ActiveHousehold = null;
         await _live.StopAsync().ConfigureAwait(false);
-
-        // Only an answer of "not signed in" says anything about setup; a network error keeps the login page,
-        // where trying again shows the problem.
-        var needsSetup = false;
-        if (status == 401)
-        {
-            var setup = await _accounts.GetSetupStatusAsync(cancellationToken).ConfigureAwait(false);
-            needsSetup = setup.IsSuccess && !setup.Value!.IsSetupComplete;
-        }
-
-        SetStatus(needsSetup ? SessionStatus.NeedsSetup : SessionStatus.SignedOut);
+        return status;
     }
 
-    private void SetStatus(SessionStatus status)
+    // Only an answer of "not signed in" says anything about setup; a network error keeps the login page,
+    // where trying again shows the problem.
+    private async Task<bool> NeedsSetupAsync(int status, CancellationToken cancellationToken)
     {
-        Status = status;
+        if (status != 401)
+        {
+            return false;
+        }
+
+        var setup = await _accounts.GetSetupStatusAsync(cancellationToken).ConfigureAwait(false);
+        return setup.IsSuccess && !setup.Value!.IsSetupComplete;
+    }
+
+    // Changed is raised outside the lock, so a handler may start the next load or sign-out.
+    private async Task TransitionAsync(int generation, Func<Task<SessionStatus>> change)
+    {
+        await _transition.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            if (generation != Volatile.Read(ref _generation))
+            {
+                return;
+            }
+
+            Status = await change().ConfigureAwait(false);
+        }
+        finally
+        {
+            _transition.Release();
+        }
+
         Changed?.Invoke();
     }
 }

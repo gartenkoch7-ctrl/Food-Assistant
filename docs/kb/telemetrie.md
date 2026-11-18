@@ -109,6 +109,7 @@ Rest frei für weitere API-Konventionen.
 | `BrowserCallUnavailable` / 4000 | Log, Debug | UI | Browser-Aufruf nicht verfügbar; nur Operationsname | `Operation`, Exception |
 | `NetworkError` / 4010 | Log, Debug | Client | API-Aufruf ohne Antwort fehlgeschlagen (auch Zeitüberschreitung des HttpClient); nur HTTP-Methode, nie Pfad/Query | `Method`, Exception |
 | `InvalidResponse` / 4011 | Log, Warning | Client | Erfolgsantwort der API mit unlesbarem JSON-Körper (z. B. HTML eines Proxys); nur HTTP-Methode, ohne Exception (Meldung kann Teile des Körpers zitieren) | `Method` |
+| `ExpiryReloadFailed` / 4200 | Log, Warning | UI – Sitzung | Neuladen der Sitzung nach einer 401-Antwort eines Datenaufrufs ist mit einer Exception gescheitert (das Neuladen läuft ohne Aufrufer; höchstens einmal je 30 s) | Exception |
 
 ## Abläufe (Activities)
 

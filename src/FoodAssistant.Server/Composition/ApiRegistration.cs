@@ -19,11 +19,18 @@ public static class ApiRegistration
         services.AddApiIdempotency();
         services.AddApiRateLimiting();
         services.AddApiDocument();
+        services.AddServerInfo();
+        return builder;
+    }
+
+    /// <summary>Options of <c>/api/v1/info</c>; separate so tests can check the validation without starting a host.</summary>
+    internal static IServiceCollection AddServerInfo(this IServiceCollection services)
+    {
         services.AddOptions<ServerInfoOptions>()
             .BindConfiguration(HostingOptions.SectionName)
             .Validate(o => o.HasValidMinimumAppVersion(), "FoodAssistant:MinimumAppVersion must be major.minor.patch, e.g. 1.4.0.")
             .ValidateOnStart();
-        return builder;
+        return services;
     }
 
     /// <summary>

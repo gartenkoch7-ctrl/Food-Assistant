@@ -28,6 +28,7 @@ public static class UiServiceCollectionExtensions
         services.TryAddScoped<ThemeState>();
         services.TryAddScoped<ICultureService, CultureService>();
         services.TryAddSingleton<IAppFeatures, DefaultAppFeatures>();
+        services.TryAddSingleton(TimeProvider.System);
         services.TryAddScoped<SessionState>();
         services.TryAddScoped<ILiveAnnouncer, LiveAnnouncer>();
         services.TryAddScoped<IUndoNotifier, UndoNotifier>();

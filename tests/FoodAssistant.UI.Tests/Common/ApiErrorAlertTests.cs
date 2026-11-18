@@ -1,5 +1,6 @@
 using Bunit;
 using FoodAssistant.Client.Http;
+using FoodAssistant.Contracts.Accounts;
 using FoodAssistant.UI.Common;
 using FoodAssistant.UI.Session;
 using FoodAssistant.UI.Tests.Support;
@@ -29,6 +30,17 @@ public sealed class ApiErrorAlertTests : UiTestContext
         var cut = RenderAlert(FakeAccountClient.Error(401, "accounts.invalid_credentials"), withFeatureText: true);
 
         Assert.Equal("Benutzername oder Passwort stimmt nicht.", cut.Find("[role=alert]").TextContent.Trim());
+    }
+
+    // Setup and invitation pages bring their own feature texts (or none); the HTTPS hint must reach them too.
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void HttpsRequired_IsExplainedOnEveryPage(bool withFeatureText)
+    {
+        var cut = RenderAlert(FakeAccountClient.Error(400, AccountErrorCodes.HttpsRequired), withFeatureText);
+
+        Assert.Contains("nur über HTTPS", cut.Find("[role=alert]").TextContent);
     }
 
     [Theory]

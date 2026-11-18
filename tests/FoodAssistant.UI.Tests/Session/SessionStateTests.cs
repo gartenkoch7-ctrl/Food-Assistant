@@ -3,6 +3,7 @@ using FoodAssistant.Client.Sync;
 using FoodAssistant.Contracts.Households;
 using FoodAssistant.UI.Session;
 using FoodAssistant.UI.Tests.Support;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace FoodAssistant.UI.Tests.Session;
 
@@ -14,7 +15,7 @@ public sealed class SessionStateTests
     private readonly FakeBrowserInterop _browser = new();
     private readonly FakeLiveUpdates _live = new();
 
-    private SessionState Create() => new(_accounts, _browser, _live, new SessionExpiry());
+    private SessionState Create() => new(_accounts, _browser, _live, new SessionExpiry(), TimeProvider.System, NullLogger<SessionState>.Instance);
 
     [Fact]
     public async Task SignedIn_ActivatesTheFirstHousehold_AndStartsLiveUpdates()

@@ -9,6 +9,7 @@ using FoodAssistant.UI.Common;
 using FoodAssistant.UI.Composition;
 using FoodAssistant.UI.Session;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace FoodAssistant.UI.Tests.Support;
 
@@ -40,7 +41,7 @@ public abstract class UiTestContext : BunitContext
         // The fakes answer synchronously, so loading does not block.
         Expiry = new SessionExpiry();
         Services.AddSingleton(Expiry);
-        Session = new SessionState(Accounts, Browser, Live, Expiry);
+        Session = new SessionState(Accounts, Browser, Live, Expiry, TimeProvider.System, NullLogger<SessionState>.Instance);
         Session.LoadAsync().GetAwaiter().GetResult();
         Services.AddSingleton(Session);
         Services.AddFoodAssistantUi();

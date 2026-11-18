@@ -21,6 +21,12 @@ public sealed class FakeAccountClient : IAccountClient
     /// <summary>When set, sign-out fails with this error and the session stays.</summary>
     public ApiError? LogoutError { get; set; }
 
+    /// <summary>When set, the answer to /me is decided at the call but delivered only once this completes.</summary>
+    public TaskCompletionSource? HoldMe { get; set; }
+
+    /// <summary>When set, /me throws this instead of answering.</summary>
+    public Exception? MeException { get; set; }
+
     public List<string> Calls { get; } = [];
 
     public static MeResponse MeWith(HouseholdRole role, int households = 1) => new(
@@ -35,12 +41,23 @@ public sealed class FakeAccountClient : IAccountClient
     public static ApiError Error(int status, string code) =>
         new(status, code, null, new Dictionary<string, string[]>(), null);
 
-    public Task<ApiResult<MeResponse>> GetMeAsync(CancellationToken cancellationToken)
+    public async Task<ApiResult<MeResponse>> GetMeAsync(CancellationToken cancellationToken)
     {
         Calls.Add("me");
-        return Task.FromResult(Me is null
+        if (MeException is not null)
+        {
+            throw MeException;
+        }
+
+        var answer = Me is null
             ? ApiResult<MeResponse>.Failure(Error(401, "common.unauthorized"))
-            : ApiResult<MeResponse>.Success(Me));
+            : ApiResult<MeResponse>.Success(Me);
+        if (HoldMe is not null)
+        {
+            await HoldMe.Task.ConfigureAwait(false);
+        }
+
+        return answer;
     }
 
     public Task<ApiResult> LoginAsync(LoginRequest request, CancellationToken cancellationToken)

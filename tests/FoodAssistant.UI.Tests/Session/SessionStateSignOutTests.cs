@@ -3,6 +3,7 @@ using FoodAssistant.Client.Sync;
 using FoodAssistant.Contracts.Households;
 using FoodAssistant.UI.Session;
 using FoodAssistant.UI.Tests.Support;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace FoodAssistant.UI.Tests.Session;
 
@@ -18,7 +19,7 @@ public sealed class SessionStateSignOutTests
 
     private async Task<SessionState> SignedInAsync()
     {
-        var session = new SessionState(_accounts, _browser, _live, _expiry);
+        var session = new SessionState(_accounts, _browser, _live, _expiry, TimeProvider.System, NullLogger<SessionState>.Instance);
         await session.LoadAsync(Ct);
         return session;
     }

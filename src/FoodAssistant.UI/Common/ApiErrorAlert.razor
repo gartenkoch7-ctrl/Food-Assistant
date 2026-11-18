@@ -11,7 +11,10 @@
     [Parameter]
     public ApiError? Error { get; set; }
 
-    /// <summary>Texts of the feature; the key <c>Error.&lt;errorCode&gt;</c> there wins over the generic texts.</summary>
+    /// <summary>
+    /// Texts of the feature; the key <c>Error.&lt;errorCode&gt;</c> there wins over the same key in
+    /// <see cref="CommonText"/>, which wins over the generic texts.
+    /// </summary>
     [Parameter]
     public IStringLocalizer? FeatureText { get; set; }
 
@@ -19,13 +22,21 @@
     {
         get
         {
-            var specific = FeatureText?["Error." + Error!.ErrorCode];
+            var key = "Error." + Error!.ErrorCode;
+            var specific = FeatureText?[key];
             if (specific is { ResourceNotFound: false })
             {
                 return specific.Value;
             }
 
-            return Error!.ErrorCode switch
+            // Codes any page can get (e.g. accounts.https_required on login, setup and invitation pages).
+            var shared = Common[key];
+            if (!shared.ResourceNotFound)
+            {
+                return shared.Value;
+            }
+
+            return Error.ErrorCode switch
             {
                 ClientErrorCodes.Network => Common["Error.Network"],
                 ClientErrorCodes.Offline => Common["Error.Offline"],

@@ -253,6 +253,6 @@ Doc-Kommentar: „Einhängepunkt für Spur X (docs/plan/m01-mvp.md)“.
 | `tests/FoodAssistant.UI.Tests/Support/UiTestContext.cs` | ändern | Fakes registrieren, `SessionState` mit aktivem Test-Haushalt (`Role = Member`) vorbelegbar | – | +20 |
 
 **Barrierefreiheit:** Checkliste `docs/kb/barrierefreiheit.md` für Login, „Mehr“, Live-Region.
-**Akzeptanz:** UI-Tests grün; im Browser-Pane (`dotnet run --project src/FoodAssistant.Server`,
+**Akzeptanz:** UI-Tests grün; im Browser-Pane (`dotnet run --project src/FoodAssistant.Server --launch-profile https`,
 Datenbank per `docker compose up -d db`): Einrichtung per API (Testskript oder `/setup` ab K), Anmeldung
 über `/login`, „Mehr“ zeigt Links, Abmelden funktioniert.

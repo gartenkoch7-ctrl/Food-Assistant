@@ -223,7 +223,7 @@ Copyleft-Lizenz.
 dotnet build FoodAssistant.slnx                       # Build
 dotnet test --solution FoodAssistant.slnx             # alle Tests (Docker für Testcontainers nötig)
 docker compose up -d db                               # PostgreSQL für die Entwicklung
-dotnet run --project src/FoodAssistant.Server         # Server + Web-App starten
+dotnet run --project src/FoodAssistant.Server --launch-profile https   # Server + Web-App (Anmelden nur über HTTPS)
 dotnet build src/FoodAssistant.Mobile -f net10.0-android   # Android-App bauen
 dotnet ef migrations add <Name> --project src/FoodAssistant.Infrastructure --startup-project src/FoodAssistant.Server
 docker compose up -d --build                          # kompletter Self-Hosting-Stack

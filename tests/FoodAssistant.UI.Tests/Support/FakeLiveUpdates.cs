@@ -18,12 +18,19 @@ public sealed class FakeLiveUpdates : ILiveUpdates
 
     public int Stopped { get; private set; }
 
-    public Task StartAsync(Guid householdId, CancellationToken cancellationToken)
+    /// <summary>When set, a start connects only once this completes.</summary>
+    public TaskCompletionSource? HoldStart { get; set; }
+
+    public async Task StartAsync(Guid householdId, CancellationToken cancellationToken)
     {
         Started.Add(householdId);
+        if (HoldStart is not null)
+        {
+            await HoldStart.Task.ConfigureAwait(false);
+        }
+
         State = LiveConnectionState.Connected;
         StateChanged?.Invoke();
-        return Task.CompletedTask;
     }
 
     public Task StopAsync()

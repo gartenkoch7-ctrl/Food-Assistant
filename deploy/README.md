@@ -26,8 +26,8 @@ Ohne Reverse-Proxy ist der Server nur auf diesem Rechner erreichbar (`127.0.0.1:
 
 **Über einfaches HTTP lässt sich nicht anmelden.** Sitzungs- und Antiforgery-Cookie sind nur
 über HTTPS erlaubt (`Secure`, `__Host-`-Präfix). `http://localhost:8080` zeigt deshalb nur, dass
-der Server läuft (`/health`, `/api/v1/info`); die Anmeldeseite meldet „Anmelden geht nur über
-HTTPS“ (`accounts.https_required`). Zum Einrichten und Anmelden HTTPS nutzen – Caddy oder
+der Server läuft (`/health`, `/api/v1/info`); Einrichtungs- und Anmeldeseite melden „Anmelden
+und Einrichten gehen nur über HTTPS“ (`accounts.https_required`). Zum Einrichten und Anmelden HTTPS nutzen – Caddy oder
 Tailscale, siehe unten.
 
 ### HTTPS mit Caddy
