@@ -31,7 +31,10 @@
   <data name="FieldProduct" xml:space="preserve"><value>Produkt</value></data>
   <data name="DoneOne" xml:space="preserve"><value>1 Charge in den Vorrat gebucht.</value></data>
   <data name="DoneMany" xml:space="preserve"><value>{0} Chargen in den Vorrat gebucht.</value></data>
-  <data name="Stale" xml:space="preserve"><value>{0} Einträge wurden inzwischen geändert und nicht gebucht. Bitte prüfe sie noch einmal.</value></data>
+  <data name="DoneNone" xml:space="preserve"><value>Nichts gebucht. Von der Liste entfernt: {0}.</value></data>
+  <data name="Stale" xml:space="preserve"><value>{0} Einträge wurden nicht gebucht: Sie wurden inzwischen geändert oder sind nicht mehr auf der Liste. Bitte prüfe die Liste und den Vorrat.</value></data>
+  <data name="StaleOne" xml:space="preserve"><value>1 Eintrag wurde nicht gebucht: Er wurde inzwischen geändert oder ist nicht mehr auf der Liste. Bitte prüfe die Liste und den Vorrat.</value></data>
+  <data name="LocationLabel" xml:space="preserve"><value>Lagerort für {0}</value></data>
   <data name="CheckLines" xml:space="preserve"><value>Bitte prüfe die markierten Zeilen.</value></data>
   <data name="FieldError.required" xml:space="preserve"><value>Bitte ausfüllen.</value></data>
   <data name="FieldError.invalid" xml:space="preserve"><value>Ungültiger Wert.</value></data>

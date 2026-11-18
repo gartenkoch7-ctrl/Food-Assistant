@@ -20,7 +20,8 @@ public interface ICheckoutStore
     /// </summary>
     /// <returns>
     /// The stored lines; 404 <c>checkout.list_not_found</c> if the list is gone, 409
-    /// <c>common.conflict</c> if a location was deleted meanwhile (nothing is stored then).
+    /// <c>common.conflict</c> if a location was deleted or changed its storage type meanwhile (nothing is
+    /// stored then).
     /// </returns>
     Task<OperationResult<CheckoutCommitted>> CommitAsync(CheckoutCommit commit, CancellationToken cancellationToken);
 }

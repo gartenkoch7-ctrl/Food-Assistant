@@ -3,6 +3,8 @@ using System.Text.Json;
 using FoodAssistant.Client.Http;
 using FoodAssistant.Contracts.Catalog;
 using FoodAssistant.Contracts.Checkout;
+using FoodAssistant.Contracts.Common;
+using FoodAssistant.Contracts.Inventory;
 using Microsoft.AspNetCore.Components;
 using MudBlazor;
 
@@ -16,6 +18,7 @@ public sealed partial class CheckoutPage
 {
     private List<CheckoutLine> _lines = [];
     private IReadOnlyList<StorageLocationDto> _locations = [];
+    private Dictionary<string, StorageTypeDto> _categoryTypes = [];
     private Dictionary<int, string> _rowErrors = [];
     private ApiError? _error;
     private Guid _loadedFor;
@@ -58,8 +61,12 @@ public sealed partial class CheckoutPage
         }
 
         var locations = await Catalog.ListStorageLocationsAsync(household, CancellationToken.None);
+        var categories = await Catalog.ListCategoriesAsync(household, CancellationToken.None);
         var proposal = await Checkout.GetProposalAsync(household, ListId, CancellationToken.None);
         _locations = locations.Value ?? _locations;
+
+        // Without categories an assigned product simply keeps the suggested location.
+        _categoryTypes = categories.Value?.ToDictionary(c => c.Key, c => c.DefaultStorageType) ?? _categoryTypes;
         _error = proposal.Error ?? locations.Error;
         _loaded = proposal.IsSuccess;
         _lines = proposal.Value is { } loaded ? [.. loaded.Entries.Select(e => new CheckoutLine(e))] : [];
@@ -109,7 +116,9 @@ public sealed partial class CheckoutPage
         _error = null;
         var result = await Checkout.CompleteAsync(household, ListId, request, _idempotencyKey, CancellationToken.None);
         _saving = false;
-        if (result.Error is { ErrorCode: ClientErrorCodes.Network or ClientErrorCodes.Offline } unanswered)
+        // No answer yet (network, offline, or the first attempt still running on the server): the outcome
+        // is unknown, so the same request must go out with the same key again.
+        if (result.Error is { ErrorCode: ClientErrorCodes.Network or ClientErrorCodes.Offline or ErrorCodes.IdempotencyRequestInProgress } unanswered)
         {
             _error = unanswered;
             return;
@@ -123,9 +132,12 @@ public sealed partial class CheckoutPage
             return;
         }
 
-        var message = done.BatchesCreated == 1
-            ? T["DoneOne"].Value
-            : string.Format(CultureInfo.CurrentCulture, T["DoneMany"].Value, done.BatchesCreated);
+        var message = done.BatchesCreated switch
+        {
+            0 => string.Format(CultureInfo.CurrentCulture, T["DoneNone"].Value, done.ItemsRemoved),
+            1 => T["DoneOne"].Value,
+            _ => string.Format(CultureInfo.CurrentCulture, T["DoneMany"].Value, done.BatchesCreated),
+        };
         Announcer.Announce(message);
         Snackbar.Add(message, Severity.Success);
         if (done.StaleItemIds.Count == 0)

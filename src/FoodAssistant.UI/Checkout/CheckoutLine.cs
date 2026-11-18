@@ -21,6 +21,7 @@ public sealed class CheckoutLine
         Date = entry.ExpiresOn;
         Kind = entry.ExpiryKind;
         FromRule = entry.ExpiryFromRule;
+        Suggested = entry.ExpiresOn is not null && !entry.ExpiryFromRule;
     }
 
     public Guid ItemId { get; }
@@ -53,6 +54,12 @@ public sealed class CheckoutLine
     /// </summary>
     public bool FromRule { get; set; }
 
+    /// <summary>
+    /// <see cref="Date"/> is the untouched suggestion from the last purchase. That purchase may have been
+    /// frozen goods (or fresh ones), so the date only fits the kind of place it was suggested for.
+    /// </summary>
+    public bool Suggested { get; set; }
+
     /// <summary>Frozen at home although a package date is given; only in a freezer.</summary>
     public bool SelfFrozen { get; set; }
 
@@ -60,17 +67,24 @@ public sealed class CheckoutLine
 
     public CheckoutLine Copy() => (CheckoutLine)MemberwiseClone();
 
-    /// <summary>Moves the line; a rule date belongs to the freezer and goes when leaving it.</summary>
-    public void MoveTo(Guid? locationId, bool freezer)
+    /// <summary>
+    /// Moves the line. A date the person did not enter (rule "frozen", last purchase) goes when the line
+    /// moves between a freezer and any other place: a freezer date must never end up in the fridge.
+    /// </summary>
+    /// <param name="locationId">New location.</param>
+    /// <param name="freezer">The new location is a freezer.</param>
+    /// <param name="fromFreezer">The previous location was a freezer.</param>
+    public void MoveTo(Guid? locationId, bool freezer, bool fromFreezer)
     {
         LocationId = locationId;
         if (!freezer)
         {
             SelfFrozen = false;
-            if (FromRule)
-            {
-                (Date, Kind, FromRule) = (null, ExpiryKindDto.None, false);
-            }
+        }
+
+        if (freezer != fromFreezer && (FromRule || Suggested))
+        {
+            (Date, Kind, FromRule, Suggested) = (null, ExpiryKindDto.None, false, false);
         }
     }
 
@@ -78,8 +92,8 @@ public sealed class CheckoutLine
     public void Apply(CheckoutLine edited)
     {
         ArgumentNullException.ThrowIfNull(edited);
-        (Quantity, LocationId, Date, Kind, FromRule, SelfFrozen) =
-            (edited.Quantity, edited.LocationId, edited.Date, edited.Kind, edited.FromRule, edited.SelfFrozen);
+        (Quantity, LocationId, Date, Kind, FromRule, Suggested, SelfFrozen) =
+            (edited.Quantity, edited.LocationId, edited.Date, edited.Kind, edited.FromRule, edited.Suggested, edited.SelfFrozen);
     }
 
     public CheckoutLineRequest ToRequest()

@@ -32,7 +32,7 @@ else
     @if (_staleCount > 0)
     {
         <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" role="alert">
-            @string.Format(CultureInfo.CurrentCulture, T["Stale"].Value, _staleCount)
+            @(_staleCount == 1 ? T["StaleOne"].Value : string.Format(CultureInfo.CurrentCulture, T["Stale"].Value, _staleCount))
         </MudAlert>
     }
     @if (_checkLines)
@@ -53,7 +53,8 @@ else
             @for (var index = 0; index < _lines.Count; index++)
             {
                 var line = _lines[index];
-                <CheckoutLineRow @key="line.ItemId" Line="line" Locations="_locations" Error="@_rowErrors.GetValueOrDefault(index)"
+                <CheckoutLineRow @key="line.ItemId" Line="line" Locations="_locations" CategoryTypes="_categoryTypes"
+                                 Error="@_rowErrors.GetValueOrDefault(index)"
                                  Changed="OnLineChanged" Edit="EditAsync" />
             }
         </ul>

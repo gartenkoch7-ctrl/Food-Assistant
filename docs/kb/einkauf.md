@@ -95,8 +95,8 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
 - **Eine Transaktion** mit Änderungsprotokoll-Sperre des Haushalts zuerst. Unter der Sperre werden alle
   Einträge erneut geprüft (noch auf der Liste, abgehakt, nicht gelöscht, gleiche `Version`) und die
   Produkte (nicht archiviert). Was nicht passt, wird nicht verarbeitet und als `staleItemIds` gemeldet –
-  die übrigen Zeilen werden trotzdem gebucht. Ein inzwischen gelöschter Lagerort ergibt 409
-  `common.conflict` ohne Änderung.
+  die übrigen Zeilen werden trotzdem gebucht. Ein inzwischen gelöschter Lagerort oder einer, der den
+  Lagertyp gewechselt hat (die Charge wurde für den alten Typ gebaut), ergibt 409 `common.conflict` ohne Änderung.
 - Verarbeitete Einträge (auch übersprungene) bekommen `DeletedAt` und `Version + 1`; je Charge eine
   Aktivität `batch_added` (Rückgängig wie beim Einbuchen). Danach laufen alle `IStockChangedHandler`
   einmal mit allen betroffenen Produkten.
@@ -105,8 +105,13 @@ Sync- und Konfliktregeln: ADR-0005. Vorratsmodell: [vorrat-und-haltbarkeit.md](v
 - **Oberfläche** (`/shopping/{id}/complete`, F2): je Eintrag eine Zeile mit Überschrift (Name), Menge,
   Datum mit Art als Text („aus Regel“ ausgeschrieben), Lagerort-Auswahl und „Ändern“ (Dialog: Menge, Ort,
   Datum + Art ohne Vorbelegung, im Gefrierort „selbst eingefroren“). Freitext: `ProductPicker` (legt ein
-  neues Produkt über den Katalog an) oder „Überspringen“. Wer einen Regel-Ort verlässt, verliert das
-  Regeldatum. Der Client nimmt denselben `Idempotency-Key` nur für dieselbe Anfrage nach einem Fehler
+  neues Produkt über den Katalog an) oder „Überspringen“; ein zugeordnetes Produkt übernimmt bei
+  „1 Stück“ seine Standardeinheit und den ersten Ort vom Lagertyp seiner Kategorie. Ein Datum, das der
+  Nutzer nicht selbst eingetragen hat (Regel „gefroren“, letzter Kauf), fällt weg, sobald die Zeile
+  zwischen Gefrierort und anderem Ort wechselt – ein Gefrierdatum darf nie im Kühlschrank landen.
+  **Offen:** Der Server merkt sich beim letzten Kauf nicht den Lagertyp; wurde zuletzt TK-Ware gekauft,
+  schlägt er deren Tage auch für einen Kühlschrank-Vorschlag vor (Entscheidung nötig, z. B. Spalte
+  `LastStorageType` oder nur aus nicht gefrorenen Chargen lernen). Der Client nimmt denselben `Idempotency-Key` nur für dieselbe Anfrage nach einem Fehler
   ohne Antwort (Netz/offline); jede andere Anfrage bekommt einen neuen (sonst 422 `common.idempotency_key_reused`).
   Erfolg: Ansage + Snackbar, zurück zur Liste; mit `staleItemIds` bleibt die Seite, lädt neu und nennt die Anzahl.
 

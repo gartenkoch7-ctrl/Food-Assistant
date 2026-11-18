@@ -101,19 +101,21 @@
             return;
         }
 
+        var fromFreezer = Locations.FirstOrDefault(l => l.Id == Line.LocationId)?.Type == StorageTypeDto.Frozen;
         var edited = Line.Copy();
         edited.Quantity = _quantity!;
         if (_date is { } date)
         {
-            (edited.Date, edited.Kind, edited.FromRule) = (date, _kind!.Value, false);
+            // Saved from the date field, the date counts as the person's own, even if it was suggested.
+            (edited.Date, edited.Kind, edited.FromRule, edited.Suggested) = (date, _kind!.Value, false, false);
         }
         else if (!Line.FromRule)
         {
-            (edited.Date, edited.Kind) = (null, ExpiryKindDto.None);
+            (edited.Date, edited.Kind, edited.Suggested) = (null, ExpiryKindDto.None, false);
         }
 
         edited.SelfFrozen = IsFreezer && _selfFrozen;
-        edited.MoveTo(_locationId, IsFreezer);
+        edited.MoveTo(_locationId, IsFreezer, fromFreezer);
         MudDialog.Close(DialogResult.Ok(edited));
     }
 }

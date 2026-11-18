@@ -75,6 +75,11 @@ internal sealed class CheckoutStore(AppDbContext db, IHouseholdContext household
             return OperationResult<CheckoutCommitted>.NotFound(CheckoutErrorCodes.ListNotFound);
         }
 
+        if (!await LocationsUnchangedAsync(commit, cancellationToken).ConfigureAwait(false))
+        {
+            return OperationResult<CheckoutCommitted>.Conflict(ErrorCodes.Conflict);
+        }
+
         var itemIds = commit.Lines.Select(l => l.ItemId).ToList();
         var items = await db.Set<ShoppingItem>()
             .Where(i => itemIds.Contains(i.Id))
@@ -128,6 +133,19 @@ internal sealed class CheckoutStore(AppDbContext db, IHouseholdContext household
         }
 
         return OperationResult<CheckoutCommitted>.Ok(new CheckoutCommitted(applied, stale));
+    }
+
+    // The batches were built for the storage type read before the lock (frozen at home or sealed);
+    // a location deleted or switched between fridge and freezer since then would contradict them.
+    private async Task<bool> LocationsUnchangedAsync(CheckoutCommit commit, CancellationToken cancellationToken)
+    {
+        var batches = commit.Lines.Select(l => l.Batch).OfType<CheckoutBatch>().ToList();
+        var locationIds = batches.Select(b => b.StorageLocationId).Distinct().ToList();
+        var types = await db.Set<StorageLocation>()
+            .Where(l => locationIds.Contains(l.Id))
+            .ToDictionaryAsync(l => l.Id, l => l.Type, cancellationToken)
+            .ConfigureAwait(false);
+        return batches.All(b => types.TryGetValue(b.StorageLocationId, out var type) && type == b.Batch.StorageType);
     }
 
     // Adds the batch (and its new product); false if its product was archived meanwhile.

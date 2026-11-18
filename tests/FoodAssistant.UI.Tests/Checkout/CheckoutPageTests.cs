@@ -1,6 +1,8 @@
 using Bunit;
 using FoodAssistant.Client.Http;
+using FoodAssistant.Contracts.Catalog;
 using FoodAssistant.Contracts.Checkout;
+using FoodAssistant.Contracts.Common;
 using FoodAssistant.Contracts.Inventory;
 using FoodAssistant.UI.Common;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +24,7 @@ public sealed class CheckoutPageTests : CheckoutTestContext
         Assert.Contains("Verbrauchsdatum: 16.02.2027 · aus Regel", Row(cut, "Erbsen").TextContent, StringComparison.Ordinal);
         Assert.Contains("In den Vorrat buchen (2)", BookButton(cut).TextContent, StringComparison.Ordinal);
         Assert.Equal("Milch ändern", RowButton(cut, "Milch", "Ändern").GetAttribute("aria-label"));
+        Assert.Contains(Row(cut, "Milch").QuerySelectorAll("label"), l => l.TextContent.Contains("Lagerort für Milch", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -49,11 +52,12 @@ public sealed class CheckoutPageTests : CheckoutTestContext
     }
 
     [Fact]
-    public async Task FreeText_AssignedProduct_IsSentWithItsId()
+    public async Task FreeText_AssignedProduct_IsSentWithItsId_AndItsDefaults()
     {
         var oat = Product("Haferdrink");
         Catalog.Products.Add(oat);
-        AddEntry("Hafer", null, Fridge.Id);
+        Catalog.Categories.Add(new CategoryDto("plant_based", "dairy_chilled", StorageTypeDto.Chilled));
+        AddEntry("Hafer", null, Freezer.Id, quantity: new QuantityDto(1m, "piece"));
         var cut = RenderPage();
 
         var input = cut.Find("li.fa-checkout-row input");
@@ -65,22 +69,36 @@ public sealed class CheckoutPageTests : CheckoutTestContext
         await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
 
         var line = Assert.Single(Assert.Single(CheckoutClient.Completions).Request.Lines);
-        Assert.Equal((oat.Id, false), (line.ProductId, line.Skip));
+        Assert.Equal((oat.Id, false, (Guid?)Fridge.Id, new QuantityDto(1m, "l")), (line.ProductId, line.Skip, line.StorageLocationId, line.Quantity));
     }
 
-    [Fact]
-    public async Task LeavingTheFreezer_DropsTheRuleDate()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CrossingTheFreezerBoundary_DropsDatesThePersonDidNotEnter(bool ruleDate)
     {
-        var peas = AddEntry("Erbsen", Guid.CreateVersion7(), Freezer.Id, Today.AddDays(90), ExpiryKindDto.UseBy, fromRule: true);
+        var (from, to) = ruleDate ? (Freezer, Fridge) : (Fridge, Freezer);
+        AddEntry("Erbsen", Guid.CreateVersion7(), from.Id, Today.AddDays(90), ruleDate ? ExpiryKindDto.UseBy : ExpiryKindDto.BestBefore, fromRule: ruleDate);
         var cut = RenderPage();
         var line = cut.FindComponent<FoodAssistant.UI.Checkout.CheckoutLineRow>().Instance.Line;
 
-        await cut.InvokeAsync(() => line.MoveTo(Fridge.Id, freezer: false)).WaitAsync(Timeout, Ct);
+        await cut.InvokeAsync(() => line.MoveTo(to.Id, freezer: !ruleDate, fromFreezer: ruleDate)).WaitAsync(Timeout, Ct);
         cut.Render();
 
-        Assert.Contains("kein Datum", Row(cut, "Erbsen").TextContent, StringComparison.Ordinal);
-        Assert.Equal((Fridge.Id, (DateOnly?)null, ExpiryKindDto.None), (line.ToRequest().StorageLocationId, line.ToRequest().ExpiresOn, line.ToRequest().ExpiryKind));
-        Assert.Equal(peas.ItemId, line.ItemId);
+        var request = line.ToRequest();
+        Assert.Equal((to.Id, (DateOnly?)null, ExpiryKindDto.None), (request.StorageLocationId!.Value, request.ExpiresOn, request.ExpiryKind));
+        Assert.DoesNotContain("16.02.2027", Row(cut, "Erbsen").TextContent, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void MovingWithinTheSameKindOfPlace_KeepsTheSuggestedDate()
+    {
+        var pantry = new StorageLocationDto(Guid.CreateVersion7(), "Vorratsschrank", StorageTypeDto.Ambient, 2, 1);
+        var line = new FoodAssistant.UI.Checkout.CheckoutLine(AddEntry("Reis", Guid.CreateVersion7(), Fridge.Id, Today.AddDays(30), ExpiryKindDto.BestBefore));
+
+        line.MoveTo(pantry.Id, freezer: false, fromFreezer: false);
+
+        Assert.Equal((Today.AddDays(30), ExpiryKindDto.BestBefore), (line.ToRequest().ExpiresOn!.Value, line.ToRequest().ExpiryKind));
     }
 
     [Fact]
@@ -102,7 +120,7 @@ public sealed class CheckoutPageTests : CheckoutTestContext
         Assert.Equal(CheckoutClient.Completions[0].Key, CheckoutClient.Completions[1].Key);
         Assert.NotEqual(CheckoutClient.Completions[1].Key, CheckoutClient.Completions[2].Key);
         Assert.Single(CheckoutClient.Completions[2].Request.Lines);
-        Assert.Contains("1 Einträge wurden inzwischen geändert", cut.Markup, StringComparison.Ordinal);
+        Assert.Contains("1 Eintrag wurde nicht gebucht", cut.Markup, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -117,6 +135,23 @@ public sealed class CheckoutPageTests : CheckoutTestContext
 
         Assert.Contains("Lagerort: Gibt es nicht mehr.", Row(cut, "Milch").TextContent, StringComparison.Ordinal);
         Assert.Contains("Bitte prüfe die markierten Zeilen.", cut.Markup, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task RequestStillInProgress_KeepsTheKey_AllSkipped_SaysNothingWasAdded()
+    {
+        var bread = AddEntry("Brot", Guid.CreateVersion7(), Fridge.Id);
+        CheckoutClient.Answers.Enqueue(ApiResult<CheckoutResultDto>.Failure(
+            new ApiError(409, ErrorCodes.IdempotencyRequestInProgress, null, new Dictionary<string, string[]>(), null)));
+        var cut = RenderPage();
+        await cut.InvokeAsync(() => RowButton(cut, "Brot", "Überspringen").Click()).WaitAsync(Timeout, Ct);
+
+        await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
+        await cut.InvokeAsync(() => BookButton(cut).Click()).WaitAsync(Timeout, Ct);
+
+        Assert.Equal(CheckoutClient.Completions[0].Key, CheckoutClient.Completions[1].Key);
+        Assert.True(Assert.Single(CheckoutClient.Completions[1].Request.Lines, l => l.ItemId == bread.ItemId).Skip);
+        Assert.Equal("Nichts gebucht. Von der Liste entfernt: 1.", Services.GetRequiredService<ILiveAnnouncer>().Message);
     }
 
     [Fact]

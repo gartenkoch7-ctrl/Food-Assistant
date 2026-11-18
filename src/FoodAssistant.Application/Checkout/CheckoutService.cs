@@ -162,6 +162,7 @@ public sealed class CheckoutService(
         var householdId = householdContext.HouseholdId!.Value;
         foreach (var batch in batches)
         {
+            InventoryLog.BatchAdded(logger, batch.Batch.Id, batch.ProductId, BatchOrigin.Purchase);
             InventoryMetrics.BatchAdded(BatchOrigin.Purchase);
             if (batch.NewProduct is { } created)
             {

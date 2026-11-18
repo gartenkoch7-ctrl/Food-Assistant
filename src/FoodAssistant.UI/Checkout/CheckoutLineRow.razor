@@ -1,5 +1,6 @@
 @using System.Globalization
 @using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Common
 @using FoodAssistant.Contracts.Inventory
 @using FoodAssistant.UI.Inventory
 @inject IStringLocalizer<CheckoutText> T
@@ -31,7 +32,8 @@
         {
             <p class="fa-checkout-secondary">@Inventory["FrozenAtHomeHint"]</p>
         }
-        <MudSelect T="Guid?" Label="@Inventory["FieldLocation"]" Value="Line.LocationId" ValueChanged="MoveAsync"
+        @* The label names the line: every row has a location field, and a list of "Lagerort" fields is ambiguous. *@
+        <MudSelect T="Guid?" Label="@Format("LocationLabel")" Value="Line.LocationId" ValueChanged="MoveAsync"
                    Variant="Variant.Outlined" Dense="true" Required="true">
             @foreach (var location in Locations)
             {
@@ -47,9 +49,10 @@
             <MudButton Variant="Variant.Text" aria-label="@Format("SkipLabel")" OnClick="() => SetSkipAsync(true)">@T["Skip"]</MudButton>
         </div>
     }
+    @* No role="alert" here: the page announces one summary instead of every line at once. *@
     @if (Error is not null)
     {
-        <MudText Typo="Typo.caption" Color="Color.Error" role="alert">@Error</MudText>
+        <MudText Typo="Typo.caption" Color="Color.Error">@Error</MudText>
     }
 </li>
 
@@ -59,6 +62,10 @@
 
     [Parameter, EditorRequired]
     public IReadOnlyList<StorageLocationDto> Locations { get; set; } = [];
+
+    /// <summary>Default storage type per category key, for a product assigned to free text.</summary>
+    [Parameter]
+    public IReadOnlyDictionary<string, StorageTypeDto> CategoryTypes { get; set; } = new Dictionary<string, StorageTypeDto>();
 
     /// <summary>Problem of this line (missing product, field error of the server), shown under it.</summary>
     [Parameter]
@@ -85,14 +92,31 @@
 
     private Task MoveAsync(Guid? locationId)
     {
-        var freezer = Locations.FirstOrDefault(l => l.Id == locationId)?.Type == StorageTypeDto.Frozen;
-        Line.MoveTo(locationId, freezer);
+        Move(locationId);
         return Changed.InvokeAsync(Line);
     }
 
+    private void Move(Guid? locationId)
+    {
+        var freezer = Locations.FirstOrDefault(l => l.Id == locationId)?.Type == StorageTypeDto.Frozen;
+        Line.MoveTo(locationId, freezer, IsFreezer);
+    }
+
+    // Free text was suggested "1 piece" in the first location; the product's own defaults fit better
+    // (default unit, a location of its category's storage type), as the server suggests for products.
     private Task AssignAsync(ProductSummaryDto product)
     {
         (Line.ProductId, Line.Name) = (product.Id, product.Name);
+        if (Line.Quantity is { Value: 1m, Unit: UnitCodes.Piece } && !string.IsNullOrEmpty(product.DefaultUnit))
+        {
+            Line.Quantity = new QuantityDto(1m, product.DefaultUnit);
+        }
+
+        if (CategoryTypes.TryGetValue(product.CategoryKey, out var type) && Locations.FirstOrDefault(l => l.Type == type) is { } location)
+        {
+            Move(location.Id);
+        }
+
         return Changed.InvokeAsync(Line);
     }
 
