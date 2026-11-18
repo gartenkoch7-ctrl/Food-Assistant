@@ -352,6 +352,267 @@
           }
         }
       }
+    },
+    "/api/v1/households/{householdId}/shelf-life/rules": {
+      "get": {
+        "tags": [
+          "ShelfLife"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShelfLifeRuleRowDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/households/{householdId}/shelf-life/sources": {
+      "get": {
+        "tags": [
+          "ShelfLife"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ShelfLifeSourceDto"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/households/{householdId}/shelf-life/overrides/categories/{categoryKey}/{storageType}": {
+      "put": {
+        "tags": [
+          "ShelfLife"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "categoryKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storageType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShelfLifeDaysDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ShelfLife"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "categoryKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "storageType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/households/{householdId}/products/{productId}/shelf-life": {
+      "get": {
+        "tags": [
+          "ShelfLife"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/households/{householdId}/products/{productId}/shelf-life/{storageType}": {
+      "put": {
+        "tags": [
+          "ShelfLife"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "storageType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShelfLifeDaysDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "ShelfLife"
+        ],
+        "parameters": [
+          {
+            "name": "householdId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "storageType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -522,6 +783,125 @@
             "type": "string"
           }
         }
+      },
+      "ShelfLifeDaysDto": {
+        "required": [
+          "daysAfterOpening",
+          "daysFrozen",
+          "daysAfterThawing",
+          "daysAsLeftover"
+        ],
+        "type": "object",
+        "properties": {
+          "daysAfterOpening": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "daysFrozen": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "daysAfterThawing": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "daysAsLeftover": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "ShelfLifeRuleRowDto": {
+        "required": [
+          "categoryKey",
+          "storageType",
+          "default",
+          "override",
+          "effective",
+          "sourceKey"
+        ],
+        "type": "object",
+        "properties": {
+          "categoryKey": {
+            "type": "string"
+          },
+          "storageType": {
+            "$ref": "#/components/schemas/StorageTypeDto"
+          },
+          "default": {
+            "$ref": "#/components/schemas/ShelfLifeDaysDto"
+          },
+          "override": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ShelfLifeDaysDto"
+              }
+            ]
+          },
+          "effective": {
+            "$ref": "#/components/schemas/ShelfLifeDaysDto"
+          },
+          "sourceKey": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ShelfLifeSourceDto": {
+        "required": [
+          "key",
+          "title",
+          "url",
+          "retrieved"
+        ],
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "retrieved": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      },
+      "StorageTypeDto": {
+        "enum": [
+          "chilled",
+          "frozen",
+          "ambient"
+        ]
       }
     }
   },
@@ -543,6 +923,9 @@
     },
     {
       "name": "Members"
+    },
+    {
+      "name": "ShelfLife"
     }
   ]
 }
