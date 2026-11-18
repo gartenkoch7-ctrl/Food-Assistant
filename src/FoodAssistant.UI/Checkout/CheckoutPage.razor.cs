@@ -104,7 +104,8 @@ public sealed partial class CheckoutPage
         }
 
         var changed = false;
-        foreach (var line in _lines.Where(l => !l.Skip))
+        // Skipped lines too: they may be booked after all later, and must not keep a date for the old type.
+        foreach (var line in _lines)
         {
             var before = _locations.FirstOrDefault(l => l.Id == line.LocationId)?.Type;
             var after = current.FirstOrDefault(l => l.Id == line.LocationId)?.Type;
@@ -114,7 +115,7 @@ public sealed partial class CheckoutPage
                 // sending asks for it); its freezer dates go like on any move out of the freezer.
                 var now = after ?? StorageTypeDto.Ambient;
                 line.MoveTo(after is null ? null : line.LocationId, now == StorageTypeDto.Frozen, was == StorageTypeDto.Frozen);
-                changed = true;
+                changed |= !line.Skip;
             }
         }
 

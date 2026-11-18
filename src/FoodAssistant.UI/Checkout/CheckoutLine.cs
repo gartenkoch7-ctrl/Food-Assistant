@@ -14,6 +14,7 @@ public sealed class CheckoutLine
         ItemVersion = entry.ItemVersion;
         Text = entry.Text;
         IsFreeText = entry.ProductId is null;
+        Reassignable = IsFreeText;
         ProductId = entry.ProductId;
         Name = entry.Text;
         Quantity = entry.Quantity;
@@ -35,6 +36,12 @@ public sealed class CheckoutLine
 
     /// <summary>The entry has no (active) product: it must be assigned one or skipped.</summary>
     public bool IsFreeText { get; }
+
+    /// <summary>
+    /// The product of this line is chosen on the page (free text, or a product archived meanwhile), so the
+    /// row offers "other product" and shows the entry text.
+    /// </summary>
+    public bool Reassignable { get; private set; }
 
     public Guid? ProductId { get; set; }
 
@@ -99,7 +106,7 @@ public sealed class CheckoutLine
     /// <summary>Removes the product so another one can be picked; its suggested date goes with it.</summary>
     public void ClearProduct()
     {
-        (ProductId, Name) = (null, Text);
+        (ProductId, Name, Reassignable) = (null, Text, true);
         DropSuggestedDate();
     }
 

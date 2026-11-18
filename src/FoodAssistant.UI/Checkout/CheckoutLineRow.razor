@@ -23,7 +23,7 @@
         {
             <ProductPicker Label="@Format("AssignLabel", Line.Text)" ProductSelected="AssignAsync" />
         }
-        else if (Line.IsFreeText)
+        else if (Line.Reassignable)
         {
             <p class="fa-checkout-secondary">@Format("AssignedFrom", Line.Text)</p>
         }
@@ -43,7 +43,7 @@
         </MudSelect>
         <div class="fa-checkout-actions">
             <MudButton Variant="Variant.Outlined" aria-label="@Format("EditLabel")" OnClick="() => Edit.InvokeAsync(Line)">@T["Edit"]</MudButton>
-            @if (Line.IsFreeText && Line.ProductId is not null)
+            @if (Line.Reassignable && Line.ProductId is not null)
             {
                 <MudButton Variant="Variant.Text" aria-label="@Format("AssignOtherLabel", Line.Text)" OnClick="UnassignAsync">@T["AssignOther"]</MudButton>
             }
