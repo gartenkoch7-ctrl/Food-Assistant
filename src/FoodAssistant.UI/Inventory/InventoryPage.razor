@@ -1,0 +1,13 @@
+﻿@page "/"
+@inject IStringLocalizer<InventoryText> T
+
+<PageTitle>@T["InventoryTitle"] – @AppInfo.Name</PageTitle>
+
+<h1>@T["InventoryTitle"]</h1>
+
+<EmptyState Icon="@Icons.Material.Rounded.Kitchen"
+            Heading="@T["InventoryEmptyHeading"]"
+            Text="@T["InventoryEmptyText"]">
+    <MudButton Href="/scan" Variant="Variant.Filled" Color="Color.Primary"
+               StartIcon="@Icons.Material.Rounded.QrCodeScanner">@T["InventoryEmptyAction"]</MudButton>
+</EmptyState>

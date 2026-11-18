@@ -1,0 +1,9 @@
+﻿@page "/not-found"
+@layout MainLayout
+@inject IStringLocalizer<ShellText> T
+
+<PageTitle>@T["NotFoundTitle"] – @AppInfo.Name</PageTitle>
+
+<h1>@T["NotFoundTitle"]</h1>
+<p class="fa-page-lead">@T["NotFoundText"]</p>
+<MudButton Href="/" Variant="Variant.Filled" Color="Color.Primary">@T["NotFoundAction"]</MudButton>

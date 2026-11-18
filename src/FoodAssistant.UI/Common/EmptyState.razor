@@ -1,0 +1,26 @@
+<section class="fa-empty-state" aria-labelledby="@_headingId">
+    <span class="fa-empty-icon" aria-hidden="true"><MudIcon Icon="@Icon" Size="Size.Large" /></span>
+    <h2 id="@_headingId" class="fa-empty-heading">@Heading</h2>
+    <p class="fa-empty-text">@Text</p>
+    @if (ChildContent is not null)
+    {
+        <div class="fa-empty-actions">@ChildContent</div>
+    }
+</section>
+
+@code {
+    private readonly string _headingId = $"fa-empty-{Guid.NewGuid():N}";
+
+    [Parameter, EditorRequired]
+    public string Icon { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Heading { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Text { get; set; } = string.Empty;
+
+    /// <summary>Actions below the text, for example the one button the page offers.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+}

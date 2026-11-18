@@ -1,0 +1,32 @@
+@typeparam TValue
+
+@* Native radio buttons in a fieldset: group name, keyboard and screen-reader behaviour come from the browser. *@
+<fieldset class="fa-option-group">
+    <legend class="fa-option-legend">@Legend</legend>
+    @foreach (var option in Options)
+    {
+        var selected = EqualityComparer<TValue>.Default.Equals(option.Value, Value);
+        <label class="fa-option @(selected ? "fa-option--selected" : null)">
+            <input type="radio" name="@_name" checked="@selected" @onchange="() => SelectAsync(option.Value)" />
+            <span>@option.Label</span>
+        </label>
+    }
+</fieldset>
+
+@code {
+    private readonly string _name = $"fa-option-{Guid.NewGuid():N}";
+
+    [Parameter, EditorRequired]
+    public string Legend { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<ChoiceOption<TValue>> Options { get; set; } = [];
+
+    [Parameter]
+    public TValue? Value { get; set; }
+
+    [Parameter]
+    public EventCallback<TValue> ValueChanged { get; set; }
+
+    private Task SelectAsync(TValue value) => ValueChanged.InvokeAsync(value);
+}

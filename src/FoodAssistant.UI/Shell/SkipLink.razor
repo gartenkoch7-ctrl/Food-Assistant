@@ -1,0 +1,25 @@
+@implements IDisposable
+@inject NavigationManager Navigation
+@inject IBrowserInterop Browser
+@inject IStringLocalizer<ShellText> T
+
+@* The href carries the full current address: with <base href="/"> a bare "#fragment" would leave the page
+   before the app is interactive. Once interactive, the click handler moves focus itself. *@
+<a class="fa-skip-link" href="@TargetHref" @onclick="FocusTargetAsync" @onclick:preventDefault="true">@T["SkipToContent"]</a>
+
+@code {
+    /// <summary>The <c>id</c> of the element that receives focus; it needs <c>tabindex="-1"</c>.</summary>
+    [Parameter]
+    public string TargetId { get; set; } = "main-content";
+
+    private string TargetHref => new Uri(Navigation.Uri).GetLeftPart(UriPartial.Query) + "#" + TargetId;
+
+    protected override void OnInitialized() => Navigation.LocationChanged += OnLocationChanged;
+
+    private Task FocusTargetAsync() => Browser.FocusElementAsync(TargetId);
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e) =>
+        _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+}

@@ -1,0 +1,44 @@
+/* One list row: at least 64 px high (docs/kb/design-system.md, "Maße"). Place inside <ul class="fa-list">. */
+.fa-list-row {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    gap: var(--fa-space-3);
+    min-height: var(--fa-row-height);
+    padding: var(--fa-space-2) var(--fa-space-4);
+    background: var(--fa-surface-raised);
+    border-bottom: 1px solid var(--fa-line);
+    list-style: none;
+}
+
+.fa-list-row-icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    color: var(--fa-ink-muted);
+}
+
+.fa-list-row-text {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.fa-list-row-name {
+    overflow-wrap: anywhere;
+    font-size: 1.125rem;
+    line-height: 1.625rem;
+}
+
+.fa-list-row-secondary {
+    color: var(--fa-ink-muted);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.fa-list-row-end {
+    display: inline-flex;
+    flex: 0 1 auto;
+    min-width: 0;
+    align-items: center;
+}

@@ -1,0 +1,56 @@
+@implements IDisposable
+@inject NavigationManager Navigation
+
+<li class="fa-nav-entry">
+    <a class="fa-nav-item @(IsPrimaryAction ? "fa-nav-item--primary" : null) @(IsActive ? "fa-nav-item--active" : null)"
+       href="@Href"
+       aria-current="@(IsExact ? "page" : IsActive ? "true" : null)">
+        <span class="fa-nav-icon"><MudIcon Icon="@Icon" /></span>
+        <span class="fa-nav-label">@Text</span>
+    </a>
+</li>
+
+@code {
+    /// <summary>Absolute path of the target, for example <c>/shopping</c>.</summary>
+    [Parameter, EditorRequired]
+    public string Href { get; set; } = "/";
+
+    [Parameter, EditorRequired]
+    public string Icon { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Text { get; set; } = string.Empty;
+
+    /// <summary><see cref="NavLinkMatch.All"/> for the start page, otherwise sub-pages count as the same entry.</summary>
+    [Parameter]
+    public NavLinkMatch Match { get; set; } = NavLinkMatch.Prefix;
+
+    /// <summary>The scan button: highlighted and, on small screens, raised in the middle of the bar.</summary>
+    [Parameter]
+    public bool IsPrimaryAction { get; set; }
+
+    private bool IsActive => Matches(CurrentPath(), Href.Trim('/'), Match);
+
+    // "page" is only true for the very page the link points to; a sub-page marks its section with "true".
+    private bool IsExact => string.Equals(CurrentPath(), Href.Trim('/'), StringComparison.OrdinalIgnoreCase);
+
+    protected override void OnInitialized() => Navigation.LocationChanged += OnLocationChanged;
+
+    private string CurrentPath()
+    {
+        var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
+        var end = relative.IndexOfAny(['?', '#']);
+        return (end < 0 ? relative : relative[..end]).Trim('/');
+    }
+
+    private static bool Matches(string current, string target, NavLinkMatch match) =>
+        string.Equals(current, target, StringComparison.OrdinalIgnoreCase)
+        || (match == NavLinkMatch.Prefix
+            && target.Length > 0
+            && current.StartsWith(target + "/", StringComparison.OrdinalIgnoreCase));
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e) =>
+        _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+}

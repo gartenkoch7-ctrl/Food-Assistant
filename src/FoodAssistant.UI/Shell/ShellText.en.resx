@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="SkipToContent" xml:space="preserve"><value>Skip to content</value></data>
+  <data name="NavLabel" xml:space="preserve"><value>Main navigation</value></data>
+  <data name="NavInventory" xml:space="preserve"><value>Pantry</value></data>
+  <data name="NavShopping" xml:space="preserve"><value>Shopping</value></data>
+  <data name="NavScan" xml:space="preserve"><value>Scan</value></data>
+  <data name="NavCooking" xml:space="preserve"><value>Cook</value></data>
+  <data name="NavMore" xml:space="preserve"><value>More</value></data>
+  <data name="ErrorMessage" xml:space="preserve"><value>An unhandled error has occurred.</value></data>
+  <data name="ErrorReload" xml:space="preserve"><value>Reload</value></data>
+  <data name="ErrorDismiss" xml:space="preserve"><value>Dismiss message</value></data>
+  <data name="ErrorRequestId" xml:space="preserve"><value>Request ID</value></data>
+  <data name="NotFoundTitle" xml:space="preserve"><value>Page not found</value></data>
+  <data name="NotFoundText" xml:space="preserve"><value>This page does not exist. Head back to your pantry.</value></data>
+  <data name="NotFoundAction" xml:space="preserve"><value>Back to pantry</value></data>
+  <data name="MoreTitle" xml:space="preserve"><value>More</value></data>
+  <data name="MoreAppearanceHeading" xml:space="preserve"><value>Appearance</value></data>
+  <data name="MoreThemeLegend" xml:space="preserve"><value>Colour scheme</value></data>
+  <data name="ThemeSystem" xml:space="preserve"><value>Same as your device</value></data>
+  <data name="ThemeLight" xml:space="preserve"><value>Light</value></data>
+  <data name="ThemeDark" xml:space="preserve"><value>Dark</value></data>
+  <data name="ThemeHighContrast" xml:space="preserve"><value>High contrast</value></data>
+  <data name="MoreLanguageHeading" xml:space="preserve"><value>Language</value></data>
+  <data name="MoreLanguageLegend" xml:space="preserve"><value>App language</value></data>
+  <data name="LanguageApply" xml:space="preserve"><value>Apply language</value></data>
+  <data name="LanguageGerman" xml:space="preserve"><value>Deutsch</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+</root>

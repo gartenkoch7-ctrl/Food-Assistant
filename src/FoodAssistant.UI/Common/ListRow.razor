@@ -1,0 +1,31 @@
+<li class="fa-list-row">
+    <span class="fa-list-row-icon" aria-hidden="true"><MudIcon Icon="@Icon" /></span>
+    <span class="fa-list-row-text">
+        <span class="fa-list-row-name">@Name</span>
+        @if (!string.IsNullOrEmpty(Secondary))
+        {
+            <span class="fa-list-row-secondary">@Secondary</span>
+        }
+    </span>
+    @if (End is not null)
+    {
+        <span class="fa-list-row-end">@End</span>
+    }
+</li>
+
+@code {
+    /// <summary>Category symbol, for example <c>Icons.Material.Rounded.Kitchen</c>.</summary>
+    [Parameter, EditorRequired]
+    public string Icon { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>Second line: quantity, location or the like.</summary>
+    [Parameter]
+    public string? Secondary { get; set; }
+
+    /// <summary>Right-hand slot: a <c>StatusChip</c> or a tick button.</summary>
+    [Parameter]
+    public RenderFragment? End { get; set; }
+}

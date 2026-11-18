@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Food-Assistant">
+  <!-- Placeholder mark until a real logo exists (ADR-0009): a tomato in white on the brand colour.
+       Everything important sits inside the central 80 % so the icon also works as a maskable icon. -->
+  <rect width="512" height="512" fill="#c0391f"/>
+  <circle cx="256" cy="290" r="130" fill="#ffffff"/>
+  <path d="M256 190c-34-4-62-22-76-48 30-6 56 2 76 22 20-20 46-28 76-22-14 26-42 44-76 48z" fill="#ffffff"/>
+  <rect x="244" y="112" width="24" height="64" rx="12" fill="#ffffff"/>
+</svg>

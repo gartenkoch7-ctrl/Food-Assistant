@@ -1,0 +1,72 @@
+@page "/more"
+@implements IDisposable
+@inject ThemeState Theme
+@inject ICultureService Cultures
+@inject NavigationManager Navigation
+@inject IStringLocalizer<ShellText> T
+
+<PageTitle>@T["MoreTitle"] – @AppInfo.Name</PageTitle>
+
+<h1>@T["MoreTitle"]</h1>
+
+<section class="fa-more-section" aria-labelledby="more-appearance">
+    <h2 id="more-appearance">@T["MoreAppearanceHeading"]</h2>
+    <OptionGroup TValue="ThemeMode"
+                 Legend="@T["MoreThemeLegend"]"
+                 Options="_themeOptions"
+                 Value="Theme.Mode"
+                 ValueChanged="SetThemeAsync" />
+</section>
+
+<section class="fa-more-section" aria-labelledby="more-language">
+    <h2 id="more-language">@T["MoreLanguageHeading"]</h2>
+    <OptionGroup TValue="string"
+                 Legend="@T["MoreLanguageLegend"]"
+                 Options="_languageOptions"
+                 Value="_pendingLanguage"
+                 ValueChanged="SelectLanguage" />
+    @* Applying reloads the page, so it has its own button: arrow keys in a radio group select on the spot (WCAG 3.2.2). *@
+    <MudButton Class="fa-apply-language" Variant="Variant.Filled" Color="Color.Primary"
+               Disabled="@(_pendingLanguage == Cultures.Current)" OnClick="ApplyLanguageAsync">@T["LanguageApply"]</MudButton>
+</section>
+
+@code {
+    private IReadOnlyList<ChoiceOption<ThemeMode>> _themeOptions = [];
+    private IReadOnlyList<ChoiceOption<string>> _languageOptions = [];
+    private string _pendingLanguage = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _themeOptions =
+        [
+            new(ThemeMode.System, T["ThemeSystem"]),
+            new(ThemeMode.Light, T["ThemeLight"]),
+            new(ThemeMode.Dark, T["ThemeDark"]),
+            new(ThemeMode.HighContrast, T["ThemeHighContrast"]),
+        ];
+        _languageOptions =
+        [
+            new(SupportedCultures.German, T["LanguageGerman"]),
+            new(SupportedCultures.English, T["LanguageEnglish"]),
+        ];
+        _pendingLanguage = Cultures.Current;
+        Theme.Changed += OnThemeChanged;
+    }
+
+    private Task SetThemeAsync(ThemeMode mode) => Theme.SetModeAsync(mode);
+
+    private void SelectLanguage(string culture) => _pendingLanguage = culture;
+
+    private async Task ApplyLanguageAsync()
+    {
+        await Cultures.SetAsync(_pendingLanguage);
+
+        // Texts are resolved while rendering; a reload also lets the server prerender in the new language.
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+    }
+
+    // The stored mode arrives after the first render (ThemeHost), so the selection has to follow.
+    private void OnThemeChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Theme.Changed -= OnThemeChanged;
+}

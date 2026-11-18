@@ -1,0 +1,43 @@
+.fa-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--fa-space-3);
+    margin-top: var(--fa-space-6);
+    padding: var(--fa-space-8) var(--fa-space-4);
+    text-align: center;
+    background: var(--fa-surface-raised);
+    border: 1px solid var(--fa-line);
+    border-radius: var(--fa-radius-md);
+}
+
+.fa-empty-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--fa-surface-sunken);
+    color: var(--fa-ink-muted);
+}
+
+.fa-empty-heading {
+    font: 600 1.25rem/1.625rem var(--fa-font-heading);
+}
+
+.fa-empty-text {
+    max-width: 36ch;
+    margin: 0;
+    color: var(--fa-ink-muted);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.fa-empty-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--fa-space-2);
+    margin-top: var(--fa-space-2);
+}

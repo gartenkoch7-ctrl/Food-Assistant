@@ -1,0 +1,181 @@
+/*
+ * Global base styles: page colours, focus ring, skip link and the shape rules MudBlazor's theme
+ * cannot express (pill buttons and chips, 8 px inputs, 48 px targets). Tokens: design-tokens.css.
+ */
+html {
+    background: var(--fa-surface);
+    color: var(--fa-ink);
+}
+
+body {
+    margin: 0;
+    background: var(--fa-surface);
+    color: var(--fa-ink);
+    font-family: var(--fa-font-text);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+/* Page title = "title", section heading = "heading" of the type scale. */
+h1, h2, h3 {
+    margin: 0;
+    font-family: var(--fa-font-heading);
+}
+
+h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.875rem;
+}
+
+h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.625rem;
+}
+
+h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    line-height: 1.625rem;
+}
+
+.fa-page-lead {
+    margin: var(--fa-space-3) 0 var(--fa-space-6);
+    color: var(--fa-ink-muted);
+}
+
+.fa-empty-hint {
+    max-width: 36ch;
+    margin: 0;
+    color: var(--fa-ink-muted);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+/* The heading receives focus after navigation (FocusOnNavigate); a ring there would only confuse. */
+h1:focus {
+    outline: none;
+}
+
+/* Visible focus ring in the dedicated focus colour on every interactive element (WCAG 2.4.7, 2.4.13). */
+:focus-visible {
+    outline: 3px solid var(--fa-focus) !important;
+    outline-offset: 2px;
+}
+
+/* Focused elements must not end up behind the sticky header or the fixed bottom bar (WCAG 2.4.11). */
+@media (max-width: 839.98px) {
+    html {
+        scroll-padding-top: 4.5rem;
+        scroll-padding-bottom: calc(8rem + env(safe-area-inset-bottom));
+    }
+}
+
+.fa-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Programmatic focus targets (page heading, main content) are not controls: no ring after navigation. */
+h1:focus-visible,
+main:focus-visible {
+    outline: none !important;
+}
+
+.fa-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+.fa-skip-link {
+    position: fixed;
+    top: var(--fa-space-2);
+    left: var(--fa-space-2);
+    z-index: 2000;
+    padding: var(--fa-space-3) var(--fa-space-4);
+    border-radius: var(--fa-radius-pill);
+    background: var(--fa-brand);
+    color: var(--fa-on-brand);
+    font-weight: 700;
+    text-decoration: none;
+    transform: translateY(-200%);
+}
+
+.fa-skip-link:focus {
+    transform: translateY(0);
+}
+
+/* Shapes: pill for buttons and chips, 8 px for inputs (docs/kb/design-system.md, "Maße"). */
+.mud-button-root,
+.mud-chip {
+    border-radius: var(--fa-radius-pill);
+}
+
+.mud-button-root {
+    min-height: var(--fa-target);
+}
+
+.mud-icon-button {
+    min-width: var(--fa-target);
+}
+
+.mud-input-outlined-border {
+    border-radius: var(--fa-radius-sm);
+}
+
+.mud-dialog,
+.mud-dialog-container .mud-paper {
+    border-radius: var(--fa-radius-lg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Blazor's unhandled-error bar uses the status colours instead of fixed ones. */
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 3000;
+    box-sizing: border-box;
+    padding: var(--fa-space-3) var(--fa-space-4);
+    background: var(--fa-status-expired-bg);
+    color: var(--fa-status-expired);
+    border-top: 2px solid var(--fa-status-expired);
+}
+
+#blazor-error-ui .reload {
+    color: inherit;
+    font-weight: 700;
+}
+
+#blazor-error-ui .dismiss {
+    float: right;
+    cursor: pointer;
+    min-width: var(--fa-target);
+    min-height: var(--fa-target);
+    margin: calc(-1 * var(--fa-space-3)) calc(-1 * var(--fa-space-4)) 0 0;
+    background: none;
+    border: 0;
+    color: inherit;
+    font: inherit;
+}
