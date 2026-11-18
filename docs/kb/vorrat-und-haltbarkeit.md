@@ -31,8 +31,41 @@ Haushalt ─┬─ Produkt (Katalog des Haushalts)
 | aufgetaut | aus gefroren nach gekühlt/Raumtemperatur | Regel „aufgetaut“ ab Auftaudatum (kurz) |
 | Rest/selbst gemacht | „Rest anlegen“ oder Kochen (M2) | Regel „Rest“ für Kategorie/Lagerort |
 
-- **Teilverbrauch** ändert nur die Menge; Datum und Zustand bleiben.
+- **Teilverbrauch** ändert nur die Menge; Datum und Zustand bleiben. Mengen werden mit drei
+  Dezimalen gespeichert: Eine Entnahme in anderer Einheit wird auf das nächste 0,001 der
+  Chargeneinheit aufgerundet (höchstens der Rest). Bleibt weniger als 0,001 übrig, ist die Charge
+  leer und wird gelöscht; das Ereignis heißt dann „aufgebraucht“, die Aktivität bleibt
+  `consumed_partly`.
 - Ein Zustandswechsel wird im Aktivitätsverlauf vermerkt und ist rückgängig zu machen.
+- **Verschieben** auf einen Lagerort anderen Typs: in den Gefrierschrank = einfrieren (Regel
+  „gefroren“ der Kategorie), heraus = auftauen (Regel „aufgetaut“ für den Ziel-Lagertyp), zwischen
+  Kühlschrank und Vorratsschrank bleiben Datum und Zustand. Aufgetaut → gefroren lehnt der Server ab
+  (422 `inventory.refreeze_not_allowed`).
+- **Korrigieren** (Tippfehler, F14): Menge immer; Packungsdatum und Art nur, solange die Charge
+  verschlossen ist (sonst 422 `inventory.date_locked`) – danach stammt das Datum aus einer Regel.
+- Eine **leere Charge wird gelöscht** (Tombstone im Änderungsprotokoll); das Verbrauchsereignis bleibt.
+
+## TK-Ware (neue Charge im Gefrierschrank, F5)
+
+- **Mit Packungsdatum** = gekaufte Tiefkühlware: verschlossen, Lagertyp gefroren, das Packungsdatum
+  gilt (kein Einfrierdatum).
+- **Ohne Packungsdatum** oder mit Schalter **„selbst eingefroren“** = zu Hause eingefroren: ab heute
+  Regel „gefroren“ (gilt als Verbrauchsdatum), ein angegebenes Packungsdatum ruht.
+- Auftauen gilt für beide gleich (Regel „aufgetaut“ ab Auftaudatum).
+
+## Rückgängig (24 h, F4)
+
+- Jede Vorratsaktion (einbuchen, Rest, korrigieren, verschieben, öffnen, verbrauchen, entsorgen)
+  schreibt einen Eintrag in `HouseholdActivities` mit dem Zustand **vorher** und dem `UpdatedAt`,
+  das die Charge **nach** der Aktion trägt (`BatchSnapshotJson`, eigenes Format, Version 1).
+- Rückgängig (`POST …/inventory/activities/{id}/undo`, Rolle Mitglied) geht, wenn die Aktion
+  höchstens 24 Stunden alt, noch nicht rückgängig gemacht und jede betroffene Charge seitdem
+  unverändert ist (gleiches `UpdatedAt`) bzw. noch gelöscht ist. Sonst 409 `inventory.undo_not_possible`.
+- Wirkung: Zustand und Lagerort zurück, gelöschte Chargen mit **gleicher Id** neu, beim Einbuchen
+  die Charge wieder weg; Verbrauchsereignisse und die Aktivität bekommen `UndoneAt`; eine neue
+  Aktivität `undone` (selbst nicht rückgängig zu machen).
+- `UpdatedAt` wird auf Mikrosekunden gekürzt, weil PostgreSQL `timestamptz` so speichert und der
+  Vergleich sonst nie gleich wäre.
 
 ## Haltbarkeitsregeln
 
@@ -68,7 +101,14 @@ Haushalt ─┬─ Produkt (Katalog des Haushalts)
 - Aktionen: **aufgebraucht**, **teilweise verbraucht** (Menge), **entsorgt** mit Grund
   (abgelaufen, verdorben, schmeckt nicht, zu viel gekocht, sonstiges).
 - Jede Aktion erzeugt ein **Verbrauchsereignis** (Produkt, Menge, Art, Grund, Person, Zeit) – Basis
-  für Statistik, Verlauf und Mindestbestand.
+  für Statistik, Verlauf und Mindestbestand. Je betroffener Charge ein Ereignis, Menge in der
+  Einheit der Charge, mit dem Ablaufstatus im Moment des Verbrauchs (Haushalts-„heute“ und Vorlauf).
+- **Produkt verbrauchen** verteilt nach FEFO; bei gleichem Datum zuerst die früher eingebuchte
+  Charge. Ohne Menge („aufgebraucht“, „entsorgt“) wird die ganze früheste Charge genommen. Reicht
+  der Bestand nicht: 422 `inventory.not_enough_stock` (die verfügbare Menge liest der Client aus
+  `GET …/inventory/products/{id}`).
+- Nach jeder Bestandsänderung ruft der Server alle `IStockChangedHandler` (Mindestbestand); ein
+  Fehler dort wird geloggt und macht die Aktion nicht ungültig.
 - Fällt der Bestand unter den **Mindestbestand**, siehe [einkauf.md](einkauf.md).
 
 ## Statistik (MVP)

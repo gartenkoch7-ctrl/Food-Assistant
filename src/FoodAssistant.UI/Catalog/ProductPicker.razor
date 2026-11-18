@@ -1,0 +1,110 @@
+@using FoodAssistant.Client.Catalog
+@using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Common
+@inject ICatalogClient Catalog
+@inject SessionState Session
+@inject IDialogService Dialogs
+@inject IStringLocalizer<CatalogText> T
+
+@* Shared by stock, scan, shopping and checkout: search the catalog, or add the typed name as a new product. *@
+<MudAutocomplete T="ProductSummaryDto" Label="@(Label ?? T["PickerLabel"])" Variant="Variant.Outlined"
+                 Value="_selected" ValueChanged="OnSelectedAsync"
+                 SearchFunc="SearchAsync" ToStringFunc="NameOf"
+                 MinCharacters="1" DebounceInterval="300" CoerceText="false" CoerceValue="false"
+                 ResetValueOnEmptyText="true" Clearable="true" SelectValueOnTab="true"
+                 NoItemsTemplate="NoItems">
+    <ItemTemplate Context="item">
+        @if (item.Id == Guid.Empty)
+        {
+            <span class="fa-picker-create">
+                <MudIcon Icon="@Icons.Material.Rounded.Add" aria-hidden="true" />
+                @string.Format(System.Globalization.CultureInfo.CurrentCulture, T["PickerCreate"].Value, item.Name)
+            </span>
+        }
+        else
+        {
+            <span class="fa-picker-item">
+                <span>@item.Name</span>
+                @if (!string.IsNullOrWhiteSpace(item.Brand))
+                {
+                    <span class="fa-picker-brand">@item.Brand</span>
+                }
+            </span>
+        }
+    </ItemTemplate>
+</MudAutocomplete>
+
+@code {
+    private ProductSummaryDto? _selected;
+
+    private RenderFragment NoItems => @<span>@T["PickerNoResults"]</span>;
+
+    /// <summary>Label of the field; defaults to "Product". The accessible name of the combobox.</summary>
+    [Parameter]
+    public string? Label { get; set; }
+
+    /// <summary>Raised with the chosen product, or with the product that was just created.</summary>
+    [Parameter]
+    public EventCallback<ProductSummaryDto> ProductSelected { get; set; }
+
+    /// <summary>Offers "add as new product" as last option; off for places that may only pick existing products.</summary>
+    [Parameter]
+    public bool AllowCreate { get; set; } = true;
+
+    private static string NameOf(ProductSummaryDto? product) => product?.Name ?? string.Empty;
+
+    private async Task<IEnumerable<ProductSummaryDto>> SearchAsync(string? text, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(text) || Session.ActiveHouseholdId is not { } household)
+        {
+            return [];
+        }
+
+        var result = await Catalog.SearchProductsAsync(household, text, null, 10, cancellationToken);
+        var items = result.Value?.Items.ToList() ?? [];
+
+        // The last entry is a placeholder (empty id) that opens the product dialog with the typed name.
+        // Only for people who may create products, and not after a failed search (it would invite duplicates).
+        if (AllowCreate && Session.CanEdit && result.IsSuccess)
+        {
+            items.Add(new ProductSummaryDto(Guid.Empty, text.Trim(), null, string.Empty, UnitCodes.Piece));
+        }
+
+        return items;
+    }
+
+    private async Task OnSelectedAsync(ProductSummaryDto? item)
+    {
+        if (item is null)
+        {
+            _selected = null;
+            return;
+        }
+
+        if (item.Id != Guid.Empty)
+        {
+            _selected = item;
+            await ProductSelected.InvokeAsync(item);
+            return;
+        }
+
+        var created = await CreateAsync(item.Name);
+        _selected = created;
+        if (created is not null)
+        {
+            await ProductSelected.InvokeAsync(created);
+        }
+    }
+
+    private async Task<ProductSummaryDto?> CreateAsync(string name)
+    {
+        var prefill = new CreateProductRequest(null, name, null, string.Empty, UnitCodes.Piece, null, null, null, null, null);
+        var parameters = new DialogParameters<ProductEditDialog> { { d => d.Prefill, prefill } };
+        var dialog = await Dialogs.ShowAsync<ProductEditDialog>(
+            T["ProductDialogNew"], parameters, new DialogOptions { MaxWidth = MaxWidth.Small, FullWidth = true });
+        var result = await dialog.Result;
+        return result is { Canceled: false, Data: ProductDto product }
+            ? new ProductSummaryDto(product.Id, product.Name, product.Brand, product.CategoryKey, product.DefaultUnit)
+            : null;
+    }
+}

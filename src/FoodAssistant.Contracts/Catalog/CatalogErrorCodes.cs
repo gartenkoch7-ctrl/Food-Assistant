@@ -18,6 +18,9 @@ public static class CatalogErrorCodes
     /// <summary>A product with this name already exists in the household (409).</summary>
     public const string ProductExists = "catalog.product_exists";
 
+    /// <summary>A storage location with this id already exists (409).</summary>
+    public const string LocationExists = "catalog.location_exists";
+
     /// <summary>The product still has stock and cannot be archived (409).</summary>
     public const string ProductHasStock = "catalog.product_has_stock";
 

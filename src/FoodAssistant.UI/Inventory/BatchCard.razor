@@ -1,0 +1,39 @@
+@using System.Globalization
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Inventory
+@using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Inventory
+@inject IInventoryClient Inventory
+@inject SessionState Session
+@inject IDialogService Dialogs
+@inject IUndoNotifier Undo
+@inject ISnackbar Snackbar
+@inject IStringLocalizer<InventoryText> T
+@inject IStringLocalizer<CommonText> Common
+
+<section class="fa-batch-card" aria-label="@Summary">
+    <div class="d-flex flex-wrap align-center gap-2">
+        <span class="fa-batch-summary">@Summary</span>
+        <StatusChip Status="Batch.Status" Text="@ExpiryText.Label(Batch, T, CultureInfo.CurrentCulture)" />
+    </div>
+    @if (ExpiryText.Hint(Batch, T) is { } hint)
+    {
+        <p class="ma-0 fa-batch-hint" role="note">@hint</p>
+    }
+    <ApiErrorAlert Error="_error" FeatureText="T" />
+    @if (Session.CanEdit)
+    {
+        <div class="d-flex flex-wrap gap-1" role="group" aria-label="@string.Format(CultureInfo.CurrentCulture, T["BatchActions"].Value, Summary)">
+            <MudButton Size="Size.Small" Variant="Variant.Outlined" Disabled="_busy" OnClick="UsedUpAsync">@T["ActionUsedUp"]</MudButton>
+            <MudButton Size="Size.Small" Variant="Variant.Text" Disabled="_busy" OnClick="() => ConsumeAsync(ConsumptionKindDto.Partial)">@T["ActionPartial"]</MudButton>
+            <MudButton Size="Size.Small" Variant="Variant.Text" Disabled="_busy" OnClick="() => ConsumeAsync(ConsumptionKindDto.Discarded)">@T["ActionDiscard"]</MudButton>
+            @if (Batch.State == BatchStateDto.Sealed)
+            {
+                <MudButton Size="Size.Small" Variant="Variant.Text" Disabled="_busy" OnClick="OpenAsync">@T["ActionOpen"]</MudButton>
+            }
+            <MudButton Size="Size.Small" Variant="Variant.Text" Disabled="_busy" OnClick="MoveAsync">@T["ActionMove"]</MudButton>
+            <MudButton Size="Size.Small" Variant="Variant.Text" Disabled="_busy" OnClick="CorrectAsync">@T["ActionCorrect"]</MudButton>
+            <MudButton Size="Size.Small" Variant="Variant.Text" Disabled="_busy" OnClick="LeftoverAsync">@T["ActionLeftover"]</MudButton>
+        </div>
+    }
+</section>

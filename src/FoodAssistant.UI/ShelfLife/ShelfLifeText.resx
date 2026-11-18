@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- German is the neutral language of the project; ShelfLifeText.en.resx holds the English texts. -->
+  <data name="RulesTitle" xml:space="preserve"><value>Haltbarkeitsregeln</value></data>
+  <data name="IntroSources" xml:space="preserve"><value>Die Standardwerte stammen aus geprüften öffentlichen Quellen. Die KI schlägt keine Haltbarkeiten vor.</value></data>
+  <data name="IntroNoRule" xml:space="preserve"><value>Fehlt eine Regel, gibt es kein berechnetes Datum.</value></data>
+  <data name="IntroUseBy" xml:space="preserve"><value>Ein aus einer Regel berechnetes Datum gilt als Verbrauchsdatum.</value></data>
+  <data name="StorageChilled" xml:space="preserve"><value>Gekühlt</value></data>
+  <data name="StorageFrozen" xml:space="preserve"><value>Gefroren</value></data>
+  <data name="StorageAmbient" xml:space="preserve"><value>Raumtemperatur</value></data>
+  <data name="ValueOpening" xml:space="preserve"><value>Nach dem Öffnen</value></data>
+  <data name="ValueFrozen" xml:space="preserve"><value>Im Gefrierfach</value></data>
+  <data name="ValueThawing" xml:space="preserve"><value>Nach dem Auftauen</value></data>
+  <data name="ValueLeftover" xml:space="preserve"><value>Als Rest</value></data>
+  <data name="DaysOne" xml:space="preserve"><value>1 Tag</value></data>
+  <data name="DaysMany" xml:space="preserve"><value>{0} Tage</value></data>
+  <data name="NoValue" xml:space="preserve"><value>kein Wert</value></data>
+  <data name="OriginDefault" xml:space="preserve"><value>Standard</value></data>
+  <data name="OriginOwn" xml:space="preserve"><value>Eigen</value></data>
+  <data name="OriginCategory" xml:space="preserve"><value>Kategorie</value></data>
+  <data name="SourceOfRow" xml:space="preserve"><value>Quelle: {0}</value></data>
+  <data name="Edit" xml:space="preserve"><value>Bearbeiten</value></data>
+  <data name="EditLabel" xml:space="preserve"><value>Bearbeiten: {0}, {1}</value></data>
+  <data name="Reset" xml:space="preserve"><value>Auf Standard zurücksetzen</value></data>
+  <data name="ResetLabel" xml:space="preserve"><value>Auf Standard zurücksetzen: {0}, {1}</value></data>
+  <data name="ResetToCategory" xml:space="preserve"><value>Auf Kategoriewerte zurücksetzen</value></data>
+  <data name="ResetToCategoryLabel" xml:space="preserve"><value>Auf Kategoriewerte zurücksetzen: {0}, {1}</value></data>
+  <data name="ResetDone" xml:space="preserve"><value>Zurückgesetzt: {0}, {1}</value></data>
+  <data name="SavedDone" xml:space="preserve"><value>Gespeichert: {0}, {1}</value></data>
+  <data name="SourcesHeading" xml:space="preserve"><value>Quellen</value></data>
+  <data name="SourceRetrieved" xml:space="preserve"><value>abgerufen am {0}</value></data>
+  <data name="SourcesEmpty" xml:space="preserve"><value>Es sind noch keine Standardwerte hinterlegt. Bis dahin gelten nur eure eigenen Werte.</value></data>
+  <data name="DialogTitle" xml:space="preserve"><value>{0}, {1}</value></data>
+  <data name="DialogHint" xml:space="preserve"><value>Leere Felder übernehmen den Wert darüber. Sind alle Felder leer, gilt wieder der Standard.</value></data>
+  <data name="ProductDialogHint" xml:space="preserve"><value>Leere Felder übernehmen den Wert der Kategorie. Sind alle Felder leer, gelten wieder die Kategoriewerte.</value></data>
+  <data name="FieldInherited" xml:space="preserve"><value>Ohne eigenen Wert: {0}</value></data>
+  <data name="DaysUnit" xml:space="preserve"><value>Tage</value></data>
+  <data name="FieldOutOfRange" xml:space="preserve"><value>Bitte eine ganze Zahl von 0 bis 3650 eingeben.</value></data>
+  <data name="Save" xml:space="preserve"><value>Speichern</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Abbrechen</value></data>
+  <data name="ProductTitle" xml:space="preserve"><value>Haltbarkeit: {0}</value></data>
+  <data name="ProductTitleFallback" xml:space="preserve"><value>Haltbarkeit des Produkts</value></data>
+  <data name="ProductIntro" xml:space="preserve"><value>Kategorie: {0}. Werte ohne eigenen Eintrag übernimmt das Produkt von der Kategorie.</value></data>
+  <data name="BackToRules" xml:space="preserve"><value>Zu den Haltbarkeitsregeln</value></data>
+  <data name="Error.shelf_life.validation_failed" xml:space="preserve"><value>Bitte prüfe die markierten Werte.</value></data>
+  <data name="Error.shelf_life.unknown_category" xml:space="preserve"><value>Diese Kategorie gibt es nicht.</value></data>
+  <data name="Error.shelf_life.unknown_storage_type" xml:space="preserve"><value>Diesen Lagertyp gibt es nicht.</value></data>
+  <data name="Error.catalog.product_not_found" xml:space="preserve"><value>Das Produkt wurde nicht gefunden.</value></data>
+</root>

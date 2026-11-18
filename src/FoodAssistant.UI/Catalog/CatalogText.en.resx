@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <!-- English texts of products, the product picker and storage locations. Keys match CatalogText.resx. -->
+  <data name="ProductsTitle" xml:space="preserve"><value>Products</value></data>
+  <data name="ProductsSearch" xml:space="preserve"><value>Search products</value></data>
+  <data name="ProductsCreate" xml:space="preserve"><value>Add product</value></data>
+  <data name="ProductsLoadMore" xml:space="preserve"><value>Load more</value></data>
+  <data name="ProductsListLabel" xml:space="preserve"><value>Products</value></data>
+  <data name="ProductsEmptyHeading" xml:space="preserve"><value>No products yet</value></data>
+  <data name="ProductsEmptyText" xml:space="preserve"><value>Add your first product. Products remember category, unit and barcodes so stocking up is quick later.</value></data>
+  <data name="ProductsNoResultsHeading" xml:space="preserve"><value>No matches</value></data>
+  <data name="ProductsNoResultsText" xml:space="preserve"><value>No product matches this search. Check the spelling or add a new product.</value></data>
+  <data name="ProductEdit" xml:space="preserve"><value>Edit {0}</value></data>
+  <data name="ProductDialogNew" xml:space="preserve"><value>Add product</value></data>
+  <data name="ProductDialogEdit" xml:space="preserve"><value>Edit product</value></data>
+  <data name="FieldName" xml:space="preserve"><value>Name</value></data>
+  <data name="FieldBrand" xml:space="preserve"><value>Brand (optional)</value></data>
+  <data name="FieldCategory" xml:space="preserve"><value>Category</value></data>
+  <data name="FieldUnit" xml:space="preserve"><value>Default unit</value></data>
+  <data name="FieldLocation" xml:space="preserve"><value>Default storage location</value></data>
+  <data name="LocationNone" xml:space="preserve"><value>No default storage location</value></data>
+  <data name="FieldSection" xml:space="preserve"><value>Store section</value></data>
+  <data name="SectionAuto" xml:space="preserve"><value>Automatic, by category</value></data>
+  <data name="FieldMinimum" xml:space="preserve"><value>Minimum stock (optional)</value></data>
+  <data name="FieldBarcodes" xml:space="preserve"><value>Barcodes</value></data>
+  <data name="BarcodeAddLabel" xml:space="preserve"><value>Add barcode (8, 12, 13 or 14 digits)</value></data>
+  <data name="BarcodeAdd" xml:space="preserve"><value>Add</value></data>
+  <data name="BarcodeRemove" xml:space="preserve"><value>Remove barcode {0}</value></data>
+  <data name="BarcodesNone" xml:space="preserve"><value>No barcode yet</value></data>
+  <data name="ProductArchive" xml:space="preserve"><value>Archive</value></data>
+  <data name="ArchiveTitle" xml:space="preserve"><value>Archive product?</value></data>
+  <data name="ArchiveText" xml:space="preserve"><value>"{0}" disappears from search and lists. This only works while none of it is in stock.</value></data>
+  <data name="ArchiveConfirm" xml:space="preserve"><value>Yes, archive</value></data>
+  <data name="ShelfLifeLink" xml:space="preserve"><value>Adjust shelf life</value></data>
+  <data name="Reloaded" xml:space="preserve"><value>The product was changed in the meantime and has been reloaded. Please check your input and save again.</value></data>
+  <data name="FieldError.required" xml:space="preserve"><value>Please fill in this field.</value></data>
+  <data name="FieldError.too_long" xml:space="preserve"><value>The text is too long.</value></data>
+  <data name="FieldError.unknown" xml:space="preserve"><value>This choice does not exist.</value></data>
+  <data name="FieldError.invalid" xml:space="preserve"><value>The value is not valid.</value></data>
+  <data name="FieldError.too_many" xml:space="preserve"><value>There are too many entries (10 at most).</value></data>
+  <data name="FieldError.must_be_positive" xml:space="preserve"><value>The amount must be greater than 0.</value></data>
+  <data name="FieldError.unknown_unit" xml:space="preserve"><value>This unit does not exist.</value></data>
+  <data name="FieldError.not_found" xml:space="preserve"><value>This entry no longer exists.</value></data>
+  <data name="FieldError.barcode" xml:space="preserve"><value>A barcode has 8, 12, 13 or 14 digits.</value></data>
+  <data name="Error.catalog.product_not_found" xml:space="preserve"><value>This product no longer exists.</value></data>
+  <data name="Error.catalog.location_not_found" xml:space="preserve"><value>This storage location no longer exists.</value></data>
+  <data name="Error.catalog.validation_failed" xml:space="preserve"><value>Please check the marked fields.</value></data>
+  <data name="Error.catalog.barcode_in_use" xml:space="preserve"><value>One of the barcodes already belongs to another product.</value></data>
+  <data name="Error.catalog.product_exists" xml:space="preserve"><value>This product already exists.</value></data>
+  <data name="Error.catalog.product_has_stock" xml:space="preserve"><value>This product is still in stock. Use it up or discard it first.</value></data>
+  <data name="Error.catalog.location_in_use" xml:space="preserve"><value>Batches are still stored in this location. Move or use them first.</value></data>
+  <data name="Error.catalog.location_type_locked" xml:space="preserve"><value>The type cannot change while batches are stored in this location.</value></data>
+  <data name="Error.catalog.location_exists" xml:space="preserve"><value>This storage location already exists.</value></data>
+  <data name="PickerLabel" xml:space="preserve"><value>Product</value></data>
+  <data name="PickerCreate" xml:space="preserve"><value>Add "{0}" as a new product</value></data>
+  <data name="PickerNoResults" xml:space="preserve"><value>No matching product</value></data>
+  <data name="LocationsTitle" xml:space="preserve"><value>Storage locations</value></data>
+  <data name="LocationsListLabel" xml:space="preserve"><value>Storage locations</value></data>
+  <data name="LocationsCreate" xml:space="preserve"><value>Add storage location</value></data>
+  <data name="LocationsEmptyHeading" xml:space="preserve"><value>No storage locations yet</value></data>
+  <data name="LocationsEmptyText" xml:space="preserve"><value>Storage locations say where things are: in the fridge, in the freezer or in the pantry. The type decides the shelf life.</value></data>
+  <data name="LocationsDefaults" xml:space="preserve"><value>Add standard storage locations</value></data>
+  <data name="DefaultFridge" xml:space="preserve"><value>Fridge</value></data>
+  <data name="DefaultFreezer" xml:space="preserve"><value>Freezer</value></data>
+  <data name="DefaultPantry" xml:space="preserve"><value>Pantry</value></data>
+  <data name="LocationEdit" xml:space="preserve"><value>Edit {0}</value></data>
+  <data name="LocationDelete" xml:space="preserve"><value>Delete {0}</value></data>
+  <data name="LocationDeleteTitle" xml:space="preserve"><value>Delete storage location?</value></data>
+  <data name="LocationDeleteText" xml:space="preserve"><value>"{0}" will be deleted. Products that use it as their default lose their default storage location.</value></data>
+  <data name="LocationDialogNew" xml:space="preserve"><value>Add storage location</value></data>
+  <data name="LocationDialogEdit" xml:space="preserve"><value>Edit storage location</value></data>
+  <data name="LocationReloaded" xml:space="preserve"><value>The storage location was changed in the meantime and has been reloaded. Please check your input and save again.</value></data>
+  <data name="FieldLocationName" xml:space="preserve"><value>Name</value></data>
+  <data name="FieldLocationType" xml:space="preserve"><value>Type</value></data>
+  <data name="LocationTypeHint" xml:space="preserve"><value>The type decides the shelf-life rules. It can only change while no batches are stored in the location.</value></data>
+</root>

@@ -1,0 +1,150 @@
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Inventory
+@using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Common
+@using FoodAssistant.Contracts.Inventory
+@using FoodAssistant.UI.Catalog
+@inject IInventoryClient Inventory
+@inject SessionState Session
+@inject IStringLocalizer<InventoryText> T
+@inject IStringLocalizer<CommonText> Common
+
+@* Adds a batch; closes with DialogResult.Ok(InventoryActionResponse). Used by the stock page, scan (C2) and checkout (F). *@
+<MudDialog>
+    <TitleContent>@T["AddTitle"]</TitleContent>
+    <DialogContent>
+        <ApiErrorAlert Error="_error" FeatureText="T" />
+        <div class="d-flex flex-column gap-3 mt-2">
+            @if (Product is null)
+            {
+                <ProductPicker ProductSelected="SelectProduct" />
+            }
+            else
+            {
+                <p class="ma-0"><strong>@_product?.Name</strong></p>
+            }
+            @if (_productMissing)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Error" role="alert">@T["FieldError.required"]</MudText>
+            }
+            <MudSelect T="Guid?" Label="@T["FieldLocation"]" Value="_locationId" ValueChanged="SelectLocation" Required="true"
+                       Variant="Variant.Outlined" Error="@(_locationMissing || LocationError is not null)"
+                       ErrorText="@(LocationError ?? T["FieldError.required"].Value)">
+                @foreach (var location in Locations)
+                {
+                    <MudSelectItem T="Guid?" Value="@location.Id">@location.Name</MudSelectItem>
+                }
+            </MudSelect>
+            <QuantityInput @bind-Value="_quantity" Label="@T["FieldQuantity"]" Required="true" DefaultUnit="@(_product?.DefaultUnit ?? UnitCodes.Piece)" />
+            @if (InventoryFields.ErrorOf(_error, "quantity", T) is { } quantityError)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Error">@quantityError</MudText>
+            }
+            <DateOnlyField @bind-Value="_date" Label="@T["FieldDate"]" />
+            @if (_date is not null)
+            {
+                <OptionGroup TValue="ExpiryKindDto?" Legend="@T["FieldKind"]" Options="_kindOptions" @bind-Value="_kind" />
+                @if ((_kindMissing ? T["FieldError.required"].Value : InventoryFields.ErrorOf(_error, "packageExpiryKind", T)) is { } kindError)
+                {
+                    <MudText Typo="Typo.caption" Color="Color.Error" role="alert">@kindError</MudText>
+                }
+            }
+            @if (IsFreezer)
+            {
+                <MudSwitch T="bool" @bind-Value="_selfFrozen" Label="@T["SelfFrozen"]" Color="Color.Primary" />
+                <p class="ma-0 mud-text-secondary">@(_date is null || _selfFrozen ? T["FrozenAtHomeHint"] : T["BoughtFrozenHint"])</p>
+            }
+        </div>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Disabled="_saving" OnClick="() => MudDialog.Cancel()">@Common["Cancel"]</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" Disabled="_saving" OnClick="SaveAsync">@Common["Save"]</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private IReadOnlyList<ChoiceOption<ExpiryKindDto?>> _kindOptions = [];
+    private bool _kindMissing;
+    private ProductSummaryDto? _product;
+    private Guid? _locationId;
+    private QuantityDto? _quantity;
+    private DateOnly? _date;
+    // No preselection: a use-by date stored as best-before would show "often still fine" (safety).
+    private ExpiryKindDto? _kind;
+    private bool _selfFrozen;
+    private bool _productMissing;
+    private bool _locationMissing;
+    private bool _saving;
+    private ApiError? _error;
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    /// <summary>Preset product (scan, checkout); without it a product picker is shown.</summary>
+    [Parameter]
+    public ProductSummaryDto? Product { get; set; }
+
+    /// <summary>Preset amount, e.g. from a shopping entry.</summary>
+    [Parameter]
+    public QuantityDto? Quantity { get; set; }
+
+    /// <summary>Scanned barcode (C2); recorded as origin "scanned".</summary>
+    [Parameter]
+    public string? Barcode { get; set; }
+
+    [Parameter]
+    public BatchOriginDto Origin { get; set; } = BatchOriginDto.Manual;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<StorageLocationDto> Locations { get; set; } = [];
+
+    private bool IsFreezer => Locations.FirstOrDefault(l => l.Id == _locationId)?.Type == StorageTypeDto.Frozen;
+
+    protected override void OnInitialized()
+    {
+        _kindOptions =
+        [
+            new(ExpiryKindDto.BestBefore, T["Kind.BestBefore"]),
+            new(ExpiryKindDto.UseBy, T["Kind.UseBy"]),
+        ];
+        _product = Product;
+        _quantity = Quantity;
+        _locationId = Locations.FirstOrDefault()?.Id;
+    }
+
+    private void SelectProduct(ProductSummaryDto product)
+    {
+        _product = product;
+        _productMissing = false;
+    }
+
+    private string? LocationError => InventoryFields.ErrorOf(_error, "storageLocationId", T);
+
+    private void SelectLocation(Guid? id) => _locationId = id;
+
+    private async Task SaveAsync()
+    {
+        _productMissing = _product is null;
+        _locationMissing = _locationId is null;
+        _kindMissing = _date is not null && _kind is null;
+        if (_productMissing || _locationMissing || _kindMissing || Session.ActiveHouseholdId is not { } household)
+        {
+            return;
+        }
+
+        var origin = Barcode is not null && Origin == BatchOriginDto.Manual ? BatchOriginDto.Scanned : Origin;
+        var request = new AddBatchRequest(
+            null, _product!.Id, _locationId!.Value, _quantity!, _date, _date is null ? ExpiryKindDto.None : _kind!.Value, origin, IsFreezer && _selfFrozen);
+        _saving = true;
+        _error = null;
+        var result = await Inventory.AddBatchAsync(household, request, CancellationToken.None);
+        _saving = false;
+        if (result.IsSuccess)
+        {
+            MudDialog.Close(DialogResult.Ok(result.Value!));
+            return;
+        }
+
+        _error = result.Error;
+    }
+}

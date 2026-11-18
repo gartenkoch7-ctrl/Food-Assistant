@@ -1,13 +1,92 @@
 ﻿@page "/"
+@implements IDisposable
+@using System.Globalization
+@using FoodAssistant.Client.Catalog
+@using FoodAssistant.Client.Http
+@using FoodAssistant.Client.Inventory
+@using FoodAssistant.Client.Sync
+@using FoodAssistant.Contracts.Catalog
+@using FoodAssistant.Contracts.Common
+@using FoodAssistant.Contracts.Inventory
+@using FoodAssistant.Contracts.Sync
+@using FoodAssistant.UI.Catalog
+@inject IInventoryClient Inventory
+@inject ICatalogClient Catalog
+@inject SessionState Session
+@inject IDialogService Dialogs
+@inject IUndoNotifier Undo
+@inject ISnackbar Snackbar
+@inject ILiveUpdates Live
+@inject ILiveAnnouncer Announcer
+@inject TimeProvider Time
 @inject IStringLocalizer<InventoryText> T
+@inject IStringLocalizer<CommonText> Common
 
 <PageTitle>@T["InventoryTitle"] – @AppInfo.Name</PageTitle>
 
 <h1>@T["InventoryTitle"]</h1>
 
-<EmptyState Icon="@Icons.Material.Rounded.Kitchen"
-            Heading="@T["InventoryEmptyHeading"]"
-            Text="@T["InventoryEmptyText"]">
-    <MudButton Href="/scan" Variant="Variant.Filled" Color="Color.Primary"
-               StartIcon="@Icons.Material.Rounded.QrCodeScanner">@T["InventoryEmptyAction"]</MudButton>
-</EmptyState>
+<div class="d-flex flex-wrap align-center gap-2 mb-3">
+    <div class="d-flex gap-1" role="group" aria-label="@T["FilterLabel"]">
+        @foreach (var (value, label) in Filters)
+        {
+            <MudButton Size="Size.Small" Variant="@(_status == value ? Variant.Filled : Variant.Outlined)" Color="Color.Primary"
+                       aria-pressed="@(_status == value ? "true" : "false")" OnClick="() => FilterAsync(value)">@label</MudButton>
+        }
+    </div>
+    <MudSelect T="Guid?" Label="@T["FilterLocation"]" Value="_locationId" ValueChanged="LocationAsync" Variant="Variant.Outlined" Dense="true" Clearable="true">
+        @foreach (var location in _locations)
+        {
+            <MudSelectItem T="Guid?" Value="@location.Id">@location.Name</MudSelectItem>
+        }
+    </MudSelect>
+    <MudTextField T="string" Value="_query" ValueChanged="SearchAsync" Label="@T["Search"]" Variant="Variant.Outlined"
+                  Immediate="true" DebounceInterval="300" Clearable="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Rounded.Search" />
+    @if (Session.CanEdit)
+    {
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Add" OnClick="AddAsync">@T["AddBatch"]</MudButton>
+    }
+</div>
+
+<ApiErrorAlert Error="_error" FeatureText="T" />
+
+@if (_loading && _items.Count == 0)
+{
+    <LoadingState />
+}
+else if (_items.Count == 0 && _error is null)
+{
+    @if (_status is null && _locationId is null && string.IsNullOrWhiteSpace(_query))
+    {
+        <EmptyState Icon="@Icons.Material.Rounded.Kitchen" Heading="@T["InventoryEmptyHeading"]" Text="@T["InventoryEmptyText"]">
+            <MudButton Href="/scan" Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Rounded.QrCodeScanner">@T["InventoryEmptyAction"]</MudButton>
+        </EmptyState>
+    }
+    else
+    {
+        <EmptyState Icon="@Icons.Material.Rounded.SearchOff" Heading="@T["NoResultsHeading"]" Text="@T["NoResultsText"]" />
+    }
+}
+else
+{
+    <ul class="fa-list" aria-label="@T["ListLabel"]">
+        @foreach (var item in _items)
+        {
+            <ListRow @key="item.Product.Id" Icon="@CategoryIcons.For(item.Product.CategoryKey)" Name="@item.Product.Name" Secondary="@SecondaryOf(item)">
+                <End>
+                    @if (item.Batches.Count > 0)
+                    {
+                        <StatusChip Status="item.WorstStatus" Text="@ExpiryText.Label(item.Batches[0], T, CultureInfo.CurrentCulture)" />
+                    }
+                    <MudIconButton Icon="@Icons.Material.Rounded.ChevronRight" OnClick="() => OpenAsync(item.Product)"
+                                   aria-label="@string.Format(CultureInfo.CurrentCulture, T["ProductOpen"].Value, item.Product.Name)" />
+                </End>
+            </ListRow>
+        }
+    </ul>
+    @if (_next is not null)
+    {
+        <MudButton Variant="Variant.Outlined" Disabled="_loading" OnClick="LoadMoreAsync">@T["LoadMore"]</MudButton>
+    }
+}

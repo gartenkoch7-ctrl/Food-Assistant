@@ -106,6 +106,19 @@ Rest frei für weitere API-Konventionen.
 | `MemberRoleChanged` / 3023 | Log, Information | Haushalte | Rolle eines Mitglieds geändert | `HouseholdId`, `UserId`, `Role` |
 | `MemberRemoved` / 3024 | Log, Information | Haushalte | Mitglied aus Haushalt entfernt | `HouseholdId`, `UserId` |
 | `LastOwnerProtected` / 3025 | Log, Warning | Haushalte | Änderung abgelehnt: letzter Besitzer würde fehlen | `HouseholdId` |
+| `ProductCreated` / 3200 | Log, Information | Katalog | Produkt angelegt | `ProductId`, `HouseholdId` |
+| `ProductArchived` / 3201 | Log, Information | Katalog | Produkt archiviert | `ProductId`, `HouseholdId` |
+| `StorageLocationCreated` / 3202 | Log, Information | Katalog | Lagerort angelegt | `LocationId`, `HouseholdId` |
+| `StorageLocationDeleted` / 3203 | Log, Information | Katalog | Lagerort gelöscht | `LocationId`, `HouseholdId` |
+| `StockHandlerFailed` / 3204 | Log, Warning | Katalog | Ein Bestands-Handler ist nach einer Mindestbestand-Änderung gescheitert; die Änderung bleibt gültig | `ProductId`, Exception |
+| `OverrideChanged` / 3250 | Log, Information | Haltbarkeit | Eigene Haltbarkeitswerte (Kategorie oder Produkt) gespeichert; keine Werte, keine Kategorie | `HouseholdId`, `Scope` (`category`/`product`), `StorageType` |
+| `OverrideReset` / 3251 | Log, Information | Haltbarkeit | Eigene Haltbarkeitswerte auf Standard zurückgesetzt (auch durch Speichern ohne Werte) | `HouseholdId`, `Scope`, `StorageType` |
+| `BatchAdded` / 3300 | Log, Information | Vorrat | Charge eingebucht (auch Rest) | `BatchId`, `ProductId`, `Origin` |
+| `BatchStateChanged` / 3301 | Log, Information | Vorrat | Charge korrigiert, verschoben, eingefroren, aufgetaut oder geöffnet | `BatchId`, `Change` (Aktivitätsart) |
+| `BatchConsumed` / 3302 | Log, Information | Vorrat | Charge (teilweise) verbraucht oder entsorgt; je Charge ein Eintrag | `BatchId`, `Kind` |
+| `UndoApplied` / 3303 | Log, Information | Vorrat | Aktion rückgängig gemacht | `ActivityId` |
+| `UndoRejected` / 3304 | Log, Information | Vorrat | Rückgängig abgelehnt (409) | `Reason`: `already_undone`, `not_undoable`, `expired`, `invalid_payload`, `changed`, `concurrent` |
+| `StockHandlerFailed` / 3305 | Log, Warning | Vorrat | Ein `IStockChangedHandler` ist nach dem Speichern gescheitert; die Änderung bleibt gültig | Exception |
 | `ShoppingConflictResolved` / 3400 | Log, Information | Einkauf | Konflikt eines Einkaufslisten-Eintrags nach ADR-0005 aufgelöst (Ergebnis ≠ `Created`/`NoConflict`) | `ItemId`, `Outcome` |
 | `ShoppingListCreated` / 3401 | Log, Information | Einkauf | Einkaufsliste angelegt | `ListId` |
 | `ShoppingListDeleted` / 3402 | Log, Information | Einkauf | Einkaufsliste samt Einträgen gelöscht | `ListId` |
@@ -129,12 +142,28 @@ Rest frei für weitere API-Konventionen.
 | `foodassistant.accounts.logout` | Anmeldung | Web-Abmeldung | – |
 | `foodassistant.accounts.setup` | Konten | Ersteinrichtung | `foodassistant.outcome` |
 | `foodassistant.accounts.token` | Anmeldung | Token-Ausstellung | `foodassistant.grant_type` |
+| `foodassistant.catalog.archive_product` | Katalog | Produkt archivieren | `foodassistant.outcome` |
+| `foodassistant.catalog.create_location` | Katalog | Lagerort anlegen | `foodassistant.outcome` |
+| `foodassistant.catalog.create_product` | Katalog | Produkt anlegen | `foodassistant.outcome` |
+| `foodassistant.catalog.delete_location` | Katalog | Lagerort löschen | `foodassistant.outcome` |
+| `foodassistant.catalog.update_location` | Katalog | Lagerort ändern | `foodassistant.outcome` |
+| `foodassistant.catalog.update_product` | Katalog | Produkt ändern | `foodassistant.outcome` |
 | `foodassistant.households.change_member_role` | Haushalte | Mitgliedsrolle ändern | `foodassistant.outcome` |
 | `foodassistant.households.create` | Haushalte | Haushalt anlegen | `foodassistant.household_id` |
 | `foodassistant.households.create_invitation` | Haushalte | Einladung erstellen | – |
 | `foodassistant.households.remove_member` | Haushalte | Mitglied entfernen | `foodassistant.outcome` |
 | `foodassistant.households.revoke_invitation` | Haushalte | Einladung widerrufen | `foodassistant.outcome` |
+| `foodassistant.inventory.add_batch` | Vorrat | Charge einbuchen | `foodassistant.outcome` |
+| `foodassistant.inventory.consume_batch` | Vorrat | Charge verbrauchen/entsorgen | `foodassistant.outcome`, `foodassistant.batches` |
+| `foodassistant.inventory.consume_product` | Vorrat | Produkt nach FEFO verbrauchen/entsorgen | `foodassistant.outcome`, `foodassistant.batches` |
+| `foodassistant.inventory.correct_batch` | Vorrat | Charge korrigieren | `foodassistant.outcome` |
+| `foodassistant.inventory.create_leftover` | Vorrat | Rest anlegen | `foodassistant.outcome` |
+| `foodassistant.inventory.move_batch` | Vorrat | Charge verschieben (ggf. einfrieren/auftauen) | `foodassistant.outcome` |
+| `foodassistant.inventory.open_batch` | Vorrat | Charge öffnen | `foodassistant.outcome` |
+| `foodassistant.inventory.undo` | Vorrat | Aktion rückgängig machen | `foodassistant.outcome`, `foodassistant.batches` |
 | `foodassistant.persistence.migrate` | Persistenz | Datenbank-Migration | `foodassistant.migrations.pending` |
+| `foodassistant.shelf_life.reset_override` | Haltbarkeit | Eigene Haltbarkeitswerte zurücksetzen | `foodassistant.scope` (`category`/`product`), `foodassistant.outcome` (`ok`, `not_found`) |
+| `foodassistant.shelf_life.set_override` | Haltbarkeit | Eigene Haltbarkeitswerte speichern | `foodassistant.scope`, `foodassistant.outcome` (`ok`, `invalid`, `not_found`) |
 | `foodassistant.shopping.add_item` | Einkauf | Eintrag anlegen (auch intern: Mindestbestand, wiederkehrend) | `foodassistant.outcome` |
 | `foodassistant.shopping.change_item` | Einkauf | Eintrag ändern/abhaken mit Konfliktregeln | `foodassistant.outcome` |
 | `foodassistant.shopping.create_list` | Einkauf | Einkaufsliste anlegen | `foodassistant.outcome` |
@@ -155,5 +184,8 @@ Rest frei für weitere API-Konventionen.
 |---|---|---|---|---|
 | `foodassistant.api.idempotency.requests` | Counter `{request}` | API – Idempotenz | Schreibende Anfragen mit `Idempotency-Key` nach Ergebnis | `outcome`: `stored`, `replayed`, `key_reused`, `in_progress`, `invalid_key`, `abandoned` (5xx, Exception oder vor dem Handler abgewiesen, z. B. Antiforgery; Wiederholung läuft erneut), `stored_without_body` (Antwort > 1 MiB: nur Status und Header gespeichert), `store_failed`, `write_failed` (Handler fertig, Ergebnis nicht schreibbar; Schlüssel bleibt bis Lease-Ende reserviert) |
 | `foodassistant.api.rate_limit.rejections` | Counter `{request}` | API – Rate-Limits | Mit 429 abgewiesene Anfragen | `policy`: `auth-strict`, `api`, `openid` (`/connect/*`, `/.well-known/*`, vor der Authentifizierung pro Netz), `global` (API-Anfragen ohne passenden Endpunkt) |
+| `foodassistant.catalog.products.created` | Counter `{product}` | Katalog | Angelegte Produkte | `source`: `manual`, `food_facts` |
+| `foodassistant.inventory.batches.added` | Counter `{batch}` | Vorrat | Eingebuchte Chargen (auch Reste) | `origin`: `Manual`, `Scanned`, `Purchase`, `Import`, `Leftover` |
+| `foodassistant.inventory.consumptions` | Counter `{event}` | Vorrat | Verbrauchsereignisse (je Charge) | `kind`: `UsedUp`, `Partial`, `Discarded`; `reason`: Grund oder `none` |
 | `foodassistant.shopping.conflicts` | Counter `{conflict}` | Einkauf | Nach ADR-0005 aufgelöste Konflikte von Einträgen | `outcome`: `CheckedWins`, `ChangeWinsOverDelete`, `CheckedWinsOverDelete`, `BothDeleted`, `LastWriteWins` |
 | `foodassistant.shopping.items.checked` | Counter `{item}` | Einkauf | Abgehakte Einträge (Übergang offen → abgehakt) | – |

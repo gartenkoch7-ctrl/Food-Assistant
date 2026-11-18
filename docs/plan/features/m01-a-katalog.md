@@ -7,8 +7,8 @@ Chargen (B2), Scan (C2), Einkauf (D, F) und Nachkauf (G). KB: [vorrat-und-haltba
 Branch `feat/m01-a-catalog` · Pakete nacheinander: A1 → A2.
 
 ## Aufgaben
-- [ ] A1 Server: Produkte, Barcodes, Kategorien-Liste, Lagerorte (Application, Infrastructure, Endpunkte, Tests)
-- [ ] A2 Client und UI: `CatalogClient`, Produktliste, Produktdialog, `ProductPicker`, Lagerorte-Seite
+- [x] A1 Server: Produkte, Barcodes, Kategorien-Liste, Lagerorte (Application, Infrastructure, Endpunkte, Tests)
+- [x] A2 Client und UI: `CatalogClient`, Produktliste, Produktdialog, `ProductPicker`, Lagerorte-Seite
 
 ## Detailplan
 

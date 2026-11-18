@@ -1,0 +1,96 @@
+@using FoodAssistant.Contracts.ShelfLife
+@inject IStringLocalizer<ShelfLifeText> T
+
+@* One storage type of a category or product: four values, each with its origin as text (not only colour). *@
+<div class="fa-shelf-life-row">
+    <h3 id="@HeadingId">@StorageName</h3>
+    <dl class="fa-shelf-life-values">
+        @foreach (var (labelKey, get) in ShelfLifeFormat.Values)
+        {
+            var effective = get(Row.Effective);
+            var origin = ShelfLifeFormat.OriginKey(Row.Override is null ? null : get(Row.Override), get(Row.Default), InheritedOriginKey);
+            <div class="fa-shelf-life-value">
+                <dt>@T[labelKey]</dt>
+                <dd>
+                    <span>@ShelfLifeFormat.Days(T, effective)</span>
+                    @if (origin is not null)
+                    {
+                        <span class="fa-shelf-life-origin">@T[origin]</span>
+                    }
+                </dd>
+            </div>
+        }
+    </dl>
+    @if (SourceTitle is not null)
+    {
+        <p class="fa-shelf-life-source">@ShelfLifeFormat.Format(T, "SourceOfRow", SourceTitle)</p>
+    }
+    @if (CanEdit)
+    {
+        <div class="fa-shelf-life-actions">
+            <MudButton @ref="_editButton" Variant="Variant.Outlined" Color="Color.Primary" OnClick="OnEdit"
+                       aria-label="@ShelfLifeFormat.Format(T, "EditLabel", ContextName, StorageName)">@T["Edit"]</MudButton>
+            @if (Row.Override is not null)
+            {
+                <MudButton Variant="Variant.Text" Color="Color.Primary" OnClick="ResetAsync"
+                           aria-label="@ShelfLifeFormat.Format(T, ResetLabelKey, ContextName, StorageName)">@T[ResetKey]</MudButton>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private MudButton? _editButton;
+
+    [Parameter, EditorRequired]
+    public ShelfLifeRuleRowDto Row { get; set; } = default!;
+
+    /// <summary>Category or product name, used in the accessible names of the buttons.</summary>
+    [Parameter, EditorRequired]
+    public string ContextName { get; set; } = string.Empty;
+
+    /// <summary>Unique id prefix of the row heading.</summary>
+    [Parameter, EditorRequired]
+    public string IdPrefix { get; set; } = string.Empty;
+
+    /// <summary><c>OriginDefault</c> on the category page, <c>OriginCategory</c> on a product page.</summary>
+    [Parameter]
+    public string InheritedOriginKey { get; set; } = "OriginDefault";
+
+    /// <summary>Title of the default's source, or <see langword="null"/> without default.</summary>
+    [Parameter]
+    public string? SourceTitle { get; set; }
+
+    [Parameter]
+    public bool CanEdit { get; set; }
+
+    [Parameter]
+    public EventCallback OnEdit { get; set; }
+
+    [Parameter]
+    public EventCallback OnReset { get; set; }
+
+    /// <summary>Text of the reset button: <c>Reset</c> (to default) or <c>ResetToCategory</c> on a product page.</summary>
+    [Parameter]
+    public string ResetKey { get; set; } = "Reset";
+
+    /// <summary>Accessible name pattern of the reset button, matching <see cref="ResetKey"/>.</summary>
+    [Parameter]
+    public string ResetLabelKey { get; set; } = "ResetLabel";
+
+    private async Task ResetAsync()
+    {
+        await OnReset.InvokeAsync();
+
+        // The reset button disappears with the override; keep keyboard focus in the row (WCAG 2.4.3).
+        // After a failed reset the button stays, and focus on "Edit" next to it does no harm.
+        if (_editButton is not null)
+        {
+            await _editButton.FocusAsync();
+        }
+    }
+
+    private string StorageName => ShelfLifeFormat.StorageName(T, Row.StorageType);
+
+    private string HeadingId => $"{IdPrefix}-{Row.StorageType.ToString().ToLowerInvariant()}";
+}

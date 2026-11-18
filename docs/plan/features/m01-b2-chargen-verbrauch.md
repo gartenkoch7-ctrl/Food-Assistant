@@ -8,8 +8,8 @@ Sicherheitsrelevant (Ablaufdaten). KB: [vorrat-und-haltbarkeit](../../kb/vorrat-
 Branch `feat/m01-b2-stock` · Pakete nacheinander: B2.1 → B2.2 → B2.3 (B2.3 erst nach Merge A).
 
 ## Aufgaben
-- [ ] B2.1 Domain: Verschieben, Korrektur
-- [ ] B2.2 Server: Chargen, Verbrauch, FEFO, Ereignisse, Rückgängig, Übersicht
+- [x] B2.1 Domain: Verschieben, Korrektur
+- [x] B2.2 Server: Chargen, Verbrauch, FEFO, Ereignisse, Rückgängig, Übersicht
 - [ ] B2.3 Client und UI: Vorratsübersicht, Produkt-Chargen, Dialoge, Chargen-Seite
 
 ## Fachregeln (verbindlich)

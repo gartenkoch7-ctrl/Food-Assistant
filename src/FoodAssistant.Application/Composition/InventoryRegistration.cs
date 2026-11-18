@@ -1,13 +1,20 @@
+using FoodAssistant.Application.Inventory;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FoodAssistant.Application.Composition;
 
-/// <summary>Extension point for track B2 (docs/plan/m01-mvp.md). Empty until the feature is implemented.</summary>
+/// <summary>Use cases of the inventory (track B2): batches, consumption, undo, overview.</summary>
 public static class InventoryRegistration
 {
     public static IServiceCollection AddInventory(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
+        services.AddScoped<InventoryCommitter>();
+        services.AddScoped<InventoryQueryService>();
+        services.AddScoped<BatchAddService>();
+        services.AddScoped<BatchService>();
+        services.AddScoped<ConsumptionService>();
+        services.AddScoped<UndoService>();
         return services;
     }
 }

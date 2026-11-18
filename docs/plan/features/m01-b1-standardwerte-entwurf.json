@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "sources": {
+    "bfr_gefluegel": {
+      "title": "BfR: Ausgewählte Fragen und Antworten zu Geflügelfleisch (FAQ vom 28.04.2021)",
+      "url": "https://www.bfr.bund.de/cm/343/ausgewaehlte-fragen-und-antworten-zu-gefluegelfleisch.pdf",
+      "retrieved": "2026-11-18"
+    },
+    "bzfe_eier": {
+      "title": "BZfE: Kann man Eier einfrieren? (Stand 29.03.2023)",
+      "url": "https://www.bzfe.de/presse/pressemeldungen-archiv-2024-und-frueher/kann-man-eier-einfrieren",
+      "retrieved": "2026-11-18"
+    },
+    "bzfe_fisch": {
+      "title": "BZfE: Fisch und Meeresfrüchte: Vom Einkauf in die Küche (Stand 14.04.2026)",
+      "url": "https://www.bzfe.de/kueche-und-alltag/vom-acker-bis-zum-teller/fisch-und-meeresfruechte/fisch-vom-einkauf-in-die-kueche",
+      "retrieved": "2026-11-18"
+    },
+    "bzfe_huelsenfruechte": {
+      "title": "BZfE: How-to: Hülsenfrüchte (Stand 31.03.2025)",
+      "url": "https://www.bzfe.de/kueche-und-alltag/kochen/how-to-obst-und-gemuese/how-to-huelsenfruechte",
+      "retrieved": "2026-11-18"
+    },
+    "bzfe_hygiene": {
+      "title": "BZfE: Hygiene, Einfache Sprache (Stand 13.08.2026)",
+      "url": "https://www.bzfe.de/einfache-sprache/kochen-und-aufbewahren/hygiene",
+      "retrieved": "2026-11-18"
+    },
+    "bzfe_milch": {
+      "title": "BZfE: Milch: Vom Einkauf in die Küche (Stand 29.06.2026)",
+      "url": "https://www.bzfe.de/kueche-und-alltag/vom-acker-bis-zum-teller/milch/vom-einkauf-in-die-kueche",
+      "retrieved": "2026-11-18"
+    },
+    "bzfe_schwein": {
+      "title": "BZfE: Schweinefleisch: Vom Einkauf in die Küche (Stand 02.12.2025)",
+      "url": "https://www.bzfe.de/kueche-und-alltag/vom-acker-bis-zum-teller/schweinefleisch/schweinefleisch-vom-einkauf-in-die-kueche",
+      "retrieved": "2026-11-18"
+    },
+    "vz_nds_einfrieren": {
+      "title": "Verbraucherzentrale Niedersachsen: Tipps und Tricks beim Einfrieren und Auftauen (Stand 26.09.2025)",
+      "url": "https://www.verbraucherzentrale-niedersachsen.de/wissen/lebensmittel/gesund-ernaehren/tipps-und-tricks-beim-einfrieren-und-auftauen-120371",
+      "retrieved": "2026-11-18"
+    }
+  },
+  "rules": [
+    { "category": "dairy", "storageType": "Chilled", "daysAfterOpening": 3, "daysFrozen": null, "daysAfterThawing": null, "daysAsLeftover": null, "source": "bzfe_milch" },
+    { "category": "dairy", "storageType": "Frozen", "daysAfterOpening": null, "daysFrozen": 60, "daysAfterThawing": null, "daysAsLeftover": null, "source": "vz_nds_einfrieren" },
+    { "category": "cheese", "storageType": "Frozen", "daysAfterOpening": null, "daysFrozen": 60, "daysAfterThawing": null, "daysAsLeftover": null, "source": "vz_nds_einfrieren" },
+    { "category": "eggs", "storageType": "Frozen", "daysAfterOpening": null, "daysFrozen": 240, "daysAfterThawing": null, "daysAsLeftover": null, "source": "bzfe_eier" },
+    { "category": "meat", "storageType": "Chilled", "daysAfterOpening": 1, "daysFrozen": null, "daysAfterThawing": null, "daysAsLeftover": null, "source": "bzfe_schwein" },
+    { "category": "meat", "storageType": "Frozen", "daysAfterOpening": null, "daysFrozen": 30, "daysAfterThawing": null, "daysAsLeftover": 30, "source": "vz_nds_einfrieren" },
+    { "category": "meat", "storageType": "Ambient", "daysAfterOpening": null, "daysFrozen": null, "daysAfterThawing": null, "daysAsLeftover": 0, "source": "bzfe_hygiene" },
+    { "category": "poultry", "storageType": "Chilled", "daysAfterOpening": null, "daysFrozen": null, "daysAfterThawing": 0, "daysAsLeftover": null, "source": "bfr_gefluegel" },
+    { "category": "poultry", "storageType": "Frozen", "daysAfterOpening": null, "daysFrozen": 30, "daysAfterThawing": null, "daysAsLeftover": 30, "source": "vz_nds_einfrieren" },
+    { "category": "poultry", "storageType": "Ambient", "daysAfterOpening": null, "daysFrozen": null, "daysAfterThawing": null, "daysAsLeftover": 0, "source": "bzfe_hygiene" },
+    { "category": "fish", "storageType": "Chilled", "daysAfterOpening": 0, "daysFrozen": null, "daysAfterThawing": null, "daysAsLeftover": null, "source": "bzfe_fisch" },
+    { "category": "fish", "storageType": "Frozen", "daysAfterOpening": null, "daysFrozen": 30, "daysAfterThawing": null, "daysAsLeftover": 30, "source": "vz_nds_einfrieren" },
+    { "category": "fish", "storageType": "Ambient", "daysAfterOpening": null, "daysFrozen": null, "daysAfterThawing": null, "daysAsLeftover": 0, "source": "bzfe_hygiene" },
+    { "category": "sausage", "storageType": "Frozen", "daysAfterOpening": null, "daysFrozen": 30, "daysAfterThawing": null, "daysAsLeftover": null, "source": "vz_nds_einfrieren" },
+    { "category": "fruit", "storageType": "Frozen", "daysAfterOpening": null, "daysFrozen": 270, "daysAfterThawing": null, "daysAsLeftover": null, "source": "vz_nds_einfrieren" },
+    { "category": "vegetables", "storageType": "Chilled", "daysAfterOpening": null, "daysFrozen": null, "daysAfterThawing": null, "daysAsLeftover": 2, "source": "bzfe_hygiene" },
+    { "category": "vegetables", "storageType": "Frozen", "daysAfterOpening": null, "daysFrozen": 180, "daysAfterThawing": null, "daysAsLeftover": 30, "source": "vz_nds_einfrieren" },
+    { "category": "vegetables", "storageType": "Ambient", "daysAfterOpening": null, "daysFrozen": null, "daysAfterThawing": null, "daysAsLeftover": 0, "source": "bzfe_hygiene" },
+    { "category": "herbs", "storageType": "Frozen", "daysAfterOpening": null, "daysFrozen": 90, "daysAfterThawing": null, "daysAsLeftover": null, "source": "vz_nds_einfrieren" },
+    { "category": "bread", "storageType": "Frozen", "daysAfterOpening": null, "daysFrozen": 30, "daysAfterThawing": null, "daysAsLeftover": null, "source": "vz_nds_einfrieren" },
+    { "category": "grains", "storageType": "Chilled", "daysAfterOpening": null, "daysFrozen": null, "daysAfterThawing": null, "daysAsLeftover": 2, "source": "bzfe_hygiene" },
+    { "category": "grains", "storageType": "Frozen", "daysAfterOpening": null, "daysFrozen": null, "daysAfterThawing": null, "daysAsLeftover": 30, "source": "vz_nds_einfrieren" },
+    { "category": "grains", "storageType": "Ambient", "daysAfterOpening": null, "daysFrozen": null, "daysAfterThawing": null, "daysAsLeftover": 0, "source": "bzfe_hygiene" },
+    { "category": "legumes", "storageType": "Chilled", "daysAfterOpening": null, "daysFrozen": null, "daysAfterThawing": null, "daysAsLeftover": 2, "source": "bzfe_hygiene" },
+    { "category": "legumes", "storageType": "Frozen", "daysAfterOpening": null, "daysFrozen": 270, "daysAfterThawing": null, "daysAsLeftover": null, "source": "bzfe_huelsenfruechte" },
+    { "category": "legumes", "storageType": "Ambient", "daysAfterOpening": null, "daysFrozen": null, "daysAfterThawing": null, "daysAsLeftover": 0, "source": "bzfe_hygiene" },
+    { "category": "ready_meals", "storageType": "Chilled", "daysAfterOpening": null, "daysFrozen": null, "daysAfterThawing": null, "daysAsLeftover": 2, "source": "bzfe_hygiene" },
+    { "category": "ready_meals", "storageType": "Frozen", "daysAfterOpening": null, "daysFrozen": 30, "daysAfterThawing": null, "daysAsLeftover": 30, "source": "vz_nds_einfrieren" },
+    { "category": "ready_meals", "storageType": "Ambient", "daysAfterOpening": null, "daysFrozen": null, "daysAfterThawing": null, "daysAsLeftover": 0, "source": "bzfe_hygiene" }
+  ]
+}

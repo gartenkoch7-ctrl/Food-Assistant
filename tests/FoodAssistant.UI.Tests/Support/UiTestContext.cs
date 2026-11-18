@@ -3,6 +3,7 @@ using Bunit;
 using FoodAssistant.Client.Accounts;
 using FoodAssistant.Client.Catalog;
 using FoodAssistant.Client.Http;
+using FoodAssistant.Client.Inventory;
 using FoodAssistant.Client.Sync;
 using FoodAssistant.Contracts.Households;
 using FoodAssistant.UI.Common;
@@ -35,6 +36,8 @@ public abstract class UiTestContext : BunitContext
         Live = new FakeLiveUpdates();
         Services.AddSingleton<IAccountClient>(Accounts);
         Services.AddSingleton<ICatalogClient>(Catalog);
+        Inventory = new FakeInventoryClient();
+        Services.AddSingleton<IInventoryClient>(Inventory);
         Services.AddSingleton<ILiveUpdates>(Live);
 
         // Built by hand (not resolved) so tests can still register more services before the first render.
@@ -54,6 +57,8 @@ public abstract class UiTestContext : BunitContext
     protected FakeAccountClient Accounts { get; }
 
     protected FakeCatalogClient Catalog { get; }
+
+    protected FakeInventoryClient Inventory { get; }
 
     protected FakeLiveUpdates Live { get; }
 
