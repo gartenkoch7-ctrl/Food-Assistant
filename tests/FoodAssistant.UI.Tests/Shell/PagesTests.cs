@@ -31,17 +31,13 @@ public sealed class PagesTests : UiTestContext
     }
 
     [Fact]
-    public void Scan_SaysItComesInM1_AndKeepsTheManualAlternativeVisible()
+    public void Scan_HasASingleH1_AndKeepsTheManualAlternativeVisible()
     {
         var cut = Render<ScanPage>();
 
         Assert.Equal("Scannen", cut.Find("h1").TextContent);
-        Assert.Contains("kommt in M1", cut.Find("h2").TextContent);
-        var manual = cut.Find("button.mud-button-root");
-        Assert.Contains("Manuell eingeben", manual.TextContent);
-        Assert.True(manual.HasAttribute("disabled"));
-        Assert.Equal("scan-manual-hint", manual.GetAttribute("aria-describedby"));
-        Assert.Contains("M1", cut.Find("#scan-manual-hint").TextContent);
+        Assert.Single(cut.FindAll("h1"));
+        Assert.NotNull(cut.Find("#scan-barcode-input"));
     }
 
     [Fact]

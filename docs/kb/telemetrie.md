@@ -125,6 +125,7 @@ Rest frei für weitere API-Konventionen.
 | `LookupUnavailable` / 3350 | Log, Warning | Open Food Facts | Barcode-Abfrage nicht möglich und nichts im Cache; Antwort 503 (der Barcode wird nie geloggt) | – |
 | `ServedStale` / 3351 | Log, Information | Open Food Facts | Open Food Facts nicht erreichbar; abgelaufener Cache-Eintrag ausgeliefert | – |
 | `SettingsChanged` / 3026 | Log, Information | Haushalte | Haushaltseinstellungen geändert | `HouseholdId` |
+| `CameraUnavailable` / 4400 | Log, Information | Scan (UI) | Kamera-Scan im Browser nicht möglich (kein Zugriff, keine `BarcodeDetector`-API); nie ein gescannter Code | `Reason` (`NotStarted` oder .NET-Ausnahmetyp, z. B. `JSException`) |
 | `BrowserCallUnavailable` / 4000 | Log, Debug | UI | Browser-Aufruf nicht verfügbar; nur Operationsname | `Operation`, Exception |
 | `NetworkError` / 4010 | Log, Debug | Client | API-Aufruf ohne Antwort fehlgeschlagen (auch Zeitüberschreitung des HttpClient); nur HTTP-Methode, nie Pfad/Query | `Method`, Exception |
 | `InvalidResponse` / 4011 | Log, Warning | Client | Erfolgsantwort der API mit unlesbarem JSON-Körper (z. B. HTML eines Proxys); nur HTTP-Methode, ohne Exception (Meldung kann Teile des Körpers zitieren) | `Method` |

@@ -1,15 +1,67 @@
 @page "/scan"
-@inject IStringLocalizer<ScanText> T
+@implements IAsyncDisposable
 
 <PageTitle>@T["ScanTitle"] – @AppInfo.Name</PageTitle>
 
 <h1>@T["ScanTitle"]</h1>
 
-@* Scanning always has an alternative (ADR-0008). Until manual entry exists the button is disabled and says so. *@
-<EmptyState Icon="@Icons.Material.Rounded.QrCodeScanner"
-            Heading="@T["ScanComingSoonHeading"]"
-            Text="@T["ScanComingSoonText"]">
-    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="true"
-               aria-describedby="scan-manual-hint">@T["ScanManualAction"]</MudButton>
-    <p id="scan-manual-hint" class="fa-empty-hint">@T["ScanManualHint"]</p>
-</EmptyState>
+<div class="fa-scan">
+    <OptionGroup TValue="ScanMode" Legend="@T["ModeLegend"]" Options="_modes" Value="_mode" ValueChanged="SetMode" />
+
+    <section aria-labelledby="scan-camera-heading" class="fa-scan-section">
+        <h2 id="scan-camera-heading">@T["CameraHeading"]</h2>
+        @if (_cameraAvailable == true)
+        {
+            <p class="ma-0 mud-text-secondary">@T["CameraPrivacy"]</p>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_busy || _starting)"
+                       StartIcon="@(_scanning ? Icons.Material.Rounded.VideocamOff : Icons.Material.Rounded.QrCodeScanner)"
+                       OnClick="ToggleCameraAsync">@(_scanning ? T["CameraStop"] : T["CameraStart"])</MudButton>
+        }
+        else if (_cameraAvailable == false)
+        {
+            <p class="ma-0">@T["CameraUnavailable"]</p>
+        }
+        @if (_cameraFailed)
+        {
+            <p class="ma-0" role="alert">@T["CameraFailed"]</p>
+        }
+        <video id="@VideoId" class="fa-scan-video" hidden="@(!_scanning)" muted playsinline aria-label="@T["VideoLabel"]"></video>
+    </section>
+
+    <section aria-labelledby="scan-manual-heading" class="fa-scan-section">
+        <h2 id="scan-manual-heading">@T["ManualHeading"]</h2>
+        <form class="fa-scan-form" @onsubmit="SubmitAsync" @onsubmit:preventDefault>
+            <MudTextField T="string" @bind-Value="_manual" InputId="@BarcodeInputId" Label="@T["BarcodeLabel"]"
+                          HelperText="@T["BarcodeHelp"]" Variant="Variant.Outlined" Disabled="_busy"
+                          InputMode="InputMode.numeric" Immediate="true" />
+            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Outlined" Color="Color.Primary"
+                       Disabled="@(_busy || string.IsNullOrWhiteSpace(_manual))">@T["BarcodeSubmit"]</MudButton>
+        </form>
+        @* Re-created after each use so the field is empty again. *@
+        <div @key="_pickerKey">
+            <ProductPicker Label="@T["SearchLabel"]" AllowCreate="@(_mode == ScanMode.Add)" ProductSelected="ProductChosenAsync" />
+        </div>
+    </section>
+
+    @if (_outcome is not null)
+    {
+        <section aria-labelledby="scan-result-heading" class="fa-scan-section">
+            <h2 id="scan-result-heading">@T["ResultHeading"]</h2>
+            <ApiErrorAlert Error="_outcome.Error" FeatureText="T" />
+            @if (_outcome.Kind != ScanOutcomeKind.Failed)
+            {
+                <p class="ma-0 fa-scan-result">@MessageOf(_outcome)</p>
+            }
+            @if (_outcome.ActivityId is not null && _outcome.Kind is ScanOutcomeKind.Added or ScanOutcomeKind.Used)
+            {
+                <div class="fa-scan-actions">
+                    <MudButton Variant="Variant.Outlined" Disabled="_busy" OnClick="UndoAsync">@T["UndoAction"]</MudButton>
+                    @if (_outcome.Kind == ScanOutcomeKind.Used)
+                    {
+                        <MudButton Variant="Variant.Outlined" Disabled="_busy" OnClick="ChangeAmountAsync">@T["ChangeAmount"]</MudButton>
+                    }
+                </div>
+            }
+        </section>
+    }
+</div>

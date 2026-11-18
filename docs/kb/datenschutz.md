@@ -29,6 +29,7 @@ wird hier eingetragen.
 | KI-Anbieter (Cloud) | nur wenn konfiguriert und Funktion genutzt | nur nötige Fachdaten (z. B. Vorratsnamen, Mengen, Rezeptwunsch), keine Personendaten |
 | Ollama | wie oben, bleibt im eigenen Netz | wie oben |
 | Open Food Facts | Barcode-Abfrage unbekannter Produkte, nur durch den Server; abschaltbar mit `FoodAssistant__OpenFoodFacts__Enabled=false` | nur der Barcode; der `User-Agent` nennt App-Version und das Projekt als Kontakt (kein Nutzerbezug); die IP des Servers ist für Open Food Facts sichtbar |
+| Kamera (Barcode-Scan im Browser) | nur nach Knopfdruck auf der Scan-Seite | nichts: das Kamerabild bleibt im Browser; an den Server geht nur der erkannte Barcode bzw. die Chargenkennung |
 | ntfy | wenn konfiguriert | Text der Benachrichtigung |
 | Web-Push-Dienst des Browsers | Benachrichtigungen im Web | verschlüsselter Inhalt der Benachrichtigung |
 | OTLP-Ziel | wenn konfiguriert | Telemetrie ohne Nutzerinhalte |

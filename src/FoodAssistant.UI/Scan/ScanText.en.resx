@@ -5,8 +5,44 @@
   <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
   <data name="ScanTitle" xml:space="preserve"><value>Scan</value></data>
-  <data name="ScanComingSoonHeading" xml:space="preserve"><value>Barcode scanning arrives in M1</value></data>
-  <data name="ScanComingSoonText" xml:space="preserve"><value>Soon you will scan barcodes with your camera. Until then you can enter items by hand.</value></data>
-  <data name="ScanManualAction" xml:space="preserve"><value>Enter manually</value></data>
-  <data name="ScanManualHint" xml:space="preserve"><value>Manual entry follows together with the pantry in M1.</value></data>
+  <data name="ModeLegend" xml:space="preserve"><value>What do you want to do?</value></data>
+  <data name="ModeAdd" xml:space="preserve"><value>Add to stock</value></data>
+  <data name="ModeUse" xml:space="preserve"><value>Used</value></data>
+  <data name="CameraHeading" xml:space="preserve"><value>Camera</value></data>
+  <data name="CameraPrivacy" xml:space="preserve"><value>The camera image stays on your device. Only the detected code is sent.</value></data>
+  <data name="CameraStart" xml:space="preserve"><value>Start camera</value></data>
+  <data name="CameraStop" xml:space="preserve"><value>Stop camera</value></data>
+  <data name="CameraUnavailable" xml:space="preserve"><value>The camera is not available here. Enter the barcode below or search for the product.</value></data>
+  <data name="CameraFailed" xml:space="preserve"><value>The camera could not be started, maybe permission is missing. Enter the barcode below or search for the product.</value></data>
+  <data name="VideoLabel" xml:space="preserve"><value>Camera view for scanning</value></data>
+  <data name="ManualHeading" xml:space="preserve"><value>Without a camera</value></data>
+  <data name="BarcodeLabel" xml:space="preserve"><value>Enter barcode</value></data>
+  <data name="BarcodeHelp" xml:space="preserve"><value>8, 12, 13 or 14 digits</value></data>
+  <data name="BarcodeSubmit" xml:space="preserve"><value>Use</value></data>
+  <data name="SearchLabel" xml:space="preserve"><value>Search for a product</value></data>
+  <data name="ResultHeading" xml:space="preserve"><value>Result</value></data>
+  <data name="UndoAction" xml:space="preserve"><value>Undo</value></data>
+  <data name="ChangeAmount" xml:space="preserve"><value>Change amount</value></data>
+  <data name="DoneAdded" xml:space="preserve"><value>{0}: added to stock</value></data>
+  <data name="DoneUsed" xml:space="preserve"><value>{0}: used</value></data>
+  <data name="DoneUndone" xml:space="preserve"><value>Undone.</value></data>
+  <data name="NotInStock" xml:space="preserve"><value>{0}: nothing in stock, nothing used.</value></data>
+  <data name="UnknownProduct" xml:space="preserve"><value>No product has this barcode yet. Switch to “Add to stock” to create it.</value></data>
+  <data name="UnknownCode" xml:space="preserve"><value>This is neither a barcode nor a label of this app. Barcodes have 8, 12, 13 or 14 digits.</value></data>
+  <data name="Navigated" xml:space="preserve"><value>Opening the batch.</value></data>
+  <data name="ProductCreated" xml:space="preserve"><value>{0}: product created, but nothing added to stock.</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>Cancelled, nothing was changed.</value></data>
+  <data name="AttributionPrefix" xml:space="preserve"><value>Suggestion from</value></data>
+  <data name="AttributionCheck" xml:space="preserve"><value>Community data, please check.</value></data>
+  <data name="OpensInNewTab" xml:space="preserve"><value>(opens in a new tab)</value></data>
+  <data name="NoSuggestion" xml:space="preserve"><value>Open Food Facts has no suggestion for this barcode or cannot be reached. Please enter the data yourself.</value></data>
+  <data name="Error.scan.no_location" xml:space="preserve"><value>Create a storage location first under “Storage locations”.</value></data>
+  <data name="Error.scan.no_household" xml:space="preserve"><value>No household is selected.</value></data>
+  <data name="Error.food_facts.not_found" xml:space="preserve"><value>Open Food Facts does not know this barcode.</value></data>
+  <data name="Error.food_facts.unavailable" xml:space="preserve"><value>Open Food Facts is not available right now.</value></data>
+  <data name="Error.food_facts.invalid_barcode" xml:space="preserve"><value>A barcode has 8, 12, 13 or 14 digits.</value></data>
+  <data name="Error.inventory.undo_not_possible" xml:space="preserve"><value>Undo is no longer possible.</value></data>
+  <data name="Error.inventory.activity_not_found" xml:space="preserve"><value>This action no longer exists.</value></data>
+  <data name="Error.inventory.not_enough_stock" xml:space="preserve"><value>There is not enough stock.</value></data>
+  <data name="Error.catalog.product_not_found" xml:space="preserve"><value>The product no longer exists.</value></data>
 </root>
