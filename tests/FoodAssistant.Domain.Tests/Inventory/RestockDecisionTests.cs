@@ -30,6 +30,33 @@ public sealed class RestockDecisionTests
         Assert.Equal(new Quantity(3m, Unit.Piece), action.Amount);
     }
 
+    [Theory]
+    [InlineData("package")]
+    [InlineData("can")]
+    [InlineData("bunch")]
+    public void Decide_BelowMinimum_OtherCountableUnitsAreRoundedUp(string code)
+    {
+        var unit = Unit.FromCode(code);
+
+        var action = RestockDecision.Decide(new Quantity(2m, unit), new Quantity(0.5m, unit), false, false);
+
+        Assert.Equal(new Quantity(2m, unit), action.Amount);
+    }
+
+    [Fact]
+    public void Decide_BelowMinimum_ConversionRemainderIsRoundedUpToThreeDecimals()
+    {
+        var action = RestockDecision.Decide(new Quantity(1m, Unit.Kilogram), new Quantity(0.5m, Unit.Gram), false, false);
+
+        Assert.Equal(new Quantity(1m, Unit.Kilogram), action.Amount);
+    }
+
+    [Fact]
+    public void Decide_AboveMinimumWithoutTrigger_DoesNothing() =>
+        Assert.Equal(
+            RestockKind.None,
+            RestockDecision.Decide(TwoLitres, new Quantity(5m, Unit.Litre), triggered: false, onOpenList: false).Kind);
+
     [Fact]
     public void Decide_BelowMinimum_MeasuredAmountsStayExact()
     {

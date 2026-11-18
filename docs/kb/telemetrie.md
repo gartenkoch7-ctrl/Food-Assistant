@@ -133,6 +133,7 @@ Rest frei für weitere API-Konventionen.
 | `RestockItemAdded` / 3550 | Log, Information | Nachkauf | Produkt unter Mindestbestand: automatischer Eintrag auf der Standardliste | `ProductId`, `ListId` |
 | `RecurringItemAdded` / 3551 | Log, Information | Nachkauf | Wiederkehrende Regel hat ihren Eintrag angelegt | `RuleId`, `ListId` |
 | `RecurringItemSkipped` / 3552 | Log, Information | Nachkauf | Wiederkehrende Regel übersprungen, weil ihr letzter Eintrag noch offen ist | `RuleId` |
+| `MinimumStockCheckFailed` / 3554 | Log, Warning | Nachkauf | Mindestbestand-Prüfung eines Produkts gescheitert; die übrigen Produkte werden weiter geprüft | `ProductId`, Exception |
 | `RecurringRunFailed` / 3553 | Log, Warning | Nachkauf | Lauf der wiederkehrenden Einträge für einen Haushalt gescheitert; die übrigen Haushalte laufen weiter | `HouseholdId`, Exception |
 | `StoreCreated` / 3450 | Log, Information | Läden | Laden angelegt | `StoreId` |
 | `StoreDeleted` / 3451 | Log, Information | Läden | Laden gelöscht (Listen verlieren den Laden) | `StoreId` |

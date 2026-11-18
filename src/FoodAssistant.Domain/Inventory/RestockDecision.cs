@@ -46,5 +46,6 @@ public static class RestockDecision
     }
 
     private static bool IsCountable(Unit unit) =>
-        ReferenceEquals(unit, Unit.Piece) || ReferenceEquals(unit, Unit.Package) || ReferenceEquals(unit, Unit.Can);
+        ReferenceEquals(unit, Unit.Piece) || ReferenceEquals(unit, Unit.Package) || ReferenceEquals(unit, Unit.Can)
+        || ReferenceEquals(unit, Unit.Bunch);
 }

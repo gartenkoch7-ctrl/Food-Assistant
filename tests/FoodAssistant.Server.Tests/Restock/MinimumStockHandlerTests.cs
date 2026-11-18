@@ -86,6 +86,54 @@ public sealed class MinimumStockHandlerTests(PostgresContainerFixture postgres)
         Assert.Equal(new QuantityDto(2m, "l"), entry.Quantity);
     }
 
+    [Fact]
+    public async Task ProductResponses_CarryTheVersionAfterTheHandlerChangedTheFlag()
+    {
+        await using var app = await InventoryApp.StartAsync(postgres);
+        var created = await CatalogApi.CreateProductAsync(
+            app.Owner,
+            app.HouseholdId,
+            CatalogApi.NewProduct("Juice") with { MinimumStock = new QuantityDto(2m, "l") });
+        var url = $"{CatalogApi.Products(app.HouseholdId)}/{created.Id}";
+
+        // The handler flipped the flag during the POST; the returned version must still be current.
+        using var update = await CatalogApi.SendAsync(
+            app.Owner, HttpMethod.Put, url,
+            CatalogApi.Update("Juice") with { MinimumStock = new QuantityDto(3m, "l") },
+            CatalogApi.ETag(created.Version));
+        var updated = await TestClient.ReadAsync<ProductDto>(update);
+        using var again = await CatalogApi.SendAsync(
+            app.Owner, HttpMethod.Put, url,
+            CatalogApi.Update("Juice") with { MinimumStock = new QuantityDto(3m, "l") },
+            CatalogApi.ETag(updated.Version));
+
+        Assert.True(again.IsSuccessStatusCode);
+    }
+
+    [Fact]
+    public async Task RemovingTheMinimum_ForgetsTheTrigger_SoANewMinimumAddsAgain()
+    {
+        await using var app = await InventoryApp.StartAsync(postgres);
+        await SetMinimumAsync(app, 2m);
+        var first = Assert.Single(await DefaultListItemsAsync(app));
+        using (var delete = await app.Owner.DeleteAsync($"{ShoppingBase(app)}/items/{first.Id}?baseVersion={first.Version}"))
+        {
+            Assert.True(delete.IsSuccessStatusCode);
+        }
+
+        var url = $"{CatalogApi.Products(app.HouseholdId)}/{app.Milk.Id}";
+        var product = await app.Owner.GetJsonAsync<ProductDto>(url);
+        using (var remove = await CatalogApi.SendAsync(
+                   app.Owner, HttpMethod.Put, url, CatalogApi.Update("Milk"), CatalogApi.ETag(product.Version)))
+        {
+            Assert.True(remove.IsSuccessStatusCode);
+        }
+
+        await SetMinimumAsync(app, 2m);
+
+        Assert.Single(await DefaultListItemsAsync(app));
+    }
+
     private static string ShoppingBase(InventoryApp app) => ShoppingApi.Root(app.HouseholdId);
 
     private static async Task<ShoppingListDto> DefaultListAsync(InventoryApp app)

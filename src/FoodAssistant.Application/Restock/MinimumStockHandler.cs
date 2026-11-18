@@ -26,7 +26,16 @@ public sealed class MinimumStockHandler(
         ArgumentNullException.ThrowIfNull(productIds);
         foreach (var productId in productIds.Distinct())
         {
-            await CheckAsync(householdId, productId, cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await CheckAsync(householdId, productId, cancellationToken).ConfigureAwait(false);
+            }
+#pragma warning disable CA1031 // One failing product must not keep the others from being checked.
+            catch (Exception exception) when (exception is not OperationCanceledException)
+#pragma warning restore CA1031
+            {
+                RestockLog.MinimumStockCheckFailed(logger, productId, exception);
+            }
         }
     }
 
@@ -91,8 +100,19 @@ public sealed class MinimumStockHandler(
         }
         catch
         {
-            // No entry exists: take the claim back so the next stock change tries again.
-            await store.SetTriggeredAsync(productId, false, CancellationToken.None).ConfigureAwait(false);
+            // No entry exists: take the claim back so the next stock change tries again. The store
+            // drops half-saved state first; a failing release must not hide the original error.
+            try
+            {
+                await store.SetTriggeredAsync(productId, false, CancellationToken.None).ConfigureAwait(false);
+            }
+#pragma warning disable CA1031
+            catch (Exception)
+#pragma warning restore CA1031
+            {
+                // The original exception is rethrown below.
+            }
+
             throw;
         }
     }

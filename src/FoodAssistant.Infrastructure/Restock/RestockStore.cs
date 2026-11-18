@@ -48,6 +48,9 @@ internal sealed class RestockStore(AppDbContext db) : IRestockStore
 
     public async Task<bool> SetTriggeredAsync(Guid productId, bool triggered, CancellationToken cancellationToken)
     {
+        // A failed insert of a list entry may have left it tracked; saving again would retry it.
+        db.ChangeTracker.Clear();
+
         // Tracked and saved through the context: the product is synchronised (change log), so no ExecuteUpdate.
         var product = await db.Set<Product>()
             .SingleOrDefaultAsync(p => p.Id == productId, cancellationToken)

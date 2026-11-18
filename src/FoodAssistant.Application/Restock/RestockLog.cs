@@ -20,4 +20,8 @@ internal static partial class RestockLog
     [LoggerMessage(EventId = 3553, Level = LogLevel.Warning,
         Message = "Recurring run failed for household {HouseholdId}")]
     public static partial void RecurringRunFailed(ILogger logger, Guid householdId, Exception exception);
+
+    [LoggerMessage(EventId = 3554, Level = LogLevel.Warning,
+        Message = "Minimum-stock check of product {ProductId} failed")]
+    public static partial void MinimumStockCheckFailed(ILogger logger, Guid productId, Exception exception);
 }
